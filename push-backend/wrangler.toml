@@ -12,3 +12,10 @@ name = "genba-no-sora-noon-push"
 main = "src/worker.js"
 compatibility_date = "2026-11-09"
 workers_dev = true
+
+# D1 database: real production database created in Cloudflare dashboard.
+# Contains push subscription endpoints and delivery logs; do not commit data.
+[[d1_databases]]
+binding = "DB"
+database_name = "genba-no-sora-push-private"
+database_id = "94a4cd9b-a998-4622-9dbe-4768665b6eff"
