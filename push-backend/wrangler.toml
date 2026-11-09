@@ -12,6 +12,9 @@ name = "genba-no-sora-noon-push"
 main = "src/worker.js"
 compatibility_date = "2026-11-09"
 workers_dev = true
+# Preserve non-secret runtime variables created in the Cloudflare dashboard.
+# Never commit VAPID keys or user contact details to this public repository.
+keep_vars = true
 
 # D1 database: real production database created in Cloudflare dashboard.
 # Contains push subscription endpoints and delivery logs; do not commit data.
