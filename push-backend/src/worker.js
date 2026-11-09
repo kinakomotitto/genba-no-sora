@@ -49,7 +49,7 @@ function isValidPushEndpoint(value) {
     return false;
   }
 }
-function parseReminderTimes(times) {
+export function parseReminderTimes(times) {
   if(!Array.isArray(times) || times.length<1 || times.length>MAX_TIMES) return null;
   const unique=new Set();
   for(const value of times) {
