@@ -287,7 +287,7 @@ body>.tabs .ko{white-space:nowrap}
 </section>
 <section id="radar" class="page"><h1 class="page-title">雨雲レーダー ☁</h1><p class="page-sub">비구름 레이더 · 情報源を切り替えて確認</p><div class="radar-block"><div style="font-size:43px">🌧️</div><strong>雨雲の動きをチェック</strong><p>初期版では各サービスの公式レーダーに移動します。<br>アプリ内アニメーションは次の開発段階で追加予定。</p></div><div class="radar-links"><a href="https://www.jma.go.jp/bosai/rain/" target="_blank" rel="noopener noreferrer">気象庁 · 雨雲の動き <span>↗</span></a><a href="https://www.windy.com/" data-windy-link="true" target="_blank" rel="noopener noreferrer">Windy.com · 選択地点 <span>↗</span></a><a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank" rel="noopener noreferrer">Yahoo!天気 · 雨雲レーダー <span>↗</span></a></div><div class="notice">雷や警報の確認も、気象庁の公式情報を優先してね。現時点では雨雲の接近通知は未搭載です。</div></section>
 <section id="sites" class="page"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><details class="research-panel" id="research-panel"><summary>🌱 予報の蓄積状況 <small>確認する</small></summary><div class="research-data" id="research-data">公開観測所のデータを確認できるよ。</div><p class="research-note">公開観測所だけの研究データ。個人の現場情報は送信しません。作業の安全判断には使用しないでね。</p></details>
-<div class="reminder-panel"><strong>🔔 天気記録リマインダー</strong><p>通知の回数も時間も選べるよ。実際の自動配信はサーバー準備後に開始♡</p><button type="button" id="reminder-test" class="reminder-test">テスト通知を表示する</button><div id="reminder-result" class="reminder-result" role="status" aria-live="polite">テストはまだ行っていません。</div>
+<div class="reminder-panel"><strong>🔔 天気記録リマインダー</strong><p>通知の回数も時間も選べるよ。定時通知は下の「通知をオン」にした端末へお届けするよ♡</p><button type="button" id="reminder-test" class="reminder-test">テスト通知を表示する</button><div id="reminder-result" class="reminder-result" role="status" aria-live="polite">テストはまだ行っていません。</div>
 <details class="reminder-times" id="reminder-times">
   <summary>♡ 回数・時間を選ぶ <span id="reminder-times-summary">朝7:00＋昼12:00</span></summary>
   <div class="reminder-times-grid">
@@ -306,7 +306,7 @@ body>.tabs .ko{white-space:nowrap}
   <div id="push-setup-status" class="reminder-result" role="status" aria-live="polite"></div>
 </div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名<input id="site-name" maxlength="60" required placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><div class="two"><label class="field">緯度<input id="site-lat" type="number" min="-90" max="90" step="any" required placeholder="40.6"></label><label class="field">経度<input id="site-lon" type="number" min="-180" max="180" step="any" required placeholder="141.2"></label></div><button type="button" class="btn" id="fill-gps">⌖ GPSを使って入力</button><button type="submit" class="btn primary full">この現場を保存 ♡</button></form></div><div class="notice">現場名・座標・メモはこの端末内に保存。別の端末には自動同期されません。会社の機密情報は入力しないでね。</div></section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.13 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.14 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <footer class="tabs" role="navigation" aria-label="ページ切り替え">
 <button class="tab active" data-tab="home" type="button" aria-label="ホーム"><span class="tab-label">ホーム</span><span class="ko" lang="ko">홈</span></button>
@@ -413,7 +413,7 @@ async function showReminderTest(){
       icon:'./icon-192.png',tag:'weather-record-test',
       data:{kind:'daily-weather-record'}
     });
-    el.textContent='テスト通知を表示したよ！12時の自動送信はまだ開始していません。';
+    el.textContent='端末内のテスト通知を表示したよ！定時通知は下の通知登録とは別に動作確認してね。';
   }catch(e){
     el.textContent='通知を表示できませんでした。通知の許可やiOSの対応状況を確認してね。';
   }finally{btn.disabled=false;}
@@ -562,7 +562,7 @@ async function showPushButtons(){
     $('push-disable').classList.toggle('hidden',!active);
     $('push-server-test').classList.toggle('hidden',!active);
     pushStatus(active?'このiPhoneはプッシュ購読済み。サーバー登録状態は初回のテスト送信で確認できるよ。':
-      'このiPhoneでは毎日12時のプッシュ通知がまだ有効ではありません。');
+      'このiPhoneでは定時のプッシュ通知がまだ有効ではありません。');
   }catch(e){pushStatus('通知の登録状態を確認できません。')}
 }
 async function enableDailyPush(){
