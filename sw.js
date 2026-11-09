@@ -1,5 +1,5 @@
 /* 現場の空 v0.8: ホーム画面用のアプリ本体をオフライン保存 */
-const CACHE = 'genba-no-sora-shell-v0.9.2';
+const CACHE = 'genba-no-sora-shell-v0.10';
 const PREFIX = 'genba-no-sora-shell-';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
@@ -44,4 +44,36 @@ self.addEventListener('fetch', event => {
       return response;
     }))
   );
+});
+/* v0.10: Daily reminder receiver only.
+   Actual push subscription & secure server scheduling are NOT implemented yet. */
+self.addEventListener('push', (event) => {
+  event.waitUntil(self.registration.showNotification('하늘', {
+    body: '今日の現場のお天気はどう？☁️ タップして記録してね ♡',
+    icon: './icon-192.png',
+    badge: './icon-192.png',
+    tag: 'daily-weather-check',
+    data: { kind: 'daily-weather-record' }
+  }));
+});
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const target = new URL('#weather-record', self.registration.scope).href;
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const scopeUrl = new URL(self.registration.scope);
+    for (const client of windows) {
+      try {
+        const url = new URL(client.url);
+        if (url.origin !== scopeUrl.origin || !url.pathname.startsWith(scopeUrl.pathname)) continue;
+        if ('navigate' in client) {
+          await client.navigate(target);
+        }
+        if ('focus' in client) return client.focus();
+      } catch (err) {
+        // A closed/invalid client is not a reason to lose the reminder.
+      }
+    }
+    if (self.clients.openWindow) return self.clients.openWindow(target);
+  })());
 });
