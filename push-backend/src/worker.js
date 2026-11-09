@@ -7,6 +7,7 @@ const SITE_ORIGIN = 'https://kinakomotitto.github.io';
 const DAILY_TITLE = '하늘';
 const DAILY_BODY = '今日の現場のお天気はどう？☁️ タップして記録してね ♡';
 const TEST_COOLDOWN_SECONDS = 120;
+const MAX_TIMES = 3;
 
 function reply(data, status=200, origin=SITE_ORIGIN) {
   return new Response(JSON.stringify(data), {
@@ -48,6 +49,18 @@ function isValidPushEndpoint(value) {
     return false;
   }
 }
+function parseReminderTimes(times) {
+  if(!Array.isArray(times) || times.length<1 || times.length>MAX_TIMES) return null;
+  const unique=new Set();
+  for(const value of times) {
+    if(typeof value!=='string' || !/^\d{2}:\d{2}$/.test(value)) return null;
+    const [hh,mm]=value.split(':').map(Number);
+    if(hh<5 || hh>23 || mm>59 || mm%15!==0 || (hh===23&&mm>0)) return null;
+    if(unique.has(value)) return null;
+    unique.add(value);
+  }
+  return [...unique].sort();
+}
 function checkPayload(obj) {
   return obj && typeof obj === 'object' &&
     isValidPushEndpoint(obj.endpoint) &&
@@ -85,6 +98,8 @@ async function subscribe(request, env) {
   try { data=await parseSmallBody(request); }
   catch (_) { return reply({error:'Invalid request'},400); }
   if(!checkPayload(data)) return reply({error:'Invalid subscription'},400);
+  const times=parseReminderTimes(data.times);
+  if(!times)return reply({error:'Choose 1-3 valid times in 15-minute increments'},400);
   const ip=request.headers.get('cf-connecting-ip')||'unknown';
   const ipKey=await hash(env.RATE_LIMIT_SALT+':'+ip);
   const id=await hash(data.endpoint);
@@ -106,14 +121,30 @@ async function subscribe(request, env) {
       return reply({error:'Trial subscription limit reached'},429);
     }
     await env.DB.prepare(
-      "INSERT INTO push_subscriptions (id,endpoint,p256dh,auth,token_hash,ip_hash,created_at,updated_at) VALUES (?,?,?,?,?,?,datetime('now'),datetime('now'))"
-    ).bind(id,data.endpoint,data.keys.p256dh,data.keys.auth,tokenHash,ipKey).run();
+      "INSERT INTO push_subscriptions (id,endpoint,p256dh,auth,token_hash,ip_hash,schedule_json,created_at,updated_at) VALUES (?,?,?,?,?,?,?,datetime('now'),datetime('now'))"
+    ).bind(id,data.endpoint,data.keys.p256dh,data.keys.auth,tokenHash,ipKey,JSON.stringify(times)).run();
   } else {
     await env.DB.prepare(
-      "UPDATE push_subscriptions SET p256dh=?,auth=?,active=1,updated_at=datetime('now') WHERE id=? AND token_hash=?"
-    ).bind(data.keys.p256dh,data.keys.auth,id,tokenHash).run();
+      "UPDATE push_subscriptions SET p256dh=?,auth=?,schedule_json=?,active=1,updated_at=datetime('now') WHERE id=? AND token_hash=?"
+    ).bind(data.keys.p256dh,data.keys.auth,JSON.stringify(times),id,tokenHash).run();
   }
-  return reply({ok:true,reminder:'daily 12:00 Asia/Tokyo'});
+  return reply({ok:true,times,timeZone:'Asia/Tokyo'});
+}
+
+async function setPreferences(request, env) {
+  let data;
+  try { data=await parseSmallBody(request); }
+  catch (_) { return reply({error:'Invalid request'},400); }
+  if(!isValidPushEndpoint(data?.endpoint)||!isBase64url(data?.token,40,128)) {
+    return reply({error:'Invalid subscription owner'},400);
+  }
+  const times=parseReminderTimes(data.times);
+  if(!times)return reply({error:'Choose 1-3 valid times in 15-minute increments'},400);
+  const updated=await env.DB.prepare(
+    "UPDATE push_subscriptions SET schedule_json=?,updated_at=datetime('now') WHERE id=? AND token_hash=? AND active=1"
+  ).bind(JSON.stringify(times),await hash(data.endpoint),await hash(data.token)).run();
+  if(!updated.meta?.changes)return reply({error:'No active subscription'},404);
+  return reply({ok:true,times,timeZone:'Asia/Tokyo'});
 }
 
 async function unsubscribe(request, env) {
@@ -164,30 +195,46 @@ async function sendTest(request, env) {
 
 async function sendDaily(env, scheduledTime) {
   if(!ready(env)) throw new Error('Worker secrets or D1 not configured');
-  const dateJST=new Date(scheduledTime+9*3600*1000).toISOString().slice(0,10);
+  const date=new Date(scheduledTime+9*3600*1000);
+  if(!Number.isFinite(date.getTime()))throw new Error('Invalid scheduled time');
+  const dateJST=date.toISOString().slice(0,10);
+  const timeJST=date.toISOString().slice(11,16);
+  // Cron runs every 15 minutes once enabled; only chosen times match.
   const rows=await env.DB.prepare(
-    "SELECT * FROM push_subscriptions WHERE active=1 AND (last_sent_day IS NULL OR last_sent_day<>?) ORDER BY created_at LIMIT 100"
-  ).bind(dateJST).all();
-  let sent=0,dead=0,failed=0;
+    "SELECT * FROM push_subscriptions WHERE active=1 ORDER BY created_at LIMIT 100"
+  ).all();
+  let sent=0,dead=0,failed=0,skipped=0;
   for(const row of rows.results||[]) {
+    let times;
+    try { times=parseReminderTimes(JSON.parse(row.schedule_json)); }
+    catch (_) { times=null; }
+    if(!times?.includes(timeJST))continue;
+    // Reserve before delivery so concurrent retries do not duplicate.
+    const reserved=await env.DB.prepare(
+      "INSERT OR IGNORE INTO push_delivery_log (subscription_id,date_jst,time_jst) VALUES (?,?,?)"
+    ).bind(row.id,dateJST,timeJST).run();
+    if(!reserved.meta?.changes){skipped++;continue;}
     try {
-      await sendWeatherNote(row,env,'daily-weather-'+dateJST);
+      await sendWeatherNote(row,env,'weather-note-'+dateJST+'-'+timeJST);
       await env.DB.prepare(
-        "UPDATE push_subscriptions SET last_sent_day=? WHERE id=?"
-      ).bind(dateJST,row.id).run();
+        "UPDATE push_delivery_log SET status='sent' WHERE subscription_id=? AND date_jst=? AND time_jst=?"
+      ).bind(row.id,dateJST,timeJST).run();
       sent++;
     } catch(e) {
-      if(e?.statusCode === 404 || e?.statusCode === 410) {
+      if(e?.statusCode===404||e?.statusCode===410) {
         await env.DB.prepare('DELETE FROM push_subscriptions WHERE id=?').bind(row.id).run();
         dead++;
       } else {
+        await env.DB.prepare(
+          "UPDATE push_delivery_log SET status='failed' WHERE subscription_id=? AND date_jst=? AND time_jst=?"
+        ).bind(row.id,dateJST,timeJST).run();
         failed++;
       }
     }
   }
-  // Deliberately log only counts, never endpoints, keys, or tokens.
-  console.log(JSON.stringify({task:'daily_weather_note',dateJST,sent,dead,failed}));
-  if(failed) throw new Error('Some push notifications could not be sent');
+  // Logs contain aggregate counts, no recipient details.
+  console.log(JSON.stringify({task:'daily_weather_note',dateJST,timeJST,sent,dead,failed,skipped}));
+  if(failed)throw new Error('Some push notifications could not be delivered');
 }
 
 export default {
@@ -207,12 +254,12 @@ export default {
     }
     if(path==='/api/config' && request.method==='GET') {
       return reply({available:ready(env),publicKey:ready(env)?env.VAPID_PUBLIC_KEY:null,
-        schedule:'12:00',timeZone:'Asia/Tokyo'});
+        schedule:'user_selected',timeZone:'Asia/Tokyo',maxTimes:3,intervalMinutes:15});
     }
     if(path==='/health' && request.method==='GET') {
       return reply({status:ready(env)?'ready':'not_configured'});
     }
-    if(request.method!=='POST' || !['/api/subscribe','/api/unsubscribe','/api/test'].includes(path)) {
+    if(request.method!=='POST' || !['/api/subscribe','/api/unsubscribe','/api/test','/api/preferences'].includes(path)) {
       return reply({error:'Not found'},404);
     }
     if(origin!==SITE_ORIGIN) return reply({error:'Origin required'},403);
@@ -220,6 +267,7 @@ export default {
     try {
       if(path==='/api/subscribe') return await subscribe(request,env);
       if(path==='/api/unsubscribe') return await unsubscribe(request,env);
+      if(path==='/api/preferences') return await setPreferences(request,env);
       return await sendTest(request,env);
     } catch(e) {
       // Do not print endpoint/key/token or raw exceptions.
