@@ -11,7 +11,19 @@ CREATE TABLE IF NOT EXISTS push_subscriptions (
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,
   last_test_at TEXT,
-  last_sent_day TEXT
+  schedule_json TEXT NOT NULL DEFAULT '["12:00"]'
 );
 CREATE INDEX IF NOT EXISTS idx_push_ip_created ON push_subscriptions(ip_hash,created_at);
-CREATE INDEX IF NOT EXISTS idx_push_active_day ON push_subscriptions(active,last_sent_day);
+CREATE INDEX IF NOT EXISTS idx_push_active ON push_subscriptions(active);
+-- Reservation log prevents repeated sends for the same local day and time slot.
+-- Contents are private D1 data; never export the rows to the public GitHub repository.
+CREATE TABLE IF NOT EXISTS push_delivery_log (
+  subscription_id TEXT NOT NULL,
+  date_jst TEXT NOT NULL,
+  time_jst TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'reserved',
+  created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%S','now')),
+  PRIMARY KEY(subscription_id,date_jst,time_jst),
+  FOREIGN KEY(subscription_id) REFERENCES push_subscriptions(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_push_delivery_day ON push_delivery_log(date_jst);
