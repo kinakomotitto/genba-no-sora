@@ -1,8 +1,12 @@
 # Cloudflare Workers Builds — deployment bootstrap.
 # The public HTTP API remains disabled until Cloudflare D1 and the four
 # runtime secrets have been configured in the Cloudflare dashboard.
-# No scheduler is enabled at bootstrap; add the noon cron after verifying
-# an actual subscriber and sending an authorized test notification.
+# No scheduler is enabled at bootstrap. After D1, secrets, opt-in, and
+# actual iPhone delivery are verified, enable one every-15-minute Cron.
+# That cron checks each subscriber's 1-3 chosen times in Japan time.
+# [triggers]
+# crons = ["*/15 * * * *"]
+# Delayed Cron execution is possible; delivery minute is not guaranteed.
 
 name = "genba-no-sora-noon-push"
 main = "src/worker.js"
