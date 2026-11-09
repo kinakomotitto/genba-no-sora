@@ -1,0 +1,43 @@
+name: 気象学習・公開観測所の試験収集
+
+on:
+  # GitHub側で4回/日。iPhoneを閉じていても動くが、定時実行保証はない。
+  schedule:
+    - cron: '17 0,6,12,18 * * *'
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/weather_learning.py'
+      - 'tests/test_weather_learning.py'
+      - '.github/workflows/weather-learning.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: public-weather-learning
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Check out public repository
+        uses: actions/checkout@v4
+      - name: Verify deterministic calculation tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Collect public-station forecast and observation snapshots
+        run: python3 tools/weather_learning.py
+      - name: Commit public research data only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/learning/
+          if git diff --cached --quiet; then
+            echo "No new public-station data"
+            exit 0
+          fi
+          git commit -m "data: refresh public weather research snapshots"
+          git pull --rebase origin main
+          git push origin HEAD:main
