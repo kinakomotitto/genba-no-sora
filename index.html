@@ -250,6 +250,18 @@ body>.tabs .ko{white-space:nowrap}
 .push-setup-panel p{font-size:10px;color:#a08999;line-height:1.7;margin:6px 0 10px}
 .push-setup-panel .reminder-test{margin-top:7px}
 .push-setup-panel .reminder-test:disabled{opacity:.55;cursor:wait}
+
+/* v0.13 · selectable 1-3 daily reminder times */
+.reminder-times{border-top:1px solid #efdeea;margin-top:13px;padding-top:12px}
+.reminder-times summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;color:#966e86;font-weight:700;font-size:12px}
+.reminder-times summary::-webkit-details-marker{display:none}
+#reminder-times-summary{font-size:10px;color:#b39bab;font-weight:500;text-align:right}
+.reminder-times-grid{display:grid;gap:9px;margin:13px 0}
+.reminder-times-row{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#fff9fc;border:1px solid #f2e4ee;border-radius:12px;padding:8px 11px}
+.reminder-times-row label{display:flex;align-items:center;gap:7px;min-height:35px;font-size:12px;color:#8b7282;font-weight:650}
+.reminder-times-row input{width:18px;height:18px;accent-color:#bd87aa}
+.reminder-times-row select{min-width:105px;border:1px solid #ead7e5;border-radius:10px;background:#fff;color:#80687a;font-size:13px;padding:8px 7px;min-height:38px}
+.reminder-times-row select:disabled{opacity:.5}
 </style>
 </head>
 <body>
@@ -275,16 +287,26 @@ body>.tabs .ko{white-space:nowrap}
 </section>
 <section id="radar" class="page"><h1 class="page-title">雨雲レーダー ☁</h1><p class="page-sub">비구름 레이더 · 情報源を切り替えて確認</p><div class="radar-block"><div style="font-size:43px">🌧️</div><strong>雨雲の動きをチェック</strong><p>初期版では各サービスの公式レーダーに移動します。<br>アプリ内アニメーションは次の開発段階で追加予定。</p></div><div class="radar-links"><a href="https://www.jma.go.jp/bosai/rain/" target="_blank" rel="noopener noreferrer">気象庁 · 雨雲の動き <span>↗</span></a><a href="https://www.windy.com/" data-windy-link="true" target="_blank" rel="noopener noreferrer">Windy.com · 選択地点 <span>↗</span></a><a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank" rel="noopener noreferrer">Yahoo!天気 · 雨雲レーダー <span>↗</span></a></div><div class="notice">雷や警報の確認も、気象庁の公式情報を優先してね。現時点では雨雲の接近通知は未搭載です。</div></section>
 <section id="sites" class="page"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><details class="research-panel" id="research-panel"><summary>🌱 予報の蓄積状況 <small>確認する</small></summary><div class="research-data" id="research-data">公開観測所のデータを確認できるよ。</div><p class="research-note">公開観測所だけの研究データ。個人の現場情報は送信しません。作業の安全判断には使用しないでね。</p></details>
-<div class="reminder-panel"><strong>🔔 天気記録リマインダー</strong><p>毎日12:00の自動通知は準備中。まずiPhoneで通知表示を試そう♡</p><button type="button" id="reminder-test" class="reminder-test">テスト通知を表示する</button><div id="reminder-result" class="reminder-result" role="status" aria-live="polite">テストはまだ行っていません。</div></div><div id="push-setup-panel" class="push-setup-panel hidden" aria-label="毎日12時の通知設定">
-  <div class="push-setup-title">♡ 毎日12時のお知らせを受け取る</div>
+<div class="reminder-panel"><strong>🔔 天気記録リマインダー</strong><p>通知の回数も時間も選べるよ。実際の自動配信はサーバー準備後に開始♡</p><button type="button" id="reminder-test" class="reminder-test">テスト通知を表示する</button><div id="reminder-result" class="reminder-result" role="status" aria-live="polite">テストはまだ行っていません。</div>
+<details class="reminder-times" id="reminder-times">
+  <summary>♡ 回数・時間を選ぶ <span id="reminder-times-summary">朝7:00＋昼12:00</span></summary>
+  <div class="reminder-times-grid">
+    <div class="reminder-times-row"><label><input type="checkbox" id="reminder-morning-enabled" checked> <span>🌅 朝</span></label><select id="reminder-morning-time" aria-label="朝の通知時刻"></select></div>
+    <div class="reminder-times-row"><label><input type="checkbox" id="reminder-noon-enabled" checked> <span>☀️ 昼</span></label><select id="reminder-noon-time" aria-label="昼の通知時刻"></select></div>
+    <div class="reminder-times-row"><label><input type="checkbox" id="reminder-evening-enabled"> <span>🌙 夜</span></label><select id="reminder-evening-time" aria-label="夜の通知時刻"></select></div>
+  </div>
+  <button type="button" id="reminder-times-save" class="reminder-test">回数と時間を保存 ♡</button>
+  <div id="reminder-times-result" class="reminder-result" aria-live="polite">15分刻み・最大3回。設定だけでは通知は開始されないよ。</div>
+</details></div><div id="push-setup-panel" class="push-setup-panel hidden" aria-label="選べる天気記録通知">
+  <div class="push-setup-title">♡ 選んだ時間にお知らせを受け取る</div>
   <p>端末の通知登録情報だけを専用サーバーに送信。現場名・GPS・天気記録は送信しないよ。</p>
-  <button type="button" id="push-enable" class="reminder-test">毎日12時の通知をオンにする</button>
-  <button type="button" id="push-disable" class="reminder-test hidden">毎日12時の通知をオフにする</button>
+  <button type="button" id="push-enable" class="reminder-test">選んだ時間の通知をオンにする</button>
+  <button type="button" id="push-disable" class="reminder-test hidden">通知をすべてオフにする</button>
   <button type="button" id="push-server-test" class="reminder-test hidden">サーバーからテスト通知を送る</button>
   <div id="push-setup-status" class="reminder-result" role="status" aria-live="polite"></div>
 </div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名<input id="site-name" maxlength="60" required placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><div class="two"><label class="field">緯度<input id="site-lat" type="number" min="-90" max="90" step="any" required placeholder="40.6"></label><label class="field">経度<input id="site-lon" type="number" min="-180" max="180" step="any" required placeholder="141.2"></label></div><button type="button" class="btn" id="fill-gps">⌖ GPSを使って入力</button><button type="submit" class="btn primary full">この現場を保存 ♡</button></form></div><div class="notice">現場名・座標・メモはこの端末内に保存。別の端末には自動同期されません。会社の機密情報は入力しないでね。</div></section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.12 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.13 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <footer class="tabs" role="navigation" aria-label="ページ切り替え">
 <button class="tab active" data-tab="home" type="button" aria-label="ホーム"><span class="tab-label">ホーム</span><span class="ko" lang="ko">홈</span></button>
@@ -398,6 +420,96 @@ async function showReminderTest(){
 }
 $('reminder-test').addEventListener('click',showReminderTest);
 
+
+const reminderTimesKey='genbanosora.reminder.times.v1';
+const reminderDefaults={
+  morning:{enabled:true,time:'07:00'},
+  noon:{enabled:true,time:'12:00'},
+  evening:{enabled:false,time:'19:00'}
+};
+const reminderWindows={
+  morning:[5,10],noon:[11,15],evening:[16,23]
+};
+function validReminderTime(value,slot){
+  if(typeof value!=='string'||!/^\d{2}:\d{2}$/.test(value))return false;
+  const [hour,minute]=value.split(':').map(Number);
+  const [minHour,maxHour]=reminderWindows[slot];
+  return hour>=minHour && hour<=maxHour && minute<60 && minute%15===0 && !(hour===23 && minute>0);
+}
+function initializeReminderTimes(){
+  let cached={};
+  try{cached=JSON.parse(localStorage.getItem(reminderTimesKey)||'{}')||{};}catch(e){}
+  for(const slot of Object.keys(reminderDefaults)){
+    const selector=$('reminder-'+slot+'-time');
+    const toggle=$('reminder-'+slot+'-enabled');
+    const [minHour,maxHour]=reminderWindows[slot];
+    for(let hour=minHour;hour<=maxHour;hour++){
+      for(const minute of [0,15,30,45]){
+        if(hour===23&&minute>0)continue;
+        const value=String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0');
+        const option=document.createElement('option');
+        option.value=value;
+        option.textContent=value;
+        selector.append(option);
+      }
+    }
+    const chosen=cached[slot]||reminderDefaults[slot];
+    selector.value=validReminderTime(chosen.time,slot)?chosen.time:reminderDefaults[slot].time;
+    toggle.checked=typeof chosen.enabled==='boolean'?chosen.enabled:reminderDefaults[slot].enabled;
+    selector.disabled=!toggle.checked;
+    toggle.addEventListener('change',()=>{selector.disabled=!toggle.checked;});
+  }
+  updateReminderSummary();
+}
+function reminderValues(){
+  const slots={};const times=[];
+  for(const slot of Object.keys(reminderDefaults)){
+    const enabled=$('reminder-'+slot+'-enabled').checked;
+    const time=$('reminder-'+slot+'-time').value;
+    if(!validReminderTime(time,slot))throw Error('Invalid time');
+    slots[slot]={enabled,time};
+    if(enabled)times.push(time);
+  }
+  if(!times.length)throw Error('No reminder time enabled');
+  return {slots,times:times.sort()};
+}
+function updateReminderSummary(){
+  const labels={morning:'朝',noon:'昼',evening:'夜'};
+  const pieces=Object.keys(reminderDefaults).filter(slot=>$('reminder-'+slot+'-enabled').checked)
+    .map(slot=>labels[slot]+$('reminder-'+slot+'-time').value);
+  $('reminder-times-summary').textContent=pieces.length?pieces.join('＋'):'未選択';
+}
+function saveReminderToDevice(slots){
+  localStorage.setItem(reminderTimesKey,JSON.stringify(slots));
+  updateReminderSummary();
+}
+async function saveReminderChoices(){
+  const status=$('reminder-times-result'),btn=$('reminder-times-save');
+  let config;
+  try{config=reminderValues();}
+  catch(e){status.textContent='少なくとも1つの時間帯をオンにしてね。';return;}
+  btn.disabled=true;
+  try{
+    if(pushServiceOrigin && 'serviceWorker' in navigator){
+      const reg=await navigator.serviceWorker.ready;
+      const sub=await reg.pushManager.getSubscription();
+      if(sub){
+        const token=localStorage.getItem(pushOwnerKey);
+        if(!token)throw Error('Missing ownership token');
+        await pushPost('/api/preferences',{endpoint:sub.endpoint,token,times:config.times});
+        saveReminderToDevice(config.slots);
+        status.textContent='♡ 通知サーバーと端末の設定を更新したよ！ '+config.times.join(' / ');
+        return;
+      }
+    }
+    saveReminderToDevice(config.slots);
+    status.textContent='♡ このiPhoneに設定を保存したよ！通知の自動配信はサーバー接続と通知オンが必要だよ。';
+  }catch(e){
+    status.textContent='サーバーへの反映に失敗しました。時刻は保存せず、もう一度試せるよ。';
+  }finally{btn.disabled=false;}
+}
+initializeReminderTimes();
+$('reminder-times-save').addEventListener('click',saveReminderChoices);
 const pushOwnerKey='genbanosora.pushowner.v1';
 let pushServiceOrigin=null,pushPublicKey=null;
 const encodePushKey=(value)=>{
@@ -481,10 +593,11 @@ async function enableDailyPush(){
     await pushPost('/api/subscribe',{
       endpoint:json.endpoint,
       keys:{p256dh:json.keys.p256dh,auth:json.keys.auth},
-      token:pushOwnerToken()
+      token:pushOwnerToken(),
+      times:reminderValues().times
     });
     await showPushButtons();
-    pushStatus('♡ 毎日12時の通知を登録したよ！正確な到着時刻は通信状況によって変わることがあるよ。');
+    pushStatus('♡ 選んだ時刻の通知を登録したよ！到着時刻は通信状況で前後することがあるよ。');
   }catch(e){
     pushStatus('登録を完了できませんでした。通信状態を確認して、もう一度試してね。');
   }finally{pushLoading(false);}
