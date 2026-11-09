@@ -1,0 +1,27 @@
+name: Daily push backend checks
+on:
+  push:
+    paths:
+      - 'push-backend/**'
+      - '.github/workflows/push-backend-check.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  node-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: push-backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install test dependencies
+        run: npm install --no-audit --no-fund
+      - name: Parse Worker JavaScript
+        run: node --check src/worker.js
+      - name: Test API security and readiness offline
+        run: npm test
