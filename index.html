@@ -427,6 +427,12 @@ html[data-skin]:not([data-skin="pink"]) input:focus-visible{
 .settings-screen .push-setup-panel{margin-top:10px}
 .settings-screen .research-panel{margin-top:0}
 .settings-privacy{font-size:11px;line-height:1.75;color:var(--muted);margin:16px 2px 0}
+.settings-widget-link{display:flex;align-items:center;gap:12px;min-height:84px;padding:14px 16px;border:1px solid var(--line);border-radius:17px;background:linear-gradient(120deg,rgba(255,255,255,.63),var(--pale));color:var(--ink);text-decoration:none;box-shadow:var(--shadow)}
+.settings-widget-symbol{font-size:30px;flex:none}
+.settings-widget-copy{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.settings-widget-copy strong{font-size:13px;color:var(--pinkdark)}
+.settings-widget-copy small{font-size:10px;color:var(--muted);line-height:1.5}
+.settings-widget-arrow{font-size:22px;color:var(--pinkdark)}
 
 
 /* v0.17: Map-based site picker + Apple/Google launch links */
@@ -545,10 +551,16 @@ body.site-map-open{overflow:hidden}
   <div class="settings-section-label">🌱 天気データ・研究 <span lang="ko">기록</span></div>
   <details class="research-panel" id="research-panel"><summary>🌱 予報の蓄積状況 <small>確認する</small></summary><div class="research-data" id="research-data">公開観測所のデータを確認できるよ。</div><p class="research-note">公開観測所だけの研究データ。個人の現場情報は送信しません。作業の安全判断には使用しないでね。</p></details>
 
+  <div class="settings-section-label">📱 ロック画面ウィジェット <span lang="ko">위젯</span></div>
+  <a class="settings-widget-link" href="./widgets/lockscreen-setup.html" target="_blank" rel="noopener noreferrer">
+    <span class="settings-widget-symbol" aria-hidden="true">☁️</span>
+    <span class="settings-widget-copy"><strong>♡ 하늘 · ロック画面に追加</strong><small>今いる場所の天気＋1時間ごとの予報 · 作り方を見る</small></span>
+    <span class="settings-widget-arrow" aria-hidden="true">›</span>
+  </a>
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.18 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.19 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
