@@ -1,5 +1,5 @@
 {
   "schema": 1,
-  "backendOrigin": "",
-  "description": "Cloudflare Workers is not deployed yet. Keep this empty until the private D1-backed endpoint is ready. No GPS or site records are sent."
+  "backendOrigin": "https://genba-no-sora-noon-push.kinako-traveler.workers.dev",
+  "description": "Cloudflare Workers backend is configured; push notifications require explicit opt-in inside the installed iPhone Home Screen app. Scheduled delivery is disabled until live push testing succeeds. No GPS or site records are sent."
 }
