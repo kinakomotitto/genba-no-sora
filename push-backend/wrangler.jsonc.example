@@ -1,0 +1,19 @@
+{
+  // Copy to wrangler.jsonc after creating your OWN D1 database.
+  // DO NOT deploy this template with the placeholder database ID.
+  "name": "genba-no-sora-noon-push",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-11-09",
+  "triggers": {
+    // UTC 03:00 = Japan standard time 12:00 (JST has no DST).
+    // Cloudflare schedules are best-effort; the minute may be delayed.
+    "crons": ["0 3 * * *"]
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "genba-no-sora-push-private",
+      "database_id": "REPLACE_WITH_YOUR_OWN_D1_DATABASE_UUID"
+    }
+  ]
+}
