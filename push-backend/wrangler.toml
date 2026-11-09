@@ -1,12 +1,6 @@
 # Cloudflare Workers Builds — deployment bootstrap.
 # The public HTTP API remains disabled until Cloudflare D1 and the four
 # runtime secrets have been configured in the Cloudflare dashboard.
-# Scheduler enabled after user confirmed actual iPhone test push delivery.
-# Runs every 15 minutes; only opted-in subscribers with a matching
-# Asia/Tokyo time are eligible. Cron may execute late.
-[triggers]
-crons = ["*/15 * * * *"]
-
 name = "genba-no-sora-noon-push"
 main = "src/worker.js"
 compatibility_date = "2026-11-09"
@@ -21,3 +15,9 @@ keep_vars = true
 binding = "DB"
 database_name = "genba-no-sora-push-private"
 database_id = "94a4cd9b-a998-4622-9dbe-4768665b6eff"
+
+# Scheduler enabled after user confirmed actual iPhone test push delivery.
+# Runs every 15 minutes; only opted-in subscribers with a matching
+# Asia/Tokyo time are eligible. Cron may execute late.
+[triggers]
+crons = ["*/15 * * * *"]
