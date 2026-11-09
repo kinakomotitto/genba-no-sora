@@ -1,6 +1,19 @@
 # 現場の空 — 12時通知サーバー（Cloudflare Workers 試作）
 
-**状態：コード準備済み／未デプロイ／定時通知未開始。**
+**状態：初回デプロイ用の設定ファイルを作成済み／サーバー公開未確認／定時通知未開始。**
+
+## iPhoneからのCloudflare初回デプロイ（安全な仮公開）
+
+- GitHubの `push-backend/wrangler.toml` は **`genba-no-sora-noon-push`** というWorker名、`src/worker.js` という実行ファイルを指定済み。
+- Cloudflare Workers BuildsのRoot directory（Advanced settings > Path）は `/push-backend` に設定する。
+- Project nameも **`genba-no-sora-noon-push`** に一致させる。Cloudflare公式はWrangler設定とプロジェクト名の一致を要求している。
+- Build commandは空、Deploy commandは `npx wrangler deploy` のまま。API tokenは初期設定の新規発行でよい。Advanced settingsのBuild variablesは空欄にする。
+- この初回公開では **D1バインディング、秘密鍵、Cron予定時刻は設定していない**。Web Pushは送信されない。画面の /health は not_configured、/api/config は available:false のはず。
+- 初回公開を検証後、Cloudflare管理画面でD1を作成・マイグレーションし、D1バインディングを `DB` で追加。さらに4種のWorker runtime secretを追加する。
+- `wrangler.toml` にD1のdatabase_idと Cron `0 3 * * *` を追記するのは、購読テストが成功した後。**Build variableはWorker runtime secretの代わりにはならない。**
+- 書類・端末名・現場名・緯度経度はWorkerに送らない。秘密鍵・Push購読情報を公開リポジトリに置かない。
+
+
 
 ## できること
 
@@ -16,11 +29,11 @@
 2. [Cloudflare Workers](https://developers.cloudflare.com/workers/) と [D1](https://developers.cloudflare.com/d1/get-started/) を設定する。
 3. ローカルPCにNode.jsを導入して、`push-backend` フォルダーで `npm install`。
 4. `npx wrangler d1 create genba-no-sora-push-private` で **非公開D1** を作成する。
-5. `wrangler.jsonc.example` を `wrangler.jsonc` にコピーし、作成されたD1のIDを自分のIDに置換。
+5. GitHubの `wrangler.toml` に、D1バインディング `DB` と作成したD1のIDを追記する。**先に `wrangler.jsonc` を重複作成しない。**
 6. `npx wrangler d1 execute genba-no-sora-push-private --remote --file=./schema.sql` でテーブルを作成。
 7. `npx web-push generate-vapid-keys` でVAPID鍵を作成。
 8. 次の値を、**必ずWorker Secret**として登録：`VAPID_PUBLIC_KEY`、`VAPID_PRIVATE_KEY`、`VAPID_SUBJECT`（本人が管理する有効な `mailto:` アドレス）、`RATE_LIMIT_SALT`（十分ランダムな秘密）。
-9. `npx wrangler deploy` でデプロイ。公開された **workers.dev URL** を、後でPWAの公開設定に追加する。Worker URL自体は公開可能だが、VAPID秘密鍵や利用者の購読情報は公開禁止。
+9. Cloudflare Workers BuildsのGitHub連携で再デプロイして動作確認。公開された **workers.dev URL** を、後でPWAの公開設定に追加する。Worker URL自体は公開可能だが、VAPID秘密鍵や利用者の購読情報は公開禁止。
 10. iPhoneで購読・1件テスト通知・定時Cron・解除・圏外時の挙動を検証してから、毎日12時の通知を有効化する。
 
 **重要：** 今回はCloudflareアカウント情報・D1 ID・鍵・本番URLを持たないため、上記の工程を勝手に実行していない。GitHubへのサーバーコード登録と、自動配信の本番稼働は別物。
