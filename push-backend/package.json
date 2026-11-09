@@ -1,0 +1,18 @@
+{
+  "name": "genba-no-sora-daily-push-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Optional Cloudflare backend for the noon sky-recording notification. Never stores user site GPS.",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "dev": "wrangler dev",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "web-push": "^3.6.7"
+  },
+  "devDependencies": {
+    "wrangler": "^4.45.0"
+  }
+}
