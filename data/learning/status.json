@@ -1,0 +1,31 @@
+{
+  "state": "experimental_collection",
+  "last_successful_run_utc": "2026-11-09T11:12:58Z",
+  "source_forecast": "met-norway-locationforecast-2.0",
+  "source_observation": "tenkinow-unofficial-jma",
+  "forecast_rows": 9,
+  "observation_rows": 3,
+  "new_forecast_rows": 9,
+  "new_observation_rows": 3,
+  "errors": [],
+  "metrics": [],
+  "notes": [
+    "Public observation stations, NOT private forest worksites.",
+    "Observation data are unofficial redistributions of JMA reports.",
+    "Metrics withheld until 20 wind samples; do not infer site accuracy.",
+    "No local GPS data, user site names or manual observations were uploaded.",
+    "Not a source for safety-critical decisions or warnings."
+  ],
+  "attribution": [
+    {
+      "provider": "MET Norway",
+      "license": "CC BY 4.0",
+      "url": "https://api.met.no/"
+    },
+    {
+      "provider": "JMA observation data via tenkinow",
+      "url": "https://tenkinow.com/ja/",
+      "license": "Japan Public Data License v1.0; see per-reading attribution"
+    }
+  ]
+}
