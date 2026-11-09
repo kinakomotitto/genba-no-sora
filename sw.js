@@ -1,5 +1,5 @@
 /* 現場の空 v0.8: ホーム画面用のアプリ本体をオフライン保存 */
-const CACHE = 'genba-no-sora-shell-v0.11';
+const CACHE = 'genba-no-sora-shell-v0.12';
 const PREFIX = 'genba-no-sora-shell-';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
@@ -23,6 +23,17 @@ self.addEventListener('fetch', event => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  // The backend connection switches from disabled to enabled only after
+  // a private push server exists. Never cache stale push config forever.
+  if (url.pathname.endsWith('/push-config.json')) {
+    event.respondWith(fetch(request,{cache:'no-store'}).catch(()=>
+      new Response('{"schema":1,"backendOrigin":""}',{
+        headers:{'content-type':'application/json;charset=utf-8'}
+      })
+    ));
+    return;
+  }
+
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request).then(response => {
