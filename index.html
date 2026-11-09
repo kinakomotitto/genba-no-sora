@@ -452,7 +452,8 @@ body.site-map-open{overflow:hidden}
 .site-map-link{min-width:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.75);font-size:11px;min-height:40px;color:var(--pinkdark);text-decoration:none;white-space:nowrap}
 .site-map-privacy{font-size:10px;line-height:1.5;color:var(--muted);margin:7px 2px 11px}
 .site-map-confirm{width:100%;min-height:48px;border-radius:13px;border:1px solid var(--line);background:var(--pink);color:white;font-weight:750;font-size:14px}
-.site-map-confirm:disabled{opacity:.55}
+.site-map-confirm:disabled,.site-map-back-to-form:disabled{opacity:.55}
+.site-map-back-to-form{width:100%;min-height:44px;margin-top:9px;border-radius:13px;border:1px solid var(--line);background:var(--pale);color:var(--pinkdark);font-weight:700;font-size:12px}
 .site-map-canvas .leaflet-control-attribution{font-size:9px}
 @media(max-width:345px){.site-location-choices{grid-template-columns:1fr}.site-map-link{font-size:10px}}
 
@@ -480,7 +481,7 @@ body.site-map-open{overflow:hidden}
 <div class="toolbar"><button class="btn primary" id="refresh">↻ 天気を更新</button><button class="btn" id="gps">⌖ 現在地を取得</button></div>
 </section>
 <section id="radar" class="page"><h1 class="page-title">雨雲レーダー ☁</h1><p class="page-sub">비구름 레이더 · 情報源を切り替えて確認</p><div class="radar-block"><div style="font-size:43px">🌧️</div><strong>雨雲の動きをチェック</strong><p>初期版では各サービスの公式レーダーに移動します。<br>アプリ内アニメーションは次の開発段階で追加予定。</p></div><div class="radar-links"><a href="https://www.jma.go.jp/bosai/rain/" target="_blank" rel="noopener noreferrer">気象庁 · 雨雲の動き <span>↗</span></a><a href="https://www.windy.com/" data-windy-link="true" target="_blank" rel="noopener noreferrer">Windy.com · 選択地点 <span>↗</span></a><a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank" rel="noopener noreferrer">Yahoo!天気 · 雨雲レーダー <span>↗</span></a></div><div class="notice">雷や警報の確認も、気象庁の公式情報を優先してね。現時点では雨雲の接近通知は未搭載です。</div></section>
-<section id="sites" class="page"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名<input id="site-name" maxlength="60" required placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><input type="hidden" id="site-lat"><input type="hidden" id="site-lon">
+<section id="sites" class="page"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名（空欄なら自動で付けるよ）<input id="site-name" maxlength="60" placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><input type="hidden" id="site-lat"><input type="hidden" id="site-lon">
 <div class="site-location-label">📍 場所を決める <span>どちらかを選んでね</span></div>
 <div class="site-location-choices">
   <button type="button" class="btn" id="fill-gps">⌖ 現在地を使う</button>
@@ -547,7 +548,7 @@ body.site-map-open{overflow:hidden}
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.17 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.18 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -563,7 +564,9 @@ body.site-map-open{overflow:hidden}
       <a id="site-map-apple" href="#" target="_blank" rel="noopener noreferrer" class="site-map-link hidden">🍎 Appleで位置を確認 ↗</a>
     </div>
     <p class="site-map-privacy">地図の表示にはOpenStreetMapの地図データを使うよ。GoogleとAppleは選んだ場所の確認用で、そこで置いたピンはこの画面に自動反映されないよ。外部マップを開くと選択位置がそのサービスへ送られるよ。</p>
-    <button type="button" class="site-map-confirm" id="site-map-confirm" disabled>♡ この場所にする</button>
+    <button type="button" class="site-map-confirm" id="site-map-save-now" disabled>♡ この地点をすぐ現場に保存</button>
+    <button type="button" class="site-map-back-to-form" id="site-map-confirm" disabled>現場名・メモを確認してから保存</button>
+    <p class="site-map-privacy">どちらを選んでも、位置は端末内だけに保存するよ。後から現場名を変更できるよ ♡</p>
   </div>
 </div>
 <footer class="tabs" role="navigation" aria-label="ページ切り替え">
@@ -1107,19 +1110,33 @@ function renderSites(){
     list.append(card);
   }
 }
+function savePickedSite(lat,lon){
+  if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180) return false;
+  const now=new Date();
+  const stamp=new Intl.DateTimeFormat('ja-JP',{
+    timeZone:'Asia/Tokyo',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'
+  }).format(now);
+  const name=$('site-name').value.trim().slice(0,60)||'現場 '+stamp;
+  const note=$('site-note').value.trim().slice(0,250);
+  const site={id:Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),
+    name,lat,lon,note,createdAt:now.toISOString()};
+  saved.unshift(site);save();renderSites();
+  $('site-form').reset();
+  $('site-choice-status').classList.remove('selected');
+  $('site-choice-status').textContent='場所はまだ選択されていません';
+  $('save-current-status').textContent='♡ 地図の場所を保存したよ！必要なら「名前変更」で現場名を直せるよ。';
+  toast('現場一覧に追加したよ ♡');
+  requestAnimationFrame(()=>$('site-list')?.scrollIntoView({behavior:'smooth',block:'start'}));
+  return true;
+}
 $('site-form').addEventListener('submit',e=>{
   e.preventDefault();
-  const name=$('site-name').value.trim(),rawLat=$('site-lat').value,rawLon=$('site-lon').value;
-  const lat=Number(rawLat),lon=Number(rawLon),note=$('site-note').value.trim();
-  if(!name){toast('現場名を入力してね');return;}
+  const rawLat=$('site-lat').value,rawLon=$('site-lon').value;
+  const lat=Number(rawLat),lon=Number(rawLon);
   if(!rawLat||!rawLon||!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180){
     toast('「現在地を使う」か「地図から選ぶ」で場所を決めてね');return;
   }
-  const site={id:Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),name,lat,lon,note};
-  saved.push(site);save();renderSites();$('site-form').reset();
-  $('site-choice-status').classList.remove('selected');
-  $('site-choice-status').textContent='場所はまだ選択されていません';
-  toast('現場を保存しました ♡');
+  savePickedSite(lat,lon);
 });
 $('quick-save-home').onclick=quickSaveCurrent;$('quick-save-site').onclick=quickSaveCurrent;
 $('fill-gps').onclick=()=>gps(p=>{
@@ -1166,7 +1183,8 @@ function setPickerCoords(lat,lon,moveView=false){
   }
   if(moveView)pickerMap.setView([lat,lon],Math.max(pickerMap.getZoom(),14));
   $('site-map-confirm').disabled=false;
-  $('site-map-feedback').textContent='✓ ピンを選択したよ！「この場所にする」で確定してね。';
+  $('site-map-save-now').disabled=false;
+  $('site-map-feedback').textContent='✓ ピンを選択したよ！すぐ現場一覧に保存できるよ ♡';
   const google=googleMapsLink(lat,lon),apple=appleMapsLink(lat,lon);
   for(const [id,url] of [['site-map-google',google],['site-map-apple',apple]]){
     const link=$(id);
@@ -1185,6 +1203,7 @@ async function openSiteMap(){
   pickerWasOpen=true;
   pickerCoords=null;
   $('site-map-confirm').disabled=true;
+  $('site-map-save-now').disabled=true;
   $('site-map-google').classList.add('hidden');
   $('site-map-apple').classList.add('hidden');
   $('site-map-feedback').textContent='地図を読み込んでいるよ…';
@@ -1236,7 +1255,17 @@ $('site-map-gps').addEventListener('click',()=>{
 $('site-map-confirm').addEventListener('click',()=>{
   if(!pickerCoords)return;
   chooseSiteCoords(pickerCoords.lat,pickerCoords.lon,'map');
+  $('site-choice-status').textContent='✓ 場所を設定したよ。下の「この現場を保存」を押すと一覧に登録されるよ ♡';
   closeSiteMap();
+});
+$('site-map-save-now').addEventListener('click',()=>{
+  if(!pickerCoords || $('site-map-save-now').disabled)return;
+  // Save exactly the chosen map pin, without asking the user to type coordinates.
+  // A blank name is replaced with the same timestamped default as GPS one-tap.
+  const {lat,lon}=pickerCoords;
+  if(!savePickedSite(lat,lon))return;
+  closeSiteMap();
+  showTab('sites');
 });
 
 $('choose-location').onclick=()=>showTab('sites');$('use-current').onclick=()=>selectLoc({kind:'current',name:'現在地'});$('refresh').onclick=()=>{const p=getCoords();p?fetchWeather(p.lat,p.lon):locate()};$('gps').onclick=()=>selectLoc({kind:'current',name:'現在地'});$('settings-open').addEventListener('click',()=>showTab('settings'));
