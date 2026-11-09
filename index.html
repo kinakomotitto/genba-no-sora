@@ -81,6 +81,24 @@ body{background:linear-gradient(145deg,#efe4fa 0%,#fae2ef 42%,#fff9fc 100%)}
 .wx-record .wx-private{font-size:10px;color:#9e8699;margin-top:6px;line-height:1.6}
 .wx-history{display:grid;gap:7px;margin-top:11px}
 .wx-history-item{background:#fff9fc;border:1px solid #f2e3ee;border-radius:12px;padding:9px 12px;font-size:12px;color:#836c7d}
+
+/* v0.10.2 · 画面下部に常時表示する固定ナビゲーション */
+#app{padding-bottom:calc(128px + env(safe-area-inset-bottom, 0px))}
+.tabs{
+  position:fixed;
+  left:50%;
+  bottom:calc(10px + env(safe-area-inset-bottom, 0px));
+  transform:translateX(-50%);
+  width:min(calc(100vw - 28px), 444px);
+  margin:0;
+  z-index:50;
+  box-shadow:0 10px 32px rgba(109,71,108,.16);
+  -webkit-backdrop-filter:blur(18px);
+  backdrop-filter:blur(18px);
+}
+@media(min-width:540px){
+  .tabs{bottom:calc(18px + env(safe-area-inset-bottom, 0px))}
+}
 </style>
 </head>
 <body>
@@ -162,7 +180,7 @@ function updateWindyLinks(){const p=getCoords();const valid=p&&Number.isFinite(N
 function renderRainOutlook(h,stale){const summary=$('rain-outlook-summary'),row=$('rain-outlook-hours');row.replaceChildren();const times=Array.isArray(h.time)?h.time:[];const probs=Array.isArray(h.precipitation_probability)?h.precipitation_probability:[];const nowJP=new Date(Date.now()+9*3600000).toISOString().slice(0,13)+':00';const first=times.findIndex(t=>t>=nowJP);const values=first<0?[]:times.slice(first,first+3).map((t,j)=>({time:t,prob:probs[first+j]}));if(!values.length){summary.textContent='この時間帯の予報はありません。取得済みデータが古い可能性があります。';return}const numbers=values.map(v=>v.prob).filter(v=>Number.isFinite(v));summary.textContent=numbers.length?`${stale?'前回保存した予報 · ':''}この3つの時間帯の最大降水確率 ${Math.round(Math.max(...numbers))}%`:'降水確率の数値がありません';for(const v of values){const chip=document.createElement('div');chip.className='rain-hour'+(Number.isFinite(v.prob)&&v.prob>=60?' high':'');const t=document.createElement('div');t.className='time';t.textContent=v.time.slice(11,16);const prob=document.createElement('div');prob.className='prob';prob.textContent=Number.isFinite(v.prob)?Math.round(v.prob)+'%':'--%';chip.append(t,prob);row.append(chip);}}
 
 function selectLoc(s){selected=s;updateWindyLinks();$('selected-location').textContent=s.name;$('geo-status').textContent=s.kind==='current'?'GPSの現在地':`保存現場 · ${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}`;showTab('home');const p=getCoords();if(p){const old=cache[keyFor(p.lat,p.lon)];if(old)renderWeather(old.data,old.fetched,true);if(navigator.onLine)fetchWeather(p.lat,p.lon);}else if(s.kind==='current')locate();}
-function showTab(id){document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id===id));document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===id));if(id==='sites')renderSites();}
+function showTab(id){const isChanging=!$(id)?.classList.contains('active');document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id===id));document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===id));if(id==='sites')renderSites();if(isChanging)window.scrollTo(0,0);}
 function gps(success,fail,options={}){if(!navigator.geolocation){fail&&fail('このブラウザではGPSが使えません');return}navigator.geolocation.getCurrentPosition(pos=>{lastGPS={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy,at:new Date().toISOString()};save();updateWindyLinks();success(lastGPS)},err=>{const msg=err.code===1?'位置情報の許可が必要です。ブラウザの設定で許可してください':err.code===3?'GPSの取得がタイムアウトしました':'GPSの位置を取得できませんでした';fail&&fail(msg)},{enableHighAccuracy:true,timeout:options.fresh?18000:12000,maximumAge:options.fresh?0:300000});}
 function locate(){$('geo-status').textContent='GPSを取得中…';gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}})}
 function renderWeather(data,fetched,stale){const c=data.current||{},h=data.hourly||{},desc=weatherDesc(c.weather_code);$('temperature').textContent=Number.isFinite(c.temperature_2m)?Math.round(c.temperature_2m)+'°':'--°';$('description').textContent=desc[0];$('weather-icon').textContent=desc[1];$('apparent').textContent=`体感温度 ${fmt(c.apparent_temperature)}°C · 湿度 ${fmt(c.relative_humidity_2m)}%`;$('wind').textContent=`${fmt(c.wind_speed_10m)} m/s`;$('gust').textContent=`${fmt(c.wind_gusts_10m)} m/s`;
