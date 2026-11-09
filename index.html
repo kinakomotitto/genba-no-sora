@@ -99,6 +99,32 @@ body{background:linear-gradient(145deg,#efe4fa 0%,#fae2ef 42%,#fff9fc 100%)}
 @media(min-width:540px){
   .tabs{bottom:calc(18px + env(safe-area-inset-bottom, 0px))}
 }
+
+/* v0.10.3: iPhone standalone PWA - bottom nav anchored directly under body.
+   The navigation was moved OUTSIDE #app, avoiding scrolling/overflow ancestors. */
+#app{padding-bottom:calc(138px + env(safe-area-inset-bottom, 0px))}
+body>.tabs{
+  position:fixed !important;
+  bottom:calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+  left:50%;
+  right:auto;
+  width:min(calc(100vw - 24px), 444px);
+  max-width:444px;
+  margin:0;
+  transform:translateX(-50%);
+  z-index:9999;
+  -webkit-backdrop-filter:blur(18px);
+  backdrop-filter:blur(18px);
+  box-shadow:0 10px 36px rgba(109,71,108,.17);
+}
+body>.tabs .tab{min-height:61px}
+body>.tabs .tab-label{white-space:nowrap}
+body>.tabs .ko{white-space:nowrap}
+@media (min-width:540px){body>.tabs{bottom:calc(16px + env(safe-area-inset-bottom, 0px))}}
+/* Saved sites: place map link beneath the existing action buttons. */
+.site-actions{max-width:150px}
+.site-actions .site-map{display:inline-flex;align-items:center;justify-content:center;flex:1 0 100%;text-decoration:none;min-height:38px}
+@media(max-width:355px){.site-actions .site-map{flex:1 0 100%}}
 </style>
 </head>
 <body>
@@ -124,13 +150,15 @@ body{background:linear-gradient(145deg,#efe4fa 0%,#fae2ef 42%,#fff9fc 100%)}
 </section>
 <section id="radar" class="page"><h1 class="page-title">雨雲レーダー ☁</h1><p class="page-sub">비구름 레이더 · 情報源を切り替えて確認</p><div class="radar-block"><div style="font-size:43px">🌧️</div><strong>雨雲の動きをチェック</strong><p>初期版では各サービスの公式レーダーに移動します。<br>アプリ内アニメーションは次の開発段階で追加予定。</p></div><div class="radar-links"><a href="https://www.jma.go.jp/bosai/rain/" target="_blank" rel="noopener noreferrer">気象庁 · 雨雲の動き <span>↗</span></a><a href="https://www.windy.com/" data-windy-link="true" target="_blank" rel="noopener noreferrer">Windy.com · 選択地点 <span>↗</span></a><a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank" rel="noopener noreferrer">Yahoo!天気 · 雨雲レーダー <span>↗</span></a></div><div class="notice">雷や警報の確認も、気象庁の公式情報を優先してね。現時点では雨雲の接近通知は未搭載です。</div></section>
 <section id="sites" class="page"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名<input id="site-name" maxlength="60" required placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><div class="two"><label class="field">緯度<input id="site-lat" type="number" min="-90" max="90" step="any" required placeholder="40.6"></label><label class="field">経度<input id="site-lon" type="number" min="-180" max="180" step="any" required placeholder="141.2"></label></div><button type="button" class="btn" id="fill-gps">⌖ GPSを使って入力</button><button type="submit" class="btn primary full">この現場を保存 ♡</button></form></div><div class="notice">現場名・座標・メモはこの端末内に保存。別の端末には自動同期されません。会社の機密情報は入力しないでね。</div></section>
+
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.10.3 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+</div></div>
 <footer class="tabs" role="navigation" aria-label="ページ切り替え">
 <button class="tab active" data-tab="home" type="button" aria-label="ホーム"><span class="tab-label">ホーム</span><span class="ko" lang="ko">홈</span></button>
 <button class="tab" data-tab="radar" type="button" aria-label="レーダー"><span class="tab-label">レーダー</span><span class="ko" lang="ko">레이더</span></button>
 <button class="tab" data-tab="sites" type="button" aria-label="現場"><span class="tab-label">現場</span><span class="ko" lang="ko">현장</span></button>
 </footer>
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
-</div></div><div id="toast" role="status" aria-live="polite"></div>
+<div id="toast" role="status" aria-live="polite"></div>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -210,7 +238,27 @@ function quickSaveCurrent(){
     toast('現在地を現場に保存したよ ♡');
   },msg=>{finish();if(status)status.textContent=msg;toast(msg)},{fresh:true});
 }
-function renderSites(){const list=$('site-list');list.replaceChildren();if(!saved.length){const p=document.createElement('div');p.className='notice';p.textContent='保存済みの現場はまだありません。下のフォームから追加してね。';list.append(p);return}for(const s of saved){const el=document.createElement('div');el.className='site-item';const left=document.createElement('div');left.style.minWidth='0';const name=document.createElement('div');name.className='site-name';name.textContent='♡ '+s.name;const where=document.createElement('div');where.className='site-where';where.textContent=`${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}`+(s.note?' · '+s.note:'');const accuracy=document.createElement('div');accuracy.className='site-accuracy';accuracy.textContent=Number.isFinite(s.accuracy)?'GPS取得精度：約'+Math.round(s.accuracy)+'m':'';left.append(name,where,accuracy);const actions=document.createElement('div');actions.className='site-actions';const open=document.createElement('button');open.className='smallbtn';open.textContent='天気を見る';open.onclick=()=>selectLoc({kind:'site',...s});const rename=document.createElement('button');rename.className='smallbtn';rename.textContent='名前変更';rename.setAttribute('aria-label',s.name+'の名前を変更');rename.onclick=()=>{const newName=prompt('新しい現場名を入力してね',s.name);if(newName===null)return;const trimmed=newName.trim().slice(0,60);if(!trimmed){toast('現場名を入力してね');return;}s.name=trimmed;save();renderSites();toast('現場名を変更しました ♡')};const remove=document.createElement('button');remove.className='smallbtn';remove.textContent='削除';remove.setAttribute('aria-label',s.name+'を削除');remove.onclick=()=>{if(confirm(`「${s.name}」を削除しますか？`)){saved=saved.filter(x=>x.id!==s.id);save();renderSites();toast('現場を削除しました')}};actions.append(open,rename,remove);el.append(left,actions);list.append(el);}}
+function googleMapsLink(lat,lon){
+  if(!Number.isFinite(Number(lat))||!Number.isFinite(Number(lon)))return null;
+  if(Number(lat)<-90||Number(lat)>90||Number(lon)<-180||Number(lon)>180)return null;
+  return 'https://www.google.com/maps/search/?api=1&query='+
+    encodeURIComponent(Number(lat).toFixed(6)+','+Number(lon).toFixed(6));
+}
+function renderSites(){const list=$('site-list');list.replaceChildren();if(!saved.length){const p=document.createElement('div');p.className='notice';p.textContent='保存済みの現場はまだありません。下のフォームから追加してね。';list.append(p);return}for(const s of saved){const el=document.createElement('div');el.className='site-item';const left=document.createElement('div');left.style.minWidth='0';const name=document.createElement('div');name.className='site-name';name.textContent='♡ '+s.name;const where=document.createElement('div');where.className='site-where';where.textContent=`${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}`+(s.note?' · '+s.note:'');const accuracy=document.createElement('div');accuracy.className='site-accuracy';accuracy.textContent=Number.isFinite(s.accuracy)?'GPS取得精度：約'+Math.round(s.accuracy)+'m':'';left.append(name,where,accuracy);const actions=document.createElement('div');actions.className='site-actions';const open=document.createElement('button');open.className='smallbtn';open.textContent='天気を見る';open.onclick=()=>selectLoc({kind:'site',...s});const rename=document.createElement('button');rename.className='smallbtn';rename.textContent='名前変更';rename.setAttribute('aria-label',s.name+'の名前を変更');rename.onclick=()=>{const newName=prompt('新しい現場名を入力してね',s.name);if(newName===null)return;const trimmed=newName.trim().slice(0,60);if(!trimmed){toast('現場名を入力してね');return;}s.name=trimmed;save();renderSites();toast('現場名を変更しました ♡')};const remove=document.createElement('button');remove.className='smallbtn';remove.textContent='削除';remove.setAttribute('aria-label',s.name+'を削除');remove.onclick=()=>{if(confirm(`「${s.name}」を削除しますか？`)){saved=saved.filter(x=>x.id!==s.id);save();renderSites();toast('現場を削除しました')}};const mapUrl=googleMapsLink(s.lat,s.lon);
+if(mapUrl){
+  const map=document.createElement('a');
+  map.className='smallbtn site-map';
+  map.href=mapUrl;
+  map.target='_blank';
+  map.rel='noopener noreferrer';
+  map.textContent='📍 Googleマップで見る ↗';
+  map.setAttribute('aria-label',s.name+'をGoogleマップで開く');
+  map.title='保存した現場の位置をGoogleマップで開く（Googleへ座標を送信）';
+  actions.append(open,rename,remove,map);
+}else{
+  actions.append(open,rename,remove);
+}
+el.append(left,actions);list.append(el);}}
 $('site-form').addEventListener('submit',e=>{e.preventDefault();const name=$('site-name').value.trim(),lat=Number($('site-lat').value),lon=Number($('site-lon').value),note=$('site-note').value.trim();if(!name||!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180){toast('現場名と正しい緯度・経度を入力してね');return}const site={id:Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),name,lat,lon,note};saved.push(site);save();renderSites();$('site-form').reset();toast('現場を保存しました ♡')});
 $('quick-save-home').onclick=quickSaveCurrent;$('quick-save-site').onclick=quickSaveCurrent;
 $('fill-gps').onclick=()=>gps(p=>{$('site-lat').value=p.lat.toFixed(6);$('site-lon').value=p.lon.toFixed(6);toast('GPSの座標を入力しました')},toast);
