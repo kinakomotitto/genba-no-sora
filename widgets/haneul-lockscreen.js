@@ -1,145 +1,177 @@
-// 하늘 ♡ 現在地の天気 — Scriptable ロック画面ウィジェット v1.0
-// 設置：Scriptableで新規スクリプトに貼り付け、ロック画面の
-// Scriptable「長方形」ウィジェットに割り当ててください。
-// 位置情報はその都度Scriptableが取得し、Open-Meteoに概略座標
-// （小数3桁、約100m単位）を送信して現在地の予報を取得します。
-// 場所・現場情報・認証情報を「하늘」のサーバーへ送信しません。
-// iOSがウィジェットを更新する時だけ実行されます。常時追跡ではありません。
+// 하늘 ♡ · 現在地の空 — Scriptable ロック画面ウィジェット v1.1
+// 「長方形」のロック画面ウィジェットで現在の天気とこの先3時間を表示。
+// ホーム画面の小・中ウィジェットなら最大5時間分まで表示。
+// ※ ロック画面の色・背景・形はiOS側が調整するため、完全なガラス調
+//    （自由な背景ぼかしや大きなカード）は再現できません。
+// ※ iOSの判断で更新されます。リアルタイム追跡・毎時の更新保証はありません。
+// ※ 位置はScriptableで現在地を取得。概略座標だけOpen-Meteoへ送ります。
+//    現場の保存地点・メモ・認証情報は参照も送信もしません。
 
 const APP_URL = "https://kinakomotitto.github.io/genba-no-sora/";
 const family = config.widgetFamily || "accessoryRectangular";
 const widget = new ListWidget();
-widget.url = APP_URL; // タップすると「하늘」のWebページ（Safariで開く場合あり）
-widget.setPadding(1, 3, 1, 3);
-widget.refreshAfterDate = new Date(Date.now() + 20 * 60 * 1000);
-// iOSはこの時刻での更新を保証しません。
+widget.url = APP_URL; // タップするとサイトを開く（iOSによってSafariになる）。
+widget.refreshAfterDate = new Date(Date.now() + 30 * 60 * 1000);
+// この時刻は最短更新の目安。実際の更新間隔はiOSが決定。
 
 const fm = FileManager.local();
-const cacheFile = fm.joinPath(fm.cacheDirectory(), "haneul-lockscreen-weather-v1.json");
-function loadCache() {
-  try {
-    if (fm.fileExists(cacheFile)) return JSON.parse(fm.readString(cacheFile));
-  } catch (_) {}
+const cacheFile = fm.joinPath(fm.cacheDirectory(), "haneul-lockscreen-weather-v2.json");
+function getCachedWeather() {
+  try { if (fm.fileExists(cacheFile)) return JSON.parse(fm.readString(cacheFile)); } catch (_) {}
   return null;
 }
-function saveCache(value) {
-  try { fm.writeString(cacheFile, JSON.stringify(value)); } catch (_) {}
+function storeWeather(data) {
+  try { fm.writeString(cacheFile, JSON.stringify(data)); } catch (_) {}
 }
-function weatherName(code, daytime) {
-  if (code === 0) return {symbol: daytime ? "☀︎" : "☾", label:"晴れ"};
-  if (code === 1 || code === 2) return {symbol:"⛅︎", label:"晴れ時々曇り"};
-  if (code === 3) return {symbol:"☁︎", label:"曇り"};
-  if (code === 45 || code === 48) return {symbol:"☁︎", label:"霧"};
-  if (code >= 51 && code <= 57) return {symbol:"☂︎", label:"霧雨"};
-  if (code >= 61 && code <= 67) return {symbol:"☂︎", label:"雨"};
-  if (code >= 71 && code <= 77) return {symbol:"❄︎", label:"雪"};
-  if (code >= 80 && code <= 82) return {symbol:"☂︎", label:"にわか雨"};
-  if (code >= 85 && code <= 86) return {symbol:"❄︎", label:"にわか雪"};
-  if (code >= 95) return {symbol:"⚡︎", label:"雷雨"};
-  return {symbol:"☁︎", label:"天気"};
+function sky(code, day) {
+  if (code === 0) return {mark:day ? "☀" : "☾",ko:"맑음"};
+  if (code === 1 || code === 2) return {mark:"⛅",ko:"구름 조금"};
+  if (code === 3) return {mark:"☁",ko:"흐림"};
+  if (code === 45 || code === 48) return {mark:"☁",ko:"안개"};
+  if (code >= 51 && code <= 57) return {mark:"☂",ko:"이슬비"};
+  if (code >= 61 && code <= 67) return {mark:"☂",ko:"비"};
+  if (code >= 71 && code <= 77) return {mark:"❄",ko:"눈"};
+  if (code >= 80 && code <= 82) return {mark:"☂",ko:"소나기"};
+  if (code >= 85 && code <= 86) return {mark:"❄",ko:"눈"};
+  if (code >= 95) return {mark:"⚡",ko:"천둥"};
+  return {mark:"☁",ko:"날씨"};
 }
-function rainAtCurrentHour(data) {
-  try {
-    const prefix = data.current.time.slice(0, 13);
-    const i = data.hourly.time.findIndex(t => t.slice(0, 13) === prefix);
-    const n = data.hourly.precipitation_probability[i];
-    return Number.isFinite(n) ? Math.round(n) : null;
-  } catch (_) { return null; }
+function currentRain(data) {
+  const times = data.hourly && data.hourly.time;
+  const probs = data.hourly && data.hourly.precipitation_probability;
+  const hour = String(data.current.time || "").slice(0,13);
+  if (!Array.isArray(times)||!Array.isArray(probs)) return null;
+  const i = times.findIndex(t=>String(t).slice(0,13)===hour);
+  const value = i>=0?probs[i]:null;
+  return Number.isFinite(value)?Math.round(value):null;
 }
-let reading = null;
-let fromCache = false;
-let cache = loadCache();
+function futureForecast(data) {
+  const h=data.hourly || {};
+  const now=String(data.current.time || "").slice(0,13);
+  if (!Array.isArray(h.time)||!Array.isArray(h.weather_code)||!Array.isArray(h.temperature_2m)) return [];
+  const result=[];
+  for (let i=0; i<h.time.length && result.length<5; i++) {
+    const t=String(h.time[i]);
+    if (t.slice(0,13)<=now) continue; // いまの時刻より後の時間帯だけ
+    const temp=h.temperature_2m[i],code=h.weather_code[i];
+    if (!Number.isFinite(temp)||!Number.isFinite(code)) continue;
+    result.push({hour:Number(t.slice(11,13)),temp:Math.round(temp),mark:sky(code,true).mark});
+  }
+  return result;
+}
+let reading=null,fromCache=false;
+const cached=getCachedWeather();
 try {
-  // ロック画面は限られた時間しか実行されないため、省電力の位置精度。
+  // 端末の現在地。GPS取得や通信が失敗したときは過去の結果を明示。
   Location.setAccuracyToHundredMeters();
-  const pos = await Location.current();
-  if (!Number.isFinite(pos.latitude) || !Number.isFinite(pos.longitude)) {
-    throw new Error("Location unavailable");
-  }
-  const lat = pos.latitude.toFixed(3);
-  const lon = pos.longitude.toFixed(3);
-  const url = "https://api.open-meteo.com/v1/forecast"
-    + "?latitude=" + encodeURIComponent(lat)
-    + "&longitude=" + encodeURIComponent(lon)
-    + "&current=temperature_2m,weather_code,is_day"
-    + "&hourly=precipitation_probability"
-    + "&forecast_days=1&timezone=auto";
-  const req = new Request(url);
-  req.timeoutInterval = 10;
-  const data = await req.loadJSON();
-  const current = data.current || {};
-  if (!Number.isFinite(current.temperature_2m) || !Number.isFinite(current.weather_code)) {
-    throw new Error("Incomplete forecast");
-  }
-  reading = {
-    temp: Math.round(current.temperature_2m),
-    code: current.weather_code,
-    isDay: current.is_day === 1,
-    rain: rainAtCurrentHour(data),
-    weatherTime: String(current.time || "").slice(11, 16),
-    fetchedAt: Date.now()
+  const pos=await Location.current();
+  if(!Number.isFinite(pos.latitude)||!Number.isFinite(pos.longitude))throw Error("No GPS");
+  const lat=pos.latitude.toFixed(3),lon=pos.longitude.toFixed(3);
+  const url="https://api.open-meteo.com/v1/forecast"
+    +"?latitude="+encodeURIComponent(lat)+"&longitude="+encodeURIComponent(lon)
+    +"&current=temperature_2m,weather_code,is_day"
+    +"&hourly=temperature_2m,weather_code,precipitation_probability"
+    +"&forecast_days=2&timezone=auto";
+  const request=new Request(url);
+  request.timeoutInterval=12;
+  const data=await request.loadJSON();
+  const now=data.current||{};
+  if(!Number.isFinite(now.temperature_2m)||!Number.isFinite(now.weather_code))throw Error("Weather unavailable");
+  reading={
+    temp:Math.round(now.temperature_2m),code:now.weather_code,
+    isDay:now.is_day===1,rain:currentRain(data),
+    weatherTime:String(now.time||"").slice(11,16),
+    hours:futureForecast(data),fetchedAt:Date.now()
   };
-  saveCache(reading); // 保存するのは天気だけ。緯度・経度は保存しません。
-} catch (_) {
-  // GPSが使えない場合、直近のデータのみ「前回」と明記して表示。
-  if (cache && Number.isFinite(cache.temp) && Number.isFinite(cache.fetchedAt)
-      && Date.now() - cache.fetchedAt < 2 * 60 * 60 * 1000) {
-    reading = cache;
-    fromCache = true;
+  storeWeather(reading); // 位置情報・座標・現場データは保存しません。
+}catch(_){
+  if(cached&&Number.isFinite(cached.temp)&&Number.isFinite(cached.fetchedAt)
+    &&Date.now()-cached.fetchedAt<2*60*60*1000){
+    reading=cached;
+    fromCache=true;
   }
 }
-
-const state = reading ? weatherName(reading.code, reading.isDay) : null;
-const temp = reading ? String(reading.temp) + "°" : "--°";
-const condition = state ? state.symbol + " " + state.label : "位置情報を確認";
-const time = reading && reading.weatherTime ? reading.weatherTime : "--:--";
-const update = fromCache ? "前回 " + time : time;
-const rain = reading && reading.rain !== null ? ("雨" + reading.rain + "%") : "降水確率 --";
-const textColor = new Color("#FFFFFF"); // ロック画面ではiOSが色を調整する場合があります。
-
-if (family === "accessoryInline") {
-  const line = widget.addText("♡ 하늘  " + temp + " " + condition);
-  line.font = Font.semiboldSystemFont(13);
-  line.lineLimit = 1;
-} else if (family === "accessoryCircular") {
-  const title = widget.addText("♡ 하늘");
-  title.font = Font.mediumSystemFont(9);
-  title.centerAlignText();
-  const main = widget.addText(temp);
-  main.font = Font.boldRoundedSystemFont(21);
-  main.centerAlignText();
-  const symbol = widget.addText(state ? state.symbol : "☁︎");
-  symbol.font = Font.mediumSystemFont(11);
-  symbol.centerAlignText();
-} else if (family === "accessoryRectangular") {
-  const title = widget.addText("♡ 하늘 · " + (fromCache ? "前回取得" : "現在地"));
-  title.font = Font.semiboldSystemFont(11);
-  title.lineLimit = 1;
-  const main = widget.addText(condition + "  " + temp);
-  main.font = Font.boldRoundedSystemFont(17);
-  main.lineLimit = 1;
-  main.minimumScaleFactor = 0.75;
-  const foot = widget.addText(rain + " · " + update);
-  foot.font = Font.mediumSystemFont(10);
-  foot.lineLimit = 1;
-} else {
-  // ホーム画面用も同じスクリプトで使用できます。
-  widget.backgroundColor = new Color("#F6E4F1");
-  widget.setPadding(13, 12, 13, 12);
-  const title = widget.addText("♡ 하늘　現在地の空");
-  title.font = Font.semiboldRoundedSystemFont(13);
-  title.textColor = new Color("#895D7D");
-  widget.addSpacer(8);
-  const main = widget.addText(condition + "   " + temp);
-  main.font = Font.boldRoundedSystemFont(22);
-  main.textColor = new Color("#6C6079");
-  widget.addSpacer(6);
-  const foot = widget.addText(rain + "  ·  " + update + (fromCache ? "（前回）" : ""));
-  foot.font = Font.mediumSystemFont(11);
-  foot.textColor = new Color("#907B94");
+const desc=reading?sky(reading.code,reading.isDay):{mark:"☁",ko:"확인 필요"};
+const temperature=reading?String(reading.temp)+"°":"--°";
+const currentText=desc.mark+" "+temperature+" "+desc.ko;
+const hours=reading&&Array.isArray(reading.hours)?reading.hours.slice(0,5):[];
+const rainText=reading&&reading.rain!==null?"강수 "+reading.rain+"%":"강수 --";
+const timeLabel=reading&&reading.weatherTime?reading.weatherTime:"--:--";
+const updated=fromCache?"前回 "+timeLabel:timeLabel;
+function textLine(parent,content,size,bold){
+  const item=parent.addText(content);
+  item.font=bold?Font.semiboldSystemFont(size):Font.mediumSystemFont(size);
+  item.lineLimit=1;
+  item.minimumScaleFactor=0.68;
+  return item;
+}
+function futureText(f){
+  return String(f.hour)+"시 "+f.mark+String(f.temp)+"°";
+}
+if(family==="accessoryInline"){
+  widget.setPadding(0,0,0,0);
+  textLine(widget,"♡ 하늘 · "+temperature+" "+desc.mark,13,true);
+}else if(family==="accessoryCircular"){
+  widget.setPadding(0,0,0,0);
+  const head=textLine(widget,"♡ 하늘",9,false);head.centerAlignText();
+  const center=textLine(widget,temperature,21,true);center.centerAlignText();
+  const foot=textLine(widget,desc.mark,10,false);foot.centerAlignText();
+}else if(family==="accessoryRectangular"){
+  // ロック画面ではiOS標準の透明・壁紙連動の表示を使う。
+  // 自由なガラス背景画像は指定せず、文字の読みやすさを優先。
+  widget.setPadding(0,2,0,2);
+  widget.spacing=0;
+  textLine(widget,"♡ 하늘  📍 현재 위치"+(fromCache?" · 前回":""),9,true);
+  textLine(widget,currentText,17,true);
+  widget.addSpacer(1);
+  const line=widget.addStack();
+  line.layoutHorizontally();
+  line.centerAlignContent();
+  const mini=hours.slice(0,3);
+  if(mini.length){
+    mini.forEach((f,i)=>{
+      const item=textLine(line,futureText(f),8.3,true);
+      if(i<mini.length-1)line.addSpacer(4);
+    });
+  }else{
+    textLine(line,"다음 시간 예보 --",9,false);
+  }
+  widget.addSpacer(1);
+  textLine(widget,rainText+" · "+updated,8.5,false);
+}else{
+  // ホーム画面用：透明感のある淡いピンク・ラベンダーのカード。
+  const gradient=new LinearGradient();
+  gradient.colors=[new Color("#F7E9F5"),new Color("#E5ECFD")];
+  gradient.locations=[0,1];
+  widget.backgroundGradient=gradient;
+  widget.setPadding(14,14,14,14);
+  widget.spacing=4;
+  const title=textLine(widget,"♡ 하늘  📍 현재 위치"+(fromCache?"（前回）":""),12,true);
+  title.textColor=new Color("#8D6989");
+  const current=textLine(widget,currentText,21,true);
+  current.textColor=new Color("#655D7C");
+  const details=textLine(widget,rainText+" · "+updated,11,false);
+  details.textColor=new Color("#987F96");
+  widget.addSpacer(5);
+  const num=family==="medium"?5:3;
+  if(family==="medium"){
+    const row=widget.addStack();row.layoutHorizontally();
+    hours.slice(0,num).forEach((f,i)=>{
+      const col=row.addStack();
+      col.layoutVertically();
+      col.setPadding(5,6,5,6);
+      const hour=textLine(col,f.hour+"시",10,true);hour.textColor=new Color("#987F96");
+      const mark=textLine(col,f.mark,16,true);mark.textColor=new Color("#766581");
+      const temp=textLine(col,f.temp+"°",13,true);temp.textColor=new Color("#766581");
+      if(i<num-1)row.addSpacer(5);
+    });
+  }else{
+    hours.slice(0,num).forEach(f=>{
+      const line=textLine(widget,futureText(f),11,false);
+      line.textColor=new Color("#766581");
+    });
+  }
 }
 Script.setWidget(widget);
-if (!config.runsInWidget) {
-  await widget.presentAccessoryRectangular();
-}
+if(!config.runsInWidget)await widget.presentAccessoryRectangular();
 Script.complete();
