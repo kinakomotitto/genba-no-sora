@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-SoraPrivateKeyTool2026'; style-src 'nonce-SoraPrivateKeyTool2026'; connect-src 'none'; img-src 'none'; font-src 'none'; object-src 'none'; form-action 'none'; base-uri 'none'">
+<title>하늘 ♡ 通知の鍵を作る</title>
+<style nonce="SoraPrivateKeyTool2026">
+:root{color-scheme:light;--ink:#654e61;--soft:#a0849b;--line:#eccedc}
+*{box-sizing:border-box}
+body{margin:0;padding:24px 18px 58px;font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN",sans-serif;color:var(--ink);background:linear-gradient(155deg,#fbe4ee 0%,#f0e8fa 45%,#fcecf6 100%);min-height:100vh}
+main{max-width:580px;margin:auto}
+header{text-align:center;padding:15px 0 17px}
+h1{font-size:24px;letter-spacing:.03em;margin:7px 0;color:#71576e}
+h2{font-size:15px;margin:0 0 6px}
+.subtitle{font-size:12px;color:var(--soft);line-height:1.8}
+.card{background:rgba(255,255,255,.88);border:1px solid #f0dae8;border-radius:22px;padding:18px;margin:13px 0;box-shadow:0 7px 25px rgba(171,112,155,.06)}
+.primary{border:1px solid #dba7c1;border-radius:14px;background:linear-gradient(115deg,#efc8df,#e8d8f2);color:#77536a;font-weight:700;padding:15px 12px;font-size:14px;min-height:50px;width:100%}
+.primary:disabled{opacity:.6}
+.detail{font-size:11px;line-height:1.8;color:#998090}
+.warning{font-size:12px;line-height:1.8;color:#87536f;margin:12px 0;background:#fff1f6;border-radius:11px;padding:10px}
+.field{margin:14px 0}
+.field-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.name{font-weight:750;font-size:12px}
+.kind{font-size:10px;color:var(--soft);white-space:nowrap}
+.value{width:100%;min-height:47px;margin:7px 0;padding:12px 11px;font-size:12px;border:1px solid var(--line);border-radius:12px;background:#fff8fc;color:#78566b;outline-color:#b490ba;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.controls{display:flex;gap:8px}
+.controls button,.secondary{flex:1;min-height:38px;border:1px solid var(--line);border-radius:11px;background:#fcf4fa;color:#8f647d;font-size:12px;font-weight:650}
+#status{font-size:12px;line-height:1.8;margin:12px 0;color:#765c72;min-height:22px}
+#results[hidden]{display:none}
+ol{font-size:12px;line-height:2;color:#806c7e;padding-left:20px;margin:10px 0 0}
+hr{border:0;border-top:1px solid #f2e3eb;margin:18px 0}
+footer{text-align:center;font-size:10px;color:#ae93a4;line-height:1.8;margin-top:17px}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div aria-hidden="true" style="font-size:35px">☁️ ♡</div>
+    <h1>하늘 · 通知の鍵づくり</h1>
+    <div class="subtitle">「現場の空」専用・iPhoneで作るVAPID鍵<br>このページはGitHub Pages上の静的なツールです</div>
+  </header>
+  <section class="card">
+    <h2>🔐 鍵はこの端末の中で作るよ</h2>
+    <p class="detail">iPhoneのWeb Crypto機能で新しい鍵を生成します。外部のサービスへの送信、GitHubへの保存、端末への自動保存はしません。生成後はCloudflareのProduction設定へコピーしてね。</p>
+    <p class="warning"><strong>大切：</strong>鍵の文字列をスクショ・チャット・GitHubへ載せないでね。Cloudflareへの登録がすべて終わるまで、このページを閉じたり再読み込みしたりしないでね。</p>
+    <button class="primary" id="generate" type="button">♡ 新しい鍵3つを作る</button>
+    <div id="status" role="status" aria-live="polite">まだ生成していません。</div>
+  </section>
+  <section class="card" id="results" hidden>
+    <h2>✨ Cloudflareへ1つずつ登録</h2>
+    <p class="detail">左の名前を「Key」に、右の文字列を「Value」に貼り付けてね。秘密鍵とSALTは必ず Secret にチェック！</p>
+    <div class="field">
+      <div class="field-head"><span class="name">① VAPID_PUBLIC_KEY</span><span class="kind">Text（公開鍵）</span></div>
+      <input class="value" id="public" readonly spellcheck="false" autocomplete="off" aria-label="VAPID公開鍵">
+      <div class="controls"><button type="button" data-copy="public">公開鍵をコピー</button></div>
+    </div>
+    <div class="field">
+      <div class="field-head"><span class="name">② VAPID_PRIVATE_KEY</span><span class="kind">Secret（秘密鍵）</span></div>
+      <input class="value" id="private" type="password" readonly spellcheck="false" autocomplete="off" aria-label="VAPID秘密鍵">
+      <div class="controls"><button type="button" data-copy="private">秘密鍵をコピー</button><button type="button" data-reveal="private">表示 / 隠す</button></div>
+    </div>
+    <div class="field">
+      <div class="field-head"><span class="name">③ RATE_LIMIT_SALT</span><span class="kind">Secret（非公開）</span></div>
+      <input class="value" id="salt" type="password" readonly spellcheck="false" autocomplete="off" aria-label="レート制限ソルト">
+      <div class="controls"><button type="button" data-copy="salt">SALTをコピー</button><button type="button" data-reveal="salt">表示 / 隠す</button></div>
+    </div>
+    <hr>
+    <h2>Cloudflareでの登録手順</h2>
+    <ol>
+      <li>通知サーバー → Settings → Runtime variables and secrets → Add variable</li>
+      <li>この画面の「Key名」と「Value」を順番に貼り付け</li>
+      <li>②と③は <strong>Secret</strong> を選択。①はTextでOK</li>
+      <li>Productionへデプロイしてから /health を確認</li>
+    </ol>
+    <p class="detail">すでに登録した <strong>VAPID_SUBJECT</strong> はそのままでOK。公開鍵と秘密鍵は必ず同じ回で作ったペアを使ってね。もし再生成したら、両方更新してね。</p>
+    <button class="secondary" id="clear" type="button" style="width:100%;margin-top:8px">この画面から鍵を消す</button>
+  </section>
+  <footer>鍵はページからネット送信しない設計です。<br>生成した鍵がSafariの画面やコピー履歴に残る可能性はあるので、取り扱いに注意してね。</footer>
+</main>
+<script nonce="SoraPrivateKeyTool2026">
+'use strict';
+const $=id=>document.getElementById(id);
+function base64url(bytes){
+  let binary='';
+  for(const x of new Uint8Array(bytes))binary+=String.fromCharCode(x);
+  return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function bytesFrom64url(value){
+  const raw=atob(value.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-value.length%4)%4));
+  return Uint8Array.from(raw,c=>c.charCodeAt(0));
+}
+function setStatus(message){$('status').textContent=message;}
+$('generate').addEventListener('click',async()=>{
+  if(!$('results').hidden && !confirm('新しい鍵にすると前の鍵は使えなくなるよ。再生成する？'))return;
+  $('generate').disabled=true;
+  setStatus('このiPhoneの中で鍵を生成中…');
+  try {
+    if(!window.crypto?.subtle || !window.crypto?.getRandomValues)throw Error('Web Crypto is not available');
+    const keys=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign','verify']);
+    const rawPublic=await crypto.subtle.exportKey('raw',keys.publicKey);
+    const rawPrivate=await crypto.subtle.exportKey('jwk',keys.privateKey);
+    if(rawPublic.byteLength!==65 || bytesFrom64url(rawPrivate.d).byteLength!==32)throw Error('Unexpected key length');
+    const text=new TextEncoder().encode('genba-no-sora-key-validation');
+    const signature=await crypto.subtle.sign({name:'ECDSA',hash:'SHA-256'},keys.privateKey,text);
+    const verified=await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},keys.publicKey,signature,text);
+    if(!verified)throw Error('Key pair validation failed');
+    const salt=crypto.getRandomValues(new Uint8Array(32));
+    $('public').value=base64url(rawPublic);
+    $('private').value=rawPrivate.d;
+    $('salt').value=base64url(salt);
+    $('private').type='password';
+    $('salt').type='password';
+    $('results').hidden=false;
+    setStatus('♡ 3つの鍵を作成・検証できたよ。Cloudflareに順番に登録してね。');
+  } catch(e){
+    setStatus('鍵を作れませんでした。SafariでHTTPSのページとして開いてね。');
+  } finally {
+    $('generate').disabled=false;
+  }
+});
+for(const btn of document.querySelectorAll('[data-copy]')){
+  btn.addEventListener('click',async()=>{
+    const field=$(btn.getAttribute('data-copy'));
+    if(!field.value)return;
+    try {
+      await navigator.clipboard.writeText(field.value);
+      setStatus('コピーできたよ！CloudflareのValueに貼り付けてね。');
+    } catch(e){
+      field.type='text';
+      field.focus();field.select();
+      setStatus('コピーできないときは、選択された文字を長押ししてコピーしてね。');
+    }
+  });
+}
+for(const btn of document.querySelectorAll('[data-reveal]')){
+  btn.addEventListener('click',()=>{
+    const field=$(btn.getAttribute('data-reveal'));
+    field.type=field.type==='password'?'text':'password';
+  });
+}
+$('clear').addEventListener('click',()=>{
+  if(!confirm('表示中の鍵を消す？ Cloudflareへ登録し終わってから消してね。'))return;
+  for(const id of ['public','private','salt'])$(id).value='';
+  $('results').hidden=true;
+  setStatus('表示中の鍵を消したよ。必要なら新しく作れるよ。');
+});
+</script>
+</body>
+</html>
