@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="하늘 날씨 앱">
+<defs>
+<linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f3e7fd"/><stop offset="0.49" stop-color="#f7dbea"/><stop offset="1" stop-color="#ffdfeb"/></linearGradient>
+<linearGradient id="cloudfill" x1="0" x2="0.8" y1="0" y2="1"><stop offset="0" stop-color="#fffdfd"/><stop offset="1" stop-color="#ffeef6"/></linearGradient>
+<radialGradient id="glow"><stop offset="0" stop-color="white" stop-opacity="0.7"/><stop offset="1" stop-color="white" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="512" height="512" rx="108" fill="url(#bg)"/>
+<ellipse cx="80" cy="395" rx="210" ry="60" fill="url(#glow)"/>
+<ellipse cx="435" cy="404" rx="180" ry="66" fill="url(#glow)"/>
+<circle cx="300" cy="157" r="53" fill="#fff4ed" stroke="#ae718a" stroke-width="8"/>
+<g fill="none" stroke="#ae718a" stroke-width="9" stroke-linecap="round">
+<path d="M300 81V66"/><path d="M354 103l13-16"/><path d="M377 157h20"/><path d="M351 211l15 14"/><path d="M247 99l-14-17"/>
+</g>
+<path d="M149 286C116 284 92 259 92 228C92 198 116 176 147 175C157 132 193 111 227 123C247 100 290 99 313 120C335 138 345 153 344 170C370 168 394 187 396 217C400 249 373 274 343 277C293 281 190 286 149 286Z" fill="url(#cloudfill)" stroke="#a96e87" stroke-width="9" stroke-linejoin="round" stroke-linecap="round"/>
+<path d="M374 108C381 95 393 100 396 108C404 99 420 103 418 118C415 130 402 142 394 148C381 137 365 124 374 108Z" fill="none" stroke="#a96e87" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="256" y="402" fill="#985a78" font-family="NanumSquareRound,Noto Sans CJK KR,sans-serif" font-size="72" font-weight="700" text-anchor="middle">하늘</text>
+</svg>
