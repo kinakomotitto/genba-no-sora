@@ -327,7 +327,7 @@ async function showResearchStatus(){
     if(!response.ok)throw Error('HTTP '+response.status);
     const file=await response.json();
     if(file.encoding!=='base64')throw Error('Unexpected encoding');
-    const encoded=String(file.content).split(/\\s+/).join('');
+    const encoded=String(file.content).split(/\s+/).join('');
     const bytes=Uint8Array.from(atob(encoded),v=>v.charCodeAt(0));
     const data=JSON.parse(new TextDecoder().decode(bytes));
     const date=new Date(data.last_successful_run_utc);
