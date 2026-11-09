@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import worker from '../src/worker.js';
+import worker, {parseReminderTimes} from '../src/worker.js';
 
 const ORIGIN = 'https://kinakomotitto.github.io';
 const url = 'https://push-test.example';
@@ -16,7 +16,9 @@ test('config keeps VAPID key unavailable until server is configured', async () =
   const obj = await res.json();
   assert.equal(obj.available, false);
   assert.equal(obj.publicKey, null);
-  assert.equal(obj.schedule, '12:00');
+  assert.equal(obj.schedule, 'user_selected');
+  assert.equal(obj.maxTimes, 3);
+  assert.equal(obj.intervalMinutes, 15);
   assert.equal(obj.timeZone, 'Asia/Tokyo');
 });
 
@@ -62,4 +64,20 @@ test('rejects non-Apple push endpoint before accessing D1 storage', async () => 
     body:JSON.stringify(data)
   }),fakeEnv);
   assert.equal(res.status,400);
+});
+
+
+test('users can select one, two or three distinct times on a 15-minute grid', () => {
+  assert.deepEqual(parseReminderTimes(['07:00']), ['07:00']);
+  assert.deepEqual(parseReminderTimes(['12:00','07:00']),['07:00','12:00']);
+  assert.deepEqual(parseReminderTimes(['19:00','12:00','07:00']),
+    ['07:00','12:00','19:00']);
+  assert.equal(parseReminderTimes([]),null);
+  assert.equal(parseReminderTimes(['07:00','07:00']),null);
+  assert.equal(parseReminderTimes(['07:00','12:00','19:00','21:00']),null);
+  assert.equal(parseReminderTimes(['07:01']),null);
+  assert.equal(parseReminderTimes(['24:00']),null);
+  assert.equal(parseReminderTimes(['04:45']),null);
+  assert.equal(parseReminderTimes(['23:15']),null);
+  assert.equal(parseReminderTimes(['07:00','NaN:00']),null);
 });
