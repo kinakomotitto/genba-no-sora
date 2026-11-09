@@ -262,6 +262,152 @@ body>.tabs .ko{white-space:nowrap}
 .reminder-times-row input{width:18px;height:18px;accent-color:#bd87aa}
 .reminder-times-row select{min-width:105px;border:1px solid #ead7e5;border-radius:10px;background:#fff;color:#80687a;font-size:13px;padding:8px 7px;min-height:38px}
 .reminder-times-row select:disabled{opacity:.5}
+
+
+/* v0.15 · Korean pastel skins — original pink palette remains unchanged. */
+.skin-panel{margin:14px 0 3px;padding:13px 15px;border-radius:17px;
+  border:1px solid var(--line);background:rgba(255,255,255,.84);box-shadow:var(--shadow)}
+.skin-panel>summary{display:flex;align-items:center;justify-content:space-between;
+  gap:10px;cursor:pointer;list-style:none;min-height:23px;color:var(--pinkdark);
+  font-size:13px;font-weight:750}
+.skin-panel>summary::-webkit-details-marker{display:none}
+.skin-panel>summary:after{content:'⌄';font-size:18px;font-weight:400;margin-left:4px;opacity:.75}
+.skin-panel[open]>summary:after{transform:rotate(180deg)}
+.skin-current{font-size:10px;color:var(--muted);margin-left:auto;font-weight:500;white-space:nowrap}
+.skin-intro{font-size:11px;line-height:1.6;color:var(--muted);margin:10px 0}
+.skin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.skin-option{appearance:none;-webkit-appearance:none;text-align:left;
+  border:2px solid transparent;border-radius:14px;padding:6px 7px 8px;
+  background:rgba(255,255,255,.73);min-height:103px;min-width:0;color:var(--ink);
+  display:flex;flex-direction:column;align-items:stretch;gap:4px}
+.skin-option[aria-pressed="true"]{border-color:var(--pinkdark);box-shadow:0 0 0 1px var(--line)}
+.skin-option[aria-pressed="true"] .skin-name:after{content:' ✓';color:var(--pinkdark);font-weight:800}
+.skin-swatch{height:50px;border-radius:10px;display:block;position:relative;
+  background:var(--swatch);overflow:hidden}
+.skin-swatch:before,.skin-swatch:after{content:'';position:absolute;
+  background:rgba(255,255,255,.55);border-radius:40px}
+.skin-swatch:before{width:72px;height:17px;top:11px;left:-9px;transform:rotate(-8deg)}
+.skin-swatch:after{width:55px;height:12px;bottom:8px;right:-9px;transform:rotate(8deg)}
+.skin-name{font-size:12px;line-height:1.5;font-weight:750;white-space:nowrap}
+.skin-ko{font-size:10px;font-weight:400;color:var(--muted);margin-left:4px}
+.skin-result{font-size:10px;line-height:1.6;color:var(--muted);margin:9px 0 0}
+@media(max-width:340px){.skin-option{min-height:94px}.skin-name{font-size:11px}.skin-ko{font-size:9px}}
+
+/* Each alternate skin changes shared palette values, not the weather app logic. */
+html[data-skin="sky"]{
+ --bg:#f6fbff;--ink:#435566;--muted:#788e9d;--line:#d9e8f1;
+ --pink:#9cc5e4;--pinkdark:#527a9c;--pale:#eaf5ff;--rose:#e3f0ff;
+ --shadow:0 8px 25px rgba(85,132,174,.065);
+ --skin-bg1:#e1f1ff;--skin-bg2:#e8eafd;--skin-bg3:#f8fdff;
+ --skin-hero1:#eef9ff;--skin-hero2:#e8edff;
+ --skin-accent:#83b1d5;--skin-strong:#527a9c;--skin-faint:#e6f2fc;
+ --skin-radar1:#dcedfa;--skin-radar2:#e9e5f9
+}
+html[data-skin="mint"]{
+ --bg:#f8fff9;--ink:#425a50;--muted:#7c9689;--line:#dbeae1;
+ --pink:#a6d2bd;--pinkdark:#537e6a;--pale:#e9f8ef;--rose:#e4f4e9;
+ --shadow:0 8px 25px rgba(79,139,111,.065);
+ --skin-bg1:#ddf3e8;--skin-bg2:#edf8e9;--skin-bg3:#fcfff7;
+ --skin-hero1:#ecfcf3;--skin-hero2:#f3f9e9;
+ --skin-accent:#86bfa6;--skin-strong:#537e6a;--skin-faint:#e4f4e9;
+ --skin-radar1:#d7efdf;--skin-radar2:#e9f4d9
+}
+html[data-skin="latte"]{
+ --bg:#fffaf5;--ink:#5e4c43;--muted:#9b8477;--line:#eee1d7;
+ --pink:#dbb8a1;--pinkdark:#886b5b;--pale:#fcf0e6;--rose:#f7e8dc;
+ --shadow:0 8px 25px rgba(148,106,81,.065);
+ --skin-bg1:#f8e9da;--skin-bg2:#f7eee5;--skin-bg3:#fffdf7;
+ --skin-hero1:#fff0e3;--skin-hero2:#fbf5ed;
+ --skin-accent:#c5a28b;--skin-strong:#886b5b;--skin-faint:#f8e9dc;
+ --skin-radar1:#f5e2d2;--skin-radar2:#f6eddc
+}
+html[data-skin]:not([data-skin="pink"]){background:var(--skin-bg1)}
+html[data-skin]:not([data-skin="pink"]) body{
+ background:linear-gradient(145deg,var(--skin-bg1) 0%,var(--skin-bg2) 43%,var(--skin-bg3) 100%);
+ color:var(--ink)}
+html[data-skin]:not([data-skin="pink"]) #app{
+ background:
+ radial-gradient(ellipse 250px 115px at 10% 20%,rgba(255,255,255,.58),transparent 78%),
+ radial-gradient(ellipse 270px 135px at 91% 33%,rgba(255,255,255,.49),transparent 80%),
+ radial-gradient(ellipse 230px 90px at 16% 66%,rgba(255,255,255,.41),transparent 82%),
+ linear-gradient(167deg,var(--skin-bg1) 0%,var(--skin-bg2) 50%,var(--skin-bg3) 100%);
+ box-shadow:var(--shadow)}
+html[data-skin]:not([data-skin="pink"]) #app:before,
+html[data-skin]:not([data-skin="pink"]) .cloud,
+html[data-skin]:not([data-skin="pink"]) .section-kicker,
+html[data-skin]:not([data-skin="pink"]) .location-name .pin,
+html[data-skin]:not([data-skin="pink"]) .site-compact-action,
+html[data-skin]:not([data-skin="pink"]) .site-fast,
+html[data-skin]:not([data-skin="pink"]) .wx-record .wx-heading,
+html[data-skin]:not([data-skin="pink"]) .research-panel summary,
+html[data-skin]:not([data-skin="pink"]) .reminder-panel strong,
+html[data-skin]:not([data-skin="pink"]) .push-setup-title,
+html[data-skin]:not([data-skin="pink"]) .rain-outlook .outlook-summary,
+html[data-skin]:not([data-skin="pink"]) .rain-hour .prob,
+html[data-skin]:not([data-skin="pink"]) .rain-hour .time,
+html[data-skin]:not([data-skin="pink"]) .btn,
+html[data-skin]:not([data-skin="pink"]) .site-mini-btn,
+html[data-skin]:not([data-skin="pink"]) .status-pill,
+html[data-skin]:not([data-skin="pink"]) .smallbtn,
+html[data-skin]:not([data-skin="pink"]) #saved-label{color:var(--skin-strong)}
+html[data-skin]:not([data-skin="pink"]) .hero{
+ background:linear-gradient(135deg,var(--skin-hero1),var(--skin-hero2));
+ box-shadow:var(--shadow)}
+html[data-skin]:not([data-skin="pink"]) .card,
+html[data-skin]:not([data-skin="pink"]) .site-item,
+html[data-skin]:not([data-skin="pink"]) .hour,
+html[data-skin]:not([data-skin="pink"]) .wx-record,
+html[data-skin]:not([data-skin="pink"]) .research-panel,
+html[data-skin]:not([data-skin="pink"]) .reminder-panel,
+html[data-skin]:not([data-skin="pink"]) .push-setup-panel,
+html[data-skin]:not([data-skin="pink"]) .skin-panel{
+ background:rgba(255,255,255,.85);border-color:var(--line)}
+html[data-skin]:not([data-skin="pink"]) .card.warn,
+html[data-skin]:not([data-skin="pink"]) .notice,
+html[data-skin]:not([data-skin="pink"]) .rain-outlook,
+html[data-skin]:not([data-skin="pink"]) .radar-block{
+ background:rgba(255,255,255,.62);color:var(--skin-strong);border-color:var(--line)}
+html[data-skin]:not([data-skin="pink"]) .details,
+html[data-skin]:not([data-skin="pink"]) .reminder-times{border-color:var(--line)}
+html[data-skin]:not([data-skin="pink"]) .tabs{
+ background:rgba(255,255,255,.9);border-color:var(--line)}
+html[data-skin]:not([data-skin="pink"]) .tab.active,
+html[data-skin]:not([data-skin="pink"]) .site-fast,
+html[data-skin]:not([data-skin="pink"]) .site-compact-action,
+html[data-skin]:not([data-skin="pink"]) .reminder-test,
+html[data-skin]:not([data-skin="pink"]) .wx-option{
+ background:linear-gradient(125deg,var(--skin-hero1),var(--skin-hero2));
+ border-color:var(--line);color:var(--skin-strong)}
+html[data-skin]:not([data-skin="pink"]) .tab .tab-label{color:var(--ink)}
+html[data-skin]:not([data-skin="pink"]) .tab span.ko{color:var(--muted)}
+html[data-skin]:not([data-skin="pink"]) .tab.active .tab-label,
+html[data-skin]:not([data-skin="pink"]) .tab.active span.ko{color:var(--skin-strong)}
+html[data-skin]:not([data-skin="pink"]) .btn.primary{
+ background:var(--skin-accent);border-color:var(--skin-accent);color:#fff}
+html[data-skin]:not([data-skin="pink"]) .btn.soft,
+html[data-skin]:not([data-skin="pink"]) .quicklink,
+html[data-skin]:not([data-skin="pink"]) .rain-hour,
+html[data-skin]:not([data-skin="pink"]) .site-mini-btn,
+html[data-skin]:not([data-skin="pink"]) .smallbtn,
+html[data-skin]:not([data-skin="pink"]) .reminder-times-row,
+html[data-skin]:not([data-skin="pink"]) .wx-history-item{
+ background:var(--skin-faint);border-color:var(--line)}
+html[data-skin]:not([data-skin="pink"]) .rain-hour.high{
+ background:var(--skin-radar1)}
+html[data-skin]:not([data-skin="pink"]) .site-compact-map{
+ background:rgba(255,255,255,.9)}
+html[data-skin]:not([data-skin="pink"]) .radar-visual{
+ background:radial-gradient(circle at 35% 45%,var(--skin-radar1) 0 11%,transparent 27%),
+ radial-gradient(circle at 70% 40%,var(--skin-radar2) 0 9%,transparent 31%),
+ linear-gradient(140deg,var(--skin-hero1),var(--skin-hero2))}
+html[data-skin]:not([data-skin="pink"]) .field input,
+html[data-skin]:not([data-skin="pink"]) .field textarea,
+html[data-skin]:not([data-skin="pink"]) .reminder-times-row select{
+ background:#fff;color:var(--ink);border-color:var(--line)}
+html[data-skin]:not([data-skin="pink"]) button:focus-visible,
+html[data-skin]:not([data-skin="pink"]) input:focus-visible{
+ outline-color:var(--skin-accent)}
+
 </style>
 </head>
 <body>
@@ -286,7 +432,29 @@ body>.tabs .ko{white-space:nowrap}
 <div class="toolbar"><button class="btn primary" id="refresh">↻ 天気を更新</button><button class="btn" id="gps">⌖ 現在地を取得</button></div>
 </section>
 <section id="radar" class="page"><h1 class="page-title">雨雲レーダー ☁</h1><p class="page-sub">비구름 레이더 · 情報源を切り替えて確認</p><div class="radar-block"><div style="font-size:43px">🌧️</div><strong>雨雲の動きをチェック</strong><p>初期版では各サービスの公式レーダーに移動します。<br>アプリ内アニメーションは次の開発段階で追加予定。</p></div><div class="radar-links"><a href="https://www.jma.go.jp/bosai/rain/" target="_blank" rel="noopener noreferrer">気象庁 · 雨雲の動き <span>↗</span></a><a href="https://www.windy.com/" data-windy-link="true" target="_blank" rel="noopener noreferrer">Windy.com · 選択地点 <span>↗</span></a><a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank" rel="noopener noreferrer">Yahoo!天気 · 雨雲レーダー <span>↗</span></a></div><div class="notice">雷や警報の確認も、気象庁の公式情報を優先してね。現時点では雨雲の接近通知は未搭載です。</div></section>
-<section id="sites" class="page"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><details class="research-panel" id="research-panel"><summary>🌱 予報の蓄積状況 <small>確認する</small></summary><div class="research-data" id="research-data">公開観測所のデータを確認できるよ。</div><p class="research-note">公開観測所だけの研究データ。個人の現場情報は送信しません。作業の安全判断には使用しないでね。</p></details>
+<section id="sites" class="page"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><details class="skin-panel" id="skin-panel">
+  <summary>🎨 スキンを選ぶ ♡ <span class="skin-current" id="skin-current">ももラベンダー</span></summary>
+  <p class="skin-intro">気分に合わせて着せ替え♡ 選んだ色はこのiPhoneに保存するよ。</p>
+  <div class="skin-grid" role="group" aria-label="アプリのスキン">
+    <button type="button" class="skin-option" data-skin-choice="pink" aria-pressed="true">
+      <span class="skin-swatch" style="--swatch:linear-gradient(140deg,#f9dbe8,#efe3fa 65%,#fff8fa)"></span>
+      <span class="skin-name">ももラベンダー <span class="skin-ko" lang="ko">핑크</span></span>
+    </button>
+    <button type="button" class="skin-option" data-skin-choice="sky" aria-pressed="false">
+      <span class="skin-swatch" style="--swatch:linear-gradient(140deg,#d6ebfa,#e6e9ff 65%,#f5fcff)"></span>
+      <span class="skin-name">空色ソーダ <span class="skin-ko" lang="ko">하늘</span></span>
+    </button>
+    <button type="button" class="skin-option" data-skin-choice="mint" aria-pressed="false">
+      <span class="skin-swatch" style="--swatch:linear-gradient(140deg,#d4ece1,#eaf5df 65%,#fcfff8)"></span>
+      <span class="skin-name">ミントクリーム <span class="skin-ko" lang="ko">민트</span></span>
+    </button>
+    <button type="button" class="skin-option" data-skin-choice="latte" aria-pressed="false">
+      <span class="skin-swatch" style="--swatch:linear-gradient(140deg,#efdccd,#f8e9dd 65%,#fffaf0)"></span>
+      <span class="skin-name">ミルクティー <span class="skin-ko" lang="ko">라떼</span></span>
+    </button>
+  </div>
+  <div class="skin-result" id="skin-result" role="status" aria-live="polite">いつでも元のピンクに戻せるよ。</div>
+</details><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><details class="research-panel" id="research-panel"><summary>🌱 予報の蓄積状況 <small>確認する</small></summary><div class="research-data" id="research-data">公開観測所のデータを確認できるよ。</div><p class="research-note">公開観測所だけの研究データ。個人の現場情報は送信しません。作業の安全判断には使用しないでね。</p></details>
 <div class="reminder-panel"><strong>🔔 天気記録リマインダー</strong><p>通知の回数も時間も選べるよ。定時通知は下の「通知をオン」にした端末へお届けするよ♡</p><button type="button" id="reminder-test" class="reminder-test">テスト通知を表示する</button><div id="reminder-result" class="reminder-result" role="status" aria-live="polite">テストはまだ行っていません。</div>
 <details class="reminder-times" id="reminder-times">
   <summary>♡ 回数・時間を選ぶ <span id="reminder-times-summary">朝7:00＋昼12:00</span></summary>
@@ -306,7 +474,7 @@ body>.tabs .ko{white-space:nowrap}
   <div id="push-setup-status" class="reminder-result" role="status" aria-live="polite"></div>
 </div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名<input id="site-name" maxlength="60" required placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><div class="two"><label class="field">緯度<input id="site-lat" type="number" min="-90" max="90" step="any" required placeholder="40.6"></label><label class="field">経度<input id="site-lon" type="number" min="-180" max="180" step="any" required placeholder="141.2"></label></div><button type="button" class="btn" id="fill-gps">⌖ GPSを使って入力</button><button type="submit" class="btn primary full">この現場を保存 ♡</button></form></div><div class="notice">現場名・座標・メモはこの端末内に保存。別の端末には自動同期されません。会社の機密情報は入力しないでね。</div></section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.14 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.15 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <footer class="tabs" role="navigation" aria-label="ページ切り替え">
 <button class="tab active" data-tab="home" type="button" aria-label="ホーム"><span class="tab-label">ホーム</span><span class="ko" lang="ko">홈</span></button>
@@ -317,6 +485,29 @@ body>.tabs .ko{white-space:nowrap}
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
+
+const skinStorageKey='genbanosora.skin.v1';
+const skinNames={pink:'ももラベンダー',sky:'空色ソーダ',mint:'ミントクリーム',latte:'ミルクティー'};
+function applySkin(skin,saveChoice=false){
+  const next=Object.prototype.hasOwnProperty.call(skinNames,skin)?skin:'pink';
+  document.documentElement.dataset.skin=next;
+  document.querySelectorAll('[data-skin-choice]').forEach(b=>{
+    b.setAttribute('aria-pressed',String(b.dataset.skinChoice===next));
+  });
+  $('skin-current').textContent=skinNames[next];
+  if(saveChoice){
+    try{localStorage.setItem(skinStorageKey,next);
+      $('skin-result').textContent='♡ '+skinNames[next]+' に着せ替えしたよ！この端末に保存したよ。';
+    }catch(e){$('skin-result').textContent='色は変更したよ。保存はできなかったので次回は元の色に戻るかも。';}
+  }
+}
+let firstSkin='pink';
+try{firstSkin=localStorage.getItem(skinStorageKey)||'pink';}catch(e){}
+applySkin(firstSkin);
+document.querySelectorAll('[data-skin-choice]').forEach(b=>{
+  b.addEventListener('click',()=>applySkin(b.dataset.skinChoice,true));
+});
+
 const storageKey='genbanosora.v1';
 let saved=[],cache={},selected={kind:'current',name:'現在地'},lastGPS=null,fetchController=null;
 try{const old=JSON.parse(localStorage.getItem(storageKey)||'{}');saved=Array.isArray(old.sites)?old.sites.filter(s=>s&&Number.isFinite(s.lat)&&Number.isFinite(s.lon)):[];cache=old.cache&&typeof old.cache==='object'?old.cache:{};if(old.lastGPS&&Number.isFinite(old.lastGPS.lat)&&Number.isFinite(old.lastGPS.lon))lastGPS=old.lastGPS;}catch(e){}
