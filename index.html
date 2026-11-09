@@ -71,11 +71,12 @@ body{background:linear-gradient(145deg,#efe4fa 0%,#fae2ef 42%,#fff9fc 100%)}
 .wx-record{border:1px solid #efdae8;border-radius:20px;background:rgba(255,255,255,.86);padding:17px;margin-bottom:16px;box-shadow:0 7px 22px rgba(156,114,151,.06)}
 .wx-record .wx-heading{font-size:16px;font-weight:750;color:#866477;margin:0 0 7px}
 .wx-record .wx-description{font-size:12px;color:var(--muted);line-height:1.7;margin:0 0 12px}
-.wx-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.wx-option{min-height:79px;border-radius:15px;border:1px solid #f1d9e5;background:linear-gradient(150deg,#fffafb,#f8edf7);display:flex;flex-direction:row;align-items:center;justify-content:center;gap:6px;color:#886378;font-size:14px;font-weight:750;cursor:pointer}
+.wx-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.wx-option{min-height:79px;border-radius:15px;border:1px solid #f1d9e5;background:linear-gradient(150deg,#fffafb,#f8edf7);display:flex;flex-direction:row;align-items:center;justify-content:center;gap:4px;color:#886378;font-size:13px;font-weight:750;cursor:pointer}
 .wx-option:active{transform:scale(.97)}
-.wx-option .wx-emoji{font-size:25px}
+.wx-option .wx-emoji{font-size:22px}
 .wx-option:focus-visible{outline:3px solid #bc86c5;outline-offset:2px}
+@media(max-width:350px){.wx-options{grid-template-columns:repeat(2,minmax(0,1fr))}.wx-option{min-height:69px}}
 .wx-record .wx-last{font-size:11px;color:#8e7188;margin-top:11px;line-height:1.6}
 .wx-record .wx-private{font-size:10px;color:#9e8699;margin-top:6px;line-height:1.6}
 .wx-history{display:grid;gap:7px;margin-top:11px}
@@ -88,7 +89,7 @@ body{background:linear-gradient(145deg,#efe4fa 0%,#fae2ef 42%,#fff9fc 100%)}
 <section id="home" class="page active">
 <div class="locrow"><div><div class="location-name"><span class="pin">⌖</span><span id="selected-location">現在地</span></div><div id="geo-status" class="sub" style="margin:4px 0 0 22px">位置情報の取得待ち</div></div><button class="btn" id="choose-location">地点切替⌄</button></div>
 <div class="site-fast-wrap"><button id="quick-save-home" class="site-fast" type="button">♡ 今いる場所を現場に登録 <span class="ko" lang="ko">현장 저장</span></button></div>
-<div class="wx-record" id="weather-record" aria-label="現地の天気のワンタッチ記録"><div class="wx-heading">♡ 現地の天気を記録 <span class="ko" lang="ko">오늘의 현장 날씨</span></div><p class="wx-description">いま見えている空は？ ひとつ押すだけで日時と一緒に保存するよ ☁️</p><div class="wx-options" role="group" aria-label="現場の天気を記録"><button class="wx-option" type="button" data-wx="sun" aria-label="晴れ・맑음"><span class="wx-emoji">☀️</span><span lang="ko">맑음</span></button><button class="wx-option" type="button" data-wx="cloud" aria-label="曇り・흐림"><span class="wx-emoji">☁️</span><span lang="ko">흐림</span></button><button class="wx-option" type="button" data-wx="rain" aria-label="雨・비"><span class="wx-emoji">🌧️</span><span lang="ko">비</span></button></div><div class="wx-last" id="wx-last" role="status" aria-live="polite">まだ記録がありません</div><div class="wx-private">記録はこの端末だけに保存。外部には送信しません。風速の実測値としては扱いません。毎日の通知は準備中です。</div></div>
+<div class="wx-record" id="weather-record" aria-label="現地の天気のワンタッチ記録"><div class="wx-heading">♡ 現地の天気を記録 <span class="ko" lang="ko">오늘의 현장 날씨</span></div><p class="wx-description">いま見えている空は？ ひとつ押すだけで日時と一緒に保存するよ ☁️</p><div class="wx-options" role="group" aria-label="現場の天気を記録"><button class="wx-option" type="button" data-wx="sun" aria-label="晴れ・맑음"><span class="wx-emoji">☀️</span><span lang="ko">맑음</span></button><button class="wx-option" type="button" data-wx="cloud" aria-label="曇り・흐림"><span class="wx-emoji">☁️</span><span lang="ko">흐림</span></button><button class="wx-option" type="button" data-wx="rain" aria-label="雨・비"><span class="wx-emoji">🌧️</span><span lang="ko">비</span></button><button class="wx-option" type="button" data-wx="snow" aria-label="雪・눈"><span class="wx-emoji">❄️</span><span lang="ko">눈</span></button></div><div class="wx-last" id="wx-last" role="status" aria-live="polite">まだ記録がありません</div><div class="wx-private">記録はこの端末だけに保存。外部には送信しません。風速の実測値としては扱いません。毎日の通知は準備中です。</div></div>
 <div class="section hero"><div class="card-top"><div class="section-kicker">今日の天気 · 오늘 날씨</div><span id="weather-state" class="source">取得前</span></div><div class="hero-main"><div><div id="temperature" class="big-temp">--°</div><div id="description" class="weather-name">現在地の天気を読み込みます</div><div id="apparent" class="tagline">体感温度 --°C</div></div><div id="weather-icon" class="emoji">☁️</div></div><div class="details"><div class="metric"><div class="metric-label">降水確率</div><div id="rain-prob" class="metric-value">--%</div></div><div class="metric"><div class="metric-label">風速</div><div id="wind" class="metric-value">-- m/s</div></div><div class="metric"><div class="metric-label">最大瞬間風速</div><div id="gust" class="metric-value">-- m/s</div></div></div></div>
 <div class="rain-outlook section" aria-label="これから約2時間の降水確率">
 <div class="card-top"><span class="card-title">このあとの雨 ☂</span><span class="tiny">곧 비가 올까?</span></div>
@@ -122,8 +123,8 @@ const save=()=>{try{localStorage.setItem(storageKey,JSON.stringify({sites:saved,
 
 const wxKey='genbanosora.wxlogs.v1';
 let wxLogs=[];
-try {const v=JSON.parse(localStorage.getItem(wxKey)||'[]');if(Array.isArray(v))wxLogs=v.filter(x=>x&&['sun','cloud','rain'].includes(x.weather)&&typeof x.at==='string').slice(0,500);}catch(e){}
-const wxLabels={sun:'☀️ 晴れ',cloud:'☁️ 曇り',rain:'🌧️ 雨'};
+try {const v=JSON.parse(localStorage.getItem(wxKey)||'[]');if(Array.isArray(v))wxLogs=v.filter(x=>x&&['sun','cloud','rain','snow'].includes(x.weather)&&typeof x.at==='string').slice(0,500);}catch(e){}
+const wxLabels={sun:'☀️ 晴れ',cloud:'☁️ 曇り',rain:'🌧️ 雨',snow:'❄️ 雪'};
 function renderWxLogs(){
   const last=$('wx-last');
   if(last)last.textContent=wxLogs.length?'前回：'+wxLabels[wxLogs[0].weather]+' · '+datefmt(wxLogs[0].at)+'（累計'+wxLogs.length+'件）':'まだ記録がありません';
@@ -196,6 +197,16 @@ $('site-form').addEventListener('submit',e=>{e.preventDefault();const name=$('si
 $('quick-save-home').onclick=quickSaveCurrent;$('quick-save-site').onclick=quickSaveCurrent;
 $('fill-gps').onclick=()=>gps(p=>{$('site-lat').value=p.lat.toFixed(6);$('site-lon').value=p.lon.toFixed(6);toast('GPSの座標を入力しました')},toast);
 $('choose-location').onclick=()=>showTab('sites');$('use-current').onclick=()=>selectLoc({kind:'current',name:'現在地'});$('refresh').onclick=()=>{const p=getCoords();p?fetchWeather(p.lat,p.lon):locate()};$('gps').onclick=()=>selectLoc({kind:'current',name:'現在地'});document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
+function focusWxRecordFromNotification(){
+  if(location.hash!=='#weather-record')return;
+  showTab('home');
+  requestAnimationFrame(()=>{
+    const record=$('weather-record');
+    if(record)record.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+}
+window.addEventListener('hashchange',focusWxRecordFromNotification);
+if(location.hash==='#weather-record')setTimeout(focusWxRecordFromNotification,150);
 window.addEventListener('online',()=>{setConnection();const p=getCoords();if(p)fetchWeather(p.lat,p.lon)});window.addEventListener('offline',()=>{setConnection();const p=getCoords();if(p&&cache[keyFor(p.lat,p.lon)])renderWeather(cache[keyFor(p.lat,p.lon)].data,cache[keyFor(p.lat,p.lon)].fetched,true)});setConnection();renderSites();renderWxLogs();updateWindyLinks();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true);}locate();
