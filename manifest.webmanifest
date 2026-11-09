@@ -1,6 +1,6 @@
 {
   "id": "./",
-  "name": "現場の空 — 하늘",
+  "name": "하늘",
   "short_name": "하늘",
   "description": "山仕事のための、やさしい天気チェック。現在地と保存した現場の天気予報を確認できます。",
   "lang": "ja",
@@ -10,8 +10,23 @@
   "background_color": "#f7e6f5",
   "theme_color": "#f9e9f6",
   "icons": [
-    {"src":"./icon-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
-    {"src":"./icon-512.png","sizes":"512x512","type":"image/png","purpose":"any"},
-    {"src":"./icon-512.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
