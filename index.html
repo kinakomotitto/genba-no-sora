@@ -428,6 +428,34 @@ html[data-skin]:not([data-skin="pink"]) input:focus-visible{
 .settings-screen .research-panel{margin-top:0}
 .settings-privacy{font-size:11px;line-height:1.75;color:var(--muted);margin:16px 2px 0}
 
+
+/* v0.17: Map-based site picker + Apple/Google launch links */
+.site-location-label{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12px;font-weight:750;color:var(--ink);margin-top:4px}
+.site-location-label span{color:var(--muted);font-size:10px;font-weight:500}
+.site-location-choices{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.site-location-choices button{min-width:0;min-height:46px;border-color:var(--line);background:var(--pale);color:var(--pinkdark);font-size:12px}
+.site-choice-status{margin:0;padding:9px 12px;background:rgba(255,255,255,.7);border:1px dashed var(--line);border-radius:11px;color:var(--muted);font-size:11px;line-height:1.6}
+.site-choice-status.selected{background:var(--pale);border-style:solid;color:var(--pinkdark)}
+.site-compact-actions .site-compact-weather{grid-column:1/-1}
+.site-compact-actions .site-compact-map{font-size:11px;min-height:39px;white-space:nowrap}
+body.site-map-open{overflow:hidden}
+.site-map-overlay{position:fixed;inset:0;z-index:20020;display:flex;align-items:center;justify-content:center;padding:calc(15px + env(safe-area-inset-top,0px)) 12px calc(12px + env(safe-area-inset-bottom,0px));background:rgba(41,45,64,.46);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px)}
+.site-map-sheet{width:min(100%,480px);max-height:94dvh;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);color:var(--ink);border-radius:21px;padding:15px;box-shadow:0 16px 50px rgba(35,36,50,.28);border:1px solid var(--line)}
+.site-map-header{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.site-map-header h2{margin:0;color:var(--pinkdark);font-size:16px;font-weight:750}
+.site-map-header p{margin:5px 0 10px;color:var(--muted);font-size:11px}
+.site-map-header button{min-width:36px;height:36px;border:1px solid var(--line);border-radius:10px;background:var(--pale);color:var(--ink);font-size:22px}
+.site-map-canvas{width:100%;height:min(44dvh,390px);min-height:240px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--pale);z-index:0}
+.site-map-feedback{color:var(--pinkdark);font-size:11px;line-height:1.6;min-height:20px;margin:9px 2px}
+.site-map-gps{border:1px solid var(--line);background:var(--pale);color:var(--pinkdark);font-size:12px;font-weight:700;border-radius:11px;padding:10px;width:100%;min-height:42px}
+.site-map-externals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:9px 0}
+.site-map-link{min-width:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.75);font-size:11px;min-height:40px;color:var(--pinkdark);text-decoration:none;white-space:nowrap}
+.site-map-privacy{font-size:10px;line-height:1.5;color:var(--muted);margin:7px 2px 11px}
+.site-map-confirm{width:100%;min-height:48px;border-radius:13px;border:1px solid var(--line);background:var(--pink);color:white;font-weight:750;font-size:14px}
+.site-map-confirm:disabled{opacity:.55}
+.site-map-canvas .leaflet-control-attribution{font-size:9px}
+@media(max-width:345px){.site-location-choices{grid-template-columns:1fr}.site-map-link{font-size:10px}}
+
 </style>
 </head>
 <body>
@@ -452,7 +480,14 @@ html[data-skin]:not([data-skin="pink"]) input:focus-visible{
 <div class="toolbar"><button class="btn primary" id="refresh">↻ 天気を更新</button><button class="btn" id="gps">⌖ 現在地を取得</button></div>
 </section>
 <section id="radar" class="page"><h1 class="page-title">雨雲レーダー ☁</h1><p class="page-sub">비구름 레이더 · 情報源を切り替えて確認</p><div class="radar-block"><div style="font-size:43px">🌧️</div><strong>雨雲の動きをチェック</strong><p>初期版では各サービスの公式レーダーに移動します。<br>アプリ内アニメーションは次の開発段階で追加予定。</p></div><div class="radar-links"><a href="https://www.jma.go.jp/bosai/rain/" target="_blank" rel="noopener noreferrer">気象庁 · 雨雲の動き <span>↗</span></a><a href="https://www.windy.com/" data-windy-link="true" target="_blank" rel="noopener noreferrer">Windy.com · 選択地点 <span>↗</span></a><a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank" rel="noopener noreferrer">Yahoo!天気 · 雨雲レーダー <span>↗</span></a></div><div class="notice">雷や警報の確認も、気象庁の公式情報を優先してね。現時点では雨雲の接近通知は未搭載です。</div></section>
-<section id="sites" class="page"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名<input id="site-name" maxlength="60" required placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><div class="two"><label class="field">緯度<input id="site-lat" type="number" min="-90" max="90" step="any" required placeholder="40.6"></label><label class="field">経度<input id="site-lon" type="number" min="-180" max="180" step="any" required placeholder="141.2"></label></div><button type="button" class="btn" id="fill-gps">⌖ GPSを使って入力</button><button type="submit" class="btn primary full">この現場を保存 ♡</button></form></div><div class="notice">現場名・座標・メモはこの端末内に保存。別の端末には自動同期されません。会社の機密情報は入力しないでね。</div><div class="settings-entry">
+<section id="sites" class="page"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名<input id="site-name" maxlength="60" required placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><input type="hidden" id="site-lat"><input type="hidden" id="site-lon">
+<div class="site-location-label">📍 場所を決める <span>どちらかを選んでね</span></div>
+<div class="site-location-choices">
+  <button type="button" class="btn" id="fill-gps">⌖ 現在地を使う</button>
+  <button type="button" class="btn" id="site-pick-map">🗺️ 地図から選ぶ</button>
+</div>
+<p class="site-choice-status" id="site-choice-status" role="status" aria-live="polite">場所はまだ選択されていません</p>
+<button type="submit" class="btn primary full">この現場を保存 ♡</button></form></div><div class="notice">現場名・座標・メモはこの端末内に保存。別の端末には自動同期されません。会社の機密情報は入力しないでね。</div><div class="settings-entry">
   <button type="button" class="settings-entry-button" id="settings-open" aria-controls="settings">
     <span class="settings-entry-icon" aria-hidden="true">⚙️</span>
     <span class="settings-entry-copy"><strong>設定・カスタマイズ ♡</strong><small>通知・スキン・予報データ</small></span>
@@ -512,8 +547,25 @@ html[data-skin]:not([data-skin="pink"]) input:focus-visible{
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.16 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.17 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
+<div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
+  <div class="site-map-sheet">
+    <div class="site-map-header">
+      <div><h2 id="site-map-title">🗺️ 地図から現場を選ぶ ♡</h2><p>地図をタップして、ピンを置いてね</p></div>
+      <button type="button" id="site-map-close" aria-label="地図を閉じる">×</button>
+    </div>
+    <div class="site-map-canvas" id="site-map-canvas" aria-label="現場位置を選ぶ地図"></div>
+    <p class="site-map-feedback" id="site-map-feedback" aria-live="polite">地図を準備中…</p>
+    <button type="button" class="site-map-gps" id="site-map-gps">⌖ 現在地を地図に表示</button>
+    <div class="site-map-externals">
+      <a id="site-map-google" href="#" target="_blank" rel="noopener noreferrer" class="site-map-link hidden">📍 Googleで位置を確認 ↗</a>
+      <a id="site-map-apple" href="#" target="_blank" rel="noopener noreferrer" class="site-map-link hidden">🍎 Appleで位置を確認 ↗</a>
+    </div>
+    <p class="site-map-privacy">地図の表示にはOpenStreetMapの地図データを使うよ。GoogleとAppleは選んだ場所の確認用で、そこで置いたピンはこの画面に自動反映されないよ。外部マップを開くと選択位置がそのサービスへ送られるよ。</p>
+    <button type="button" class="site-map-confirm" id="site-map-confirm" disabled>♡ この場所にする</button>
+  </div>
+</div>
 <footer class="tabs" role="navigation" aria-label="ページ切り替え">
 <button class="tab active" data-tab="home" type="button" aria-label="ホーム"><span class="tab-label">ホーム</span><span class="ko" lang="ko">홈</span></button>
 <button class="tab" data-tab="radar" type="button" aria-label="レーダー"><span class="tab-label">レーダー</span><span class="ko" lang="ko">레이더</span></button>
@@ -935,6 +987,12 @@ function googleMapsLink(lat,lon){
   return 'https://www.google.com/maps/search/?api=1&query='+
     encodeURIComponent(Number(lat).toFixed(6)+','+Number(lon).toFixed(6));
 }
+function appleMapsLink(lat,lon){
+  if(!Number.isFinite(Number(lat))||!Number.isFinite(Number(lon)))return null;
+  if(Number(lat)<-90||Number(lat)>90||Number(lon)<-180||Number(lon)>180)return null;
+  const coords=Number(lat).toFixed(6)+','+Number(lon).toFixed(6);
+  return 'https://maps.apple.com/?ll='+encodeURIComponent(coords)+'&q='+encodeURIComponent(coords);
+}
 function renderSites(){
   const list=$('site-list');
   list.replaceChildren();
@@ -1033,13 +1091,154 @@ function renderSites(){
       map.title='Googleマップに保存した現場のGPS座標を送信して開く';
       actions.append(map);
     }
+    const appleUrl=appleMapsLink(s.lat,s.lon);
+    if(appleUrl){
+      const apple=document.createElement('a');
+      apple.className='site-compact-action site-compact-map';
+      apple.href=appleUrl;
+      apple.target='_blank';
+      apple.rel='noopener noreferrer';
+      apple.textContent='🍎 Appleマップ';
+      apple.setAttribute('aria-label',s.name+'をAppleマップで開く');
+      apple.title='Appleマップに保存した現場の座標を送信して開く';
+      actions.append(apple);
+    }
     card.append(actions);
     list.append(card);
   }
 }
-$('site-form').addEventListener('submit',e=>{e.preventDefault();const name=$('site-name').value.trim(),lat=Number($('site-lat').value),lon=Number($('site-lon').value),note=$('site-note').value.trim();if(!name||!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180){toast('現場名と正しい緯度・経度を入力してね');return}const site={id:Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),name,lat,lon,note};saved.push(site);save();renderSites();$('site-form').reset();toast('現場を保存しました ♡')});
+$('site-form').addEventListener('submit',e=>{
+  e.preventDefault();
+  const name=$('site-name').value.trim(),rawLat=$('site-lat').value,rawLon=$('site-lon').value;
+  const lat=Number(rawLat),lon=Number(rawLon),note=$('site-note').value.trim();
+  if(!name){toast('現場名を入力してね');return;}
+  if(!rawLat||!rawLon||!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180){
+    toast('「現在地を使う」か「地図から選ぶ」で場所を決めてね');return;
+  }
+  const site={id:Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,7),name,lat,lon,note};
+  saved.push(site);save();renderSites();$('site-form').reset();
+  $('site-choice-status').classList.remove('selected');
+  $('site-choice-status').textContent='場所はまだ選択されていません';
+  toast('現場を保存しました ♡');
+});
 $('quick-save-home').onclick=quickSaveCurrent;$('quick-save-site').onclick=quickSaveCurrent;
-$('fill-gps').onclick=()=>gps(p=>{$('site-lat').value=p.lat.toFixed(6);$('site-lon').value=p.lon.toFixed(6);toast('GPSの座標を入力しました')},toast);
+$('fill-gps').onclick=()=>gps(p=>{
+  chooseSiteCoords(p.lat,p.lon,'gps');toast('現在地を設定したよ ♡');
+},toast,{fresh:true});
+
+function chooseSiteCoords(lat,lon,source){
+  if(!Number.isFinite(lat)||!Number.isFinite(lon)||lat<-90||lat>90||lon<-180||lon>180)throw Error('Invalid coords');
+  $('site-lat').value=lat.toFixed(6);
+  $('site-lon').value=lon.toFixed(6);
+  const status=$('site-choice-status');
+  status.textContent='✓ '+(source==='gps'?'現在地を設定したよ':'地図で選んだ場所を設定したよ')+' ♡';
+  status.classList.add('selected');
+}
+let pickerMap=null,pickerPin=null,pickerCoords=null,leafletLoading=null;
+let pickerWasOpen=false,pickerPrevFocus=null;
+function loadLeaflet(){
+  if(window.L&&typeof window.L.map==='function')return Promise.resolve();
+  if(leafletLoading)return leafletLoading;
+  leafletLoading=new Promise((resolve,reject)=>{
+    if(!document.querySelector('link[data-leaflet]')){
+      const style=document.createElement('link');
+      style.rel='stylesheet';
+      style.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      style.dataset.leaflet='1';
+      document.head.append(style);
+    }
+    const script=document.createElement('script');
+    script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    script.async=true;
+    script.onload=()=>window.L&&typeof window.L.map==='function'?resolve():reject(Error('Map library unavailable'));
+    script.onerror=()=>reject(Error('Map library network error'));
+    document.head.append(script);
+  }).catch(err=>{leafletLoading=null;throw err;});
+  return leafletLoading;
+}
+function setPickerCoords(lat,lon,moveView=false){
+  if(!pickerMap||!Number.isFinite(lat)||!Number.isFinite(lon))return;
+  pickerCoords={lat,lon};
+  if(pickerPin){pickerPin.setLatLng([lat,lon]);}
+  else{
+    pickerPin=window.L.circleMarker([lat,lon],{radius:10,color:'#fff',weight:3,fillColor:'#bf80ac',fillOpacity:.96})
+      .addTo(pickerMap);
+  }
+  if(moveView)pickerMap.setView([lat,lon],Math.max(pickerMap.getZoom(),14));
+  $('site-map-confirm').disabled=false;
+  $('site-map-feedback').textContent='✓ ピンを選択したよ！「この場所にする」で確定してね。';
+  const google=googleMapsLink(lat,lon),apple=appleMapsLink(lat,lon);
+  for(const [id,url] of [['site-map-google',google],['site-map-apple',apple]]){
+    const link=$(id);
+    if(url){link.href=url;link.classList.remove('hidden');}
+    else{link.classList.add('hidden');}
+  }
+}
+function closeSiteMap(){
+  pickerWasOpen=false;
+  $('site-map-overlay').classList.add('hidden');
+  document.body.classList.remove('site-map-open');
+  pickerPrevFocus?.focus();
+}
+async function openSiteMap(){
+  pickerPrevFocus=document.activeElement;
+  pickerWasOpen=true;
+  pickerCoords=null;
+  $('site-map-confirm').disabled=true;
+  $('site-map-google').classList.add('hidden');
+  $('site-map-apple').classList.add('hidden');
+  $('site-map-feedback').textContent='地図を読み込んでいるよ…';
+  $('site-map-overlay').classList.remove('hidden');
+  document.body.classList.add('site-map-open');
+  $('site-map-close').focus();
+  try{
+    await loadLeaflet();
+    if(!pickerWasOpen)return;
+    const latText=$('site-lat').value,lonText=$('site-lon').value;
+    const oldCoords=latText&&lonText?{lat:Number(latText),lon:Number(lonText)}:null;
+    const first=(oldCoords&&Number.isFinite(oldCoords.lat)&&Number.isFinite(oldCoords.lon)?oldCoords:
+                 (lastGPS||saved[0]||{lat:37.7,lon:139.2}));
+    const defaultZoom=oldCoords||lastGPS||saved.length?13:6;
+    if(!pickerMap){
+      pickerMap=window.L.map('site-map-canvas',{zoomControl:true,attributionControl:true})
+        .setView([first.lat,first.lon],defaultZoom);
+      window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{
+        minZoom:3,maxZoom:19,
+        attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>'
+      }).addTo(pickerMap);
+      pickerMap.on('click',event=>setPickerCoords(event.latlng.lat,event.latlng.lng));
+    }else{
+      pickerMap.setView([first.lat,first.lon],defaultZoom);
+    }
+    if(pickerPin){pickerMap.removeLayer(pickerPin);pickerPin=null;}
+    setTimeout(()=>pickerMap?.invalidateSize(),80);
+    $('site-map-feedback').textContent='地図の好きな場所をタップしてピンを置いてね。';
+  }catch(e){
+    $('site-map-feedback').textContent='地図を読み込めなかったよ。通信を確認するか「現在地を使う」で設定してね。';
+  }
+}
+$('site-pick-map').addEventListener('click',openSiteMap);
+$('site-map-close').addEventListener('click',closeSiteMap);
+$('site-map-overlay').addEventListener('click',e=>{
+  if(e.target===$('site-map-overlay'))closeSiteMap();
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&pickerWasOpen)closeSiteMap();
+});
+$('site-map-gps').addEventListener('click',()=>{
+  $('site-map-feedback').textContent='現在地を確認中…';
+  gps(p=>{
+    if(!pickerWasOpen)return;
+    if(!pickerMap){$('site-map-feedback').textContent='地図を読み込めなかったよ。閉じて「現在地を使う」を押してね。';return;}
+    setPickerCoords(p.lat,p.lon,true);
+  },msg=>{$('site-map-feedback').textContent=msg;},{fresh:true});
+});
+$('site-map-confirm').addEventListener('click',()=>{
+  if(!pickerCoords)return;
+  chooseSiteCoords(pickerCoords.lat,pickerCoords.lon,'map');
+  closeSiteMap();
+});
+
 $('choose-location').onclick=()=>showTab('sites');$('use-current').onclick=()=>selectLoc({kind:'current',name:'現在地'});$('refresh').onclick=()=>{const p=getCoords();p?fetchWeather(p.lat,p.lon):locate()};$('gps').onclick=()=>selectLoc({kind:'current',name:'現在地'});$('settings-open').addEventListener('click',()=>showTab('settings'));
 $('settings-back').addEventListener('click',()=>showTab('sites'));
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
