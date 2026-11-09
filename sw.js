@@ -1,5 +1,5 @@
 /* 現場の空 v0.8: ホーム画面用のアプリ本体をオフライン保存 */
-const CACHE = 'genba-no-sora-shell-v0.13';
+const CACHE = 'genba-no-sora-shell-v0.13.1';
 const PREFIX = 'genba-no-sora-shell-';
 const SHELL = [
   './', './index.html', './manifest.webmanifest', './icon.svg',
@@ -35,6 +35,12 @@ self.addEventListener('fetch', event => {
   }
 
   if (request.mode === 'navigate') {
+    // Only cache the actual app homepage as the offline app shell.
+    // Independent setup pages must never replace the app's cached index.html.
+    const scopePath = new URL(self.registration.scope).pathname;
+    const isAppHome = (url.pathname === scopePath ||
+      url.pathname === scopePath + 'index.html');
+    if (!isAppHome) return;
     event.respondWith(
       fetch(request).then(response => {
         if (response.ok) {
