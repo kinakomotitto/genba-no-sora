@@ -5,9 +5,11 @@
   "main": "src/worker.js",
   "compatibility_date": "2026-11-09",
   "triggers": {
-    // UTC 03:00 = Japan standard time 12:00 (JST has no DST).
-    // Cloudflare schedules are best-effort; the minute may be delayed.
-    "crons": ["0 3 * * *"]
+    // Enable ONLY after D1 and VAPID secrets are configured and
+    // confirmed by a successful opt-in iPhone push test.
+    // Every 15 minutes in UTC; the Worker matches per-user chosen Japan times.
+    // "crons": ["*/15 * * * *"]
+    "crons": []
   },
   "d1_databases": [
     {
