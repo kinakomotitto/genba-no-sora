@@ -1,0 +1,10 @@
+# Cloudflare Workers Builds — deployment bootstrap.
+# The public HTTP API remains disabled until Cloudflare D1 and the four
+# runtime secrets have been configured in the Cloudflare dashboard.
+# No scheduler is enabled at bootstrap; add the noon cron after verifying
+# an actual subscriber and sending an authorized test notification.
+
+name = "genba-no-sora-noon-push"
+main = "src/worker.js"
+compatibility_date = "2026-11-09"
+workers_dev = true
