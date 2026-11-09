@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#e8dce9">
+  <title>♡ 하늘 · ロック画面ウィジェット</title>
+  <style>
+    :root{color-scheme:light;--ink:#655b70;--accent:#9b6f93;--line:rgba(255,255,255,.7)}
+    *{box-sizing:border-box}
+    html{background:#e8deed}
+    body{margin:0;color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;background:radial-gradient(ellipse at 15% 16%,#f7dbe8 0,transparent 52%),radial-gradient(ellipse at 95% 37%,#c9dcff 0,transparent 48%),linear-gradient(150deg,#eddfe9,#f7e9f1 55%,#e4e8fa);min-height:100vh;padding:18px 17px max(28px,env(safe-area-inset-bottom));}
+    main{max-width:620px;margin:0 auto}
+    .back{display:inline-block;color:#91718e;font-size:12px;text-decoration:none;padding:9px 2px}
+    header{text-align:center;margin:22px 0 19px}
+    .eyebrow{color:#af89a1;font-weight:700;font-size:11px;letter-spacing:.11em}
+    h1{color:#79657e;font-size:26px;margin:8px 0 6px;letter-spacing:.02em}
+    .lead{color:#9b8299;font-size:12px;line-height:1.8;margin:0}
+    .preview-wrap{padding:24px 18px 30px;border:1px solid rgba(255,255,255,.7);border-radius:26px;background:radial-gradient(ellipse at 73% 28%,rgba(181,204,250,.88),transparent 56%),radial-gradient(ellipse at 20% 80%,rgba(250,178,194,.57),transparent 57%),linear-gradient(135deg,#a5a6c8 0%,#c5b4d6 48%,#e7bacb 100%);box-shadow:0 12px 45px #998bba23}
+    .demo-clock{text-align:center;font-size:58px;line-height:1.1;font-weight:250;color:white;text-shadow:0 2px 14px #6b587541;letter-spacing:-.05em}
+    .demo-date{text-align:center;color:white;font-size:14px;margin:8px 0 20px}
+    .glass{color:white;border-radius:24px;background:linear-gradient(130deg,rgba(255,255,255,.29),rgba(255,255,255,.10));-webkit-backdrop-filter:blur(19px);backdrop-filter:blur(19px);border:1px solid rgba(255,255,255,.55);box-shadow:inset 0 1px rgba(255,255,255,.25),0 12px 36px #76688d30;padding:17px 18px}
+    .glass-head{font-size:13px;font-weight:700;color:#fff;display:flex;justify-content:space-between;align-items:center}
+    .glass-main{display:flex;align-items:center;gap:14px;margin:9px 0 12px}
+    .glass-icon{font-size:39px;filter:drop-shadow(0 4px 4px #866f9a33)}
+    .glass-degree{font-size:39px;font-weight:650;line-height:1}
+    .glass-desc{font-size:12px;color:#fff;line-height:1.6;margin-left:auto}
+    .hours{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-top:1px solid rgba(255,255,255,.45);padding-top:12px}
+    .hour{text-align:center;border-right:1px solid rgba(255,255,255,.20);font-size:12px;line-height:1.55}
+    .hour:last-child{border-right:0}
+    .hour span{display:block;font-size:19px}
+    .actual{background:rgba(255,255,255,.44);padding:16px;margin:16px 0 0;border-radius:19px;border:1px solid rgba(255,255,255,.78)}
+    .actual-heading{font-size:12px;margin:0 0 11px;font-weight:700}
+    .lock-sample{max-width:195px;border-radius:13px;background:rgba(149,136,166,.28);padding:9px 10px;color:#766f7f;font-size:11px}
+    .lock-sample b{display:block;font-size:17px;margin:2px 0}
+    .lock-hour{display:flex;gap:6px;font-size:10px}
+    .micro{font-size:11px;line-height:1.7;color:#8c7a90;margin:12px 0 0}
+    .steps{margin-top:20px;border-radius:22px;background:rgba(255,255,255,.74);padding:17px 17px 20px;border:1px solid rgba(255,255,255,.9)}
+    h2{font-size:17px;color:#876b82;margin:3px 0 16px}
+    .step{display:flex;gap:12px;margin:15px 0}
+    .num{width:27px;height:27px;flex:none;border-radius:50%;display:grid;place-items:center;color:#fff;background:#be95b4;font-size:12px;font-weight:700}
+    .step p{margin:2px 0 0;font-size:13px;line-height:1.8}
+    .primary,.secondary{display:flex;width:100%;align-items:center;justify-content:center;gap:6px;border-radius:14px;text-decoration:none;font-size:14px;font-weight:700;min-height:47px;border:1px solid rgba(255,255,255,.8)}
+    .primary{background:linear-gradient(100deg,#b98ead,#9d9bcb);color:#fff}
+    .secondary{background:#fbf7fc;color:#8f7393;margin-top:8px}
+    .note{font-size:12px;line-height:1.8;background:#f9f4fa;border:1px solid #eee2ed;color:#957a8e;padding:12px 13px;border-radius:13px;margin-top:14px}
+    details{margin-top:14px;font-size:12px;color:#866f87}
+    summary{padding:9px 0;cursor:pointer}
+    textarea{width:100%;min-height:120px;border:1px solid #e2d2e4;border-radius:12px;background:#fff;color:#655b70;font-size:10px;padding:10px;resize:vertical;line-height:1.45}
+    #copy-result{font-size:12px;min-height:21px;margin:8px 0;color:#87678c}
+    footer{text-align:center;padding:25px 0;color:#a28d9d;font-size:10px}
+  </style>
+</head>
+<body><main>
+  <a class="back" href="../">‹ 現場の空に戻る</a>
+  <header><div class="eyebrow">LOCK SCREEN WIDGET · 위젯</div>
+    <h1>♡ 하늘　ロック画面</h1>
+    <p class="lead">今いる場所の空を、ちらっと見るだけ。<br>気温と、この先3時間の天気を小さく可愛く ☁️</p>
+  </header>
+  <div class="preview-wrap" aria-label="イメージデザイン">
+    <div class="demo-clock">7:08</div>
+    <div class="demo-date">11월 10일 화요일</div>
+    <div class="glass">
+      <div class="glass-head"><span>📍 현재 위치</span><span>♡ 하늘</span></div>
+      <div class="glass-main"><span class="glass-icon">☁️</span><span class="glass-degree">8°</span><span class="glass-desc">흐림<br>강수 30%<br>07:05 업데이트</span></div>
+      <div class="hours">
+        <div class="hour">8시 <span>☁️</span><b>8°</b></div>
+        <div class="hour">9시 <span>⛅</span><b>9°</b></div>
+        <div class="hour">10시 <span>☀️</span><b>10°</b></div>
+      </div>
+    </div>
+  </div>
+  <p class="micro">♡ 上は決定したガラス調デザインのイメージ。数字はサンプルだよ。</p>
+  <section class="actual">
+    <p class="actual-heading">📱 ロック画面に置くと、このくらいコンパクト</p>
+    <div class="lock-sample">
+      ♡ 하늘　📍 현재 위치
+      <b>☁ 8° 흐림</b>
+      <div class="lock-hour"><span>8시 ☁8°</span><span>9시 ⛅9°</span><span>10시 ☀10°</span></div>
+      <small>강수 30% · 07:05</small>
+    </div>
+    <p class="micro">※ ロック画面の背景・文字色・角丸はiOSが制御するため、見た目は壁紙や機種で変わるよ。</p>
+  </section>
+  <section class="steps">
+    <h2>♡ iPhoneへの入れ方</h2>
+    <div class="step"><span class="num">1</span><p><b>Scriptableを入れる</b>（無料のアプリ）。位置情報へのアクセスも許可してね。</p></div>
+    <a class="secondary" href="https://apps.apple.com/jp/app/scriptable/id1405459188" target="_blank" rel="noopener noreferrer">📱 App StoreでScriptableを開く ↗</a>
+    <div class="step"><span class="num">2</span><p><b>下のボタンでコードをコピー。</b> Scriptableの「＋」で新規スクリプトを作り、貼り付けて名前を「하늘」にする。最初に一度実行して位置情報を許可しよう。</p></div>
+    <button type="button" id="copy-button" class="primary">♡ ウィジェットのコードをコピー</button>
+    <p id="copy-result" role="status" aria-live="polite"></p>
+    <div class="step"><span class="num">3</span><p><b>ロック画面を長押し → カスタマイズ → ロック画面 → 時計の下のウィジェット欄 → Scriptable → 長方形。</b> 追加した枠をタップし、スクリプトに「하늘」を指定したら完成！</p></div>
+    <p class="note">📍 保存した現場ではなく、その時の現在地の天気を取得するよ。位置情報の概略座標は天気取得先のOpen-Meteoに送られるけど、現場名やメモは送らないよ。天気・予報の更新頻度はiOS次第で、常時リアルタイムではないよ。仕事の安全判断には公式の警報・現地確認も使ってね。</p>
+    <details><summary>うまくコピーできないとき：コードを直接表示</summary>
+      <textarea id="source" spellcheck="false" readonly aria-label="ウィジェットのソースコード">// 하늘 ♡ · 現在地の空 — Scriptable ロック画面ウィジェット v1.1
+// 「長方形」のロック画面ウィジェットで現在の天気とこの先3時間を表示。
+// ホーム画面の小・中ウィジェットなら最大5時間分まで表示。
+// ※ ロック画面の色・背景・形はiOS側が調整するため、完全なガラス調
+//    （自由な背景ぼかしや大きなカード）は再現できません。
+// ※ iOSの判断で更新されます。リアルタイム追跡・毎時の更新保証はありません。
+// ※ 位置はScriptableで現在地を取得。概略座標だけOpen-Meteoへ送ります。
+//    現場の保存地点・メモ・認証情報は参照も送信もしません。
+
+const APP_URL = &quot;https://kinakomotitto.github.io/genba-no-sora/&quot;;
+const family = config.widgetFamily || &quot;accessoryRectangular&quot;;
+const widget = new ListWidget();
+widget.url = APP_URL; // タップするとサイトを開く（iOSによってSafariになる）。
+widget.refreshAfterDate = new Date(Date.now() + 30 * 60 * 1000);
+// この時刻は最短更新の目安。実際の更新間隔はiOSが決定。
+
+const fm = FileManager.local();
+const cacheFile = fm.joinPath(fm.cacheDirectory(), &quot;haneul-lockscreen-weather-v2.json&quot;);
+function getCachedWeather() {
+  try { if (fm.fileExists(cacheFile)) return JSON.parse(fm.readString(cacheFile)); } catch (_) {}
+  return null;
+}
+function storeWeather(data) {
+  try { fm.writeString(cacheFile, JSON.stringify(data)); } catch (_) {}
+}
+function sky(code, day) {
+  if (code === 0) return {mark:day ? &quot;☀&quot; : &quot;☾&quot;,ko:&quot;맑음&quot;};
+  if (code === 1 || code === 2) return {mark:&quot;⛅&quot;,ko:&quot;구름 조금&quot;};
+  if (code === 3) return {mark:&quot;☁&quot;,ko:&quot;흐림&quot;};
+  if (code === 45 || code === 48) return {mark:&quot;☁&quot;,ko:&quot;안개&quot;};
+  if (code &gt;= 51 &amp;&amp; code &lt;= 57) return {mark:&quot;☂&quot;,ko:&quot;이슬비&quot;};
+  if (code &gt;= 61 &amp;&amp; code &lt;= 67) return {mark:&quot;☂&quot;,ko:&quot;비&quot;};
+  if (code &gt;= 71 &amp;&amp; code &lt;= 77) return {mark:&quot;❄&quot;,ko:&quot;눈&quot;};
+  if (code &gt;= 80 &amp;&amp; code &lt;= 82) return {mark:&quot;☂&quot;,ko:&quot;소나기&quot;};
+  if (code &gt;= 85 &amp;&amp; code &lt;= 86) return {mark:&quot;❄&quot;,ko:&quot;눈&quot;};
+  if (code &gt;= 95) return {mark:&quot;⚡&quot;,ko:&quot;천둥&quot;};
+  return {mark:&quot;☁&quot;,ko:&quot;날씨&quot;};
+}
+function currentRain(data) {
+  const times = data.hourly &amp;&amp; data.hourly.time;
+  const probs = data.hourly &amp;&amp; data.hourly.precipitation_probability;
+  const hour = String(data.current.time || &quot;&quot;).slice(0,13);
+  if (!Array.isArray(times)||!Array.isArray(probs)) return null;
+  const i = times.findIndex(t=&gt;String(t).slice(0,13)===hour);
+  const value = i&gt;=0?probs[i]:null;
+  return Number.isFinite(value)?Math.round(value):null;
+}
+function futureForecast(data) {
+  const h=data.hourly || {};
+  const now=String(data.current.time || &quot;&quot;).slice(0,13);
+  if (!Array.isArray(h.time)||!Array.isArray(h.weather_code)||!Array.isArray(h.temperature_2m)) return [];
+  const result=[];
+  for (let i=0; i&lt;h.time.length &amp;&amp; result.length&lt;5; i++) {
+    const t=String(h.time[i]);
+    if (t.slice(0,13)&lt;=now) continue; // いまの時刻より後の時間帯だけ
+    const temp=h.temperature_2m[i],code=h.weather_code[i];
+    if (!Number.isFinite(temp)||!Number.isFinite(code)) continue;
+    result.push({hour:Number(t.slice(11,13)),temp:Math.round(temp),mark:sky(code,true).mark});
+  }
+  return result;
+}
+let reading=null,fromCache=false;
+const cached=getCachedWeather();
+try {
+  // 端末の現在地。GPS取得や通信が失敗したときは過去の結果を明示。
+  Location.setAccuracyToHundredMeters();
+  const pos=await Location.current();
+  if(!Number.isFinite(pos.latitude)||!Number.isFinite(pos.longitude))throw Error(&quot;No GPS&quot;);
+  const lat=pos.latitude.toFixed(3),lon=pos.longitude.toFixed(3);
+  const url=&quot;https://api.open-meteo.com/v1/forecast&quot;
+    +&quot;?latitude=&quot;+encodeURIComponent(lat)+&quot;&amp;longitude=&quot;+encodeURIComponent(lon)
+    +&quot;&amp;current=temperature_2m,weather_code,is_day&quot;
+    +&quot;&amp;hourly=temperature_2m,weather_code,precipitation_probability&quot;
+    +&quot;&amp;forecast_days=2&amp;timezone=auto&quot;;
+  const request=new Request(url);
+  request.timeoutInterval=12;
+  const data=await request.loadJSON();
+  const now=data.current||{};
+  if(!Number.isFinite(now.temperature_2m)||!Number.isFinite(now.weather_code))throw Error(&quot;Weather unavailable&quot;);
+  reading={
+    temp:Math.round(now.temperature_2m),code:now.weather_code,
+    isDay:now.is_day===1,rain:currentRain(data),
+    weatherTime:String(now.time||&quot;&quot;).slice(11,16),
+    hours:futureForecast(data),fetchedAt:Date.now()
+  };
+  storeWeather(reading); // 位置情報・座標・現場データは保存しません。
+}catch(_){
+  if(cached&amp;&amp;Number.isFinite(cached.temp)&amp;&amp;Number.isFinite(cached.fetchedAt)
+    &amp;&amp;Date.now()-cached.fetchedAt&lt;2*60*60*1000){
+    reading=cached;
+    fromCache=true;
+  }
+}
+const desc=reading?sky(reading.code,reading.isDay):{mark:&quot;☁&quot;,ko:&quot;확인 필요&quot;};
+const temperature=reading?String(reading.temp)+&quot;°&quot;:&quot;--°&quot;;
+const currentText=desc.mark+&quot; &quot;+temperature+&quot; &quot;+desc.ko;
+const hours=reading&amp;&amp;Array.isArray(reading.hours)?reading.hours.slice(0,5):[];
+const rainText=reading&amp;&amp;reading.rain!==null?&quot;강수 &quot;+reading.rain+&quot;%&quot;:&quot;강수 --&quot;;
+const timeLabel=reading&amp;&amp;reading.weatherTime?reading.weatherTime:&quot;--:--&quot;;
+const updated=fromCache?&quot;前回 &quot;+timeLabel:timeLabel;
+function textLine(parent,content,size,bold){
+  const item=parent.addText(content);
+  item.font=bold?Font.semiboldSystemFont(size):Font.mediumSystemFont(size);
+  item.lineLimit=1;
+  item.minimumScaleFactor=0.68;
+  return item;
+}
+function futureText(f){
+  return String(f.hour)+&quot;시 &quot;+f.mark+String(f.temp)+&quot;°&quot;;
+}
+if(family===&quot;accessoryInline&quot;){
+  widget.setPadding(0,0,0,0);
+  textLine(widget,&quot;♡ 하늘 · &quot;+temperature+&quot; &quot;+desc.mark,13,true);
+}else if(family===&quot;accessoryCircular&quot;){
+  widget.setPadding(0,0,0,0);
+  const head=textLine(widget,&quot;♡ 하늘&quot;,9,false);head.centerAlignText();
+  const center=textLine(widget,temperature,21,true);center.centerAlignText();
+  const foot=textLine(widget,desc.mark,10,false);foot.centerAlignText();
+}else if(family===&quot;accessoryRectangular&quot;){
+  // ロック画面ではiOS標準の透明・壁紙連動の表示を使う。
+  // 自由なガラス背景画像は指定せず、文字の読みやすさを優先。
+  widget.setPadding(0,2,0,2);
+  widget.spacing=0;
+  textLine(widget,&quot;♡ 하늘  📍 현재 위치&quot;+(fromCache?&quot; · 前回&quot;:&quot;&quot;),9,true);
+  textLine(widget,currentText,17,true);
+  widget.addSpacer(1);
+  const line=widget.addStack();
+  line.layoutHorizontally();
+  line.centerAlignContent();
+  const mini=hours.slice(0,3);
+  if(mini.length){
+    mini.forEach((f,i)=&gt;{
+      const item=textLine(line,futureText(f),8.3,true);
+      if(i&lt;mini.length-1)line.addSpacer(4);
+    });
+  }else{
+    textLine(line,&quot;다음 시간 예보 --&quot;,9,false);
+  }
+  widget.addSpacer(1);
+  textLine(widget,rainText+&quot; · &quot;+updated,8.5,false);
+}else{
+  // ホーム画面用：透明感のある淡いピンク・ラベンダーのカード。
+  const gradient=new LinearGradient();
+  gradient.colors=[new Color(&quot;#F7E9F5&quot;),new Color(&quot;#E5ECFD&quot;)];
+  gradient.locations=[0,1];
+  widget.backgroundGradient=gradient;
+  widget.setPadding(14,14,14,14);
+  widget.spacing=4;
+  const title=textLine(widget,&quot;♡ 하늘  📍 현재 위치&quot;+(fromCache?&quot;（前回）&quot;:&quot;&quot;),12,true);
+  title.textColor=new Color(&quot;#8D6989&quot;);
+  const current=textLine(widget,currentText,21,true);
+  current.textColor=new Color(&quot;#655D7C&quot;);
+  const details=textLine(widget,rainText+&quot; · &quot;+updated,11,false);
+  details.textColor=new Color(&quot;#987F96&quot;);
+  widget.addSpacer(5);
+  const num=family===&quot;medium&quot;?5:3;
+  if(family===&quot;medium&quot;){
+    const row=widget.addStack();row.layoutHorizontally();
+    hours.slice(0,num).forEach((f,i)=&gt;{
+      const col=row.addStack();
+      col.layoutVertically();
+      col.setPadding(5,6,5,6);
+      const hour=textLine(col,f.hour+&quot;시&quot;,10,true);hour.textColor=new Color(&quot;#987F96&quot;);
+      const mark=textLine(col,f.mark,16,true);mark.textColor=new Color(&quot;#766581&quot;);
+      const temp=textLine(col,f.temp+&quot;°&quot;,13,true);temp.textColor=new Color(&quot;#766581&quot;);
+      if(i&lt;num-1)row.addSpacer(5);
+    });
+  }else{
+    hours.slice(0,num).forEach(f=&gt;{
+      const line=textLine(widget,futureText(f),11,false);
+      line.textColor=new Color(&quot;#766581&quot;);
+    });
+  }
+}
+Script.setWidget(widget);
+if(!config.runsInWidget)await widget.presentAccessoryRectangular();
+Script.complete();
+</textarea>
+      <p class="micro">長押し → すべてを選択 → コピーでもOK！</p>
+    </details>
+  </section>
+  <footer>하늘 ♡ Made for your little sky · v1.1</footer>
+</main>
+<script>
+(function(){
+  const btn=document.getElementById('copy-button');
+  const source=document.getElementById('source');
+  const status=document.getElementById('copy-result');
+  btn.addEventListener('click',()=>{
+    const text=source.value;
+    const fallback=()=>{
+      source.parentElement.open=true;source.focus();source.select();source.setSelectionRange(0,text.length);
+      let copied=false;
+      try{copied=document.execCommand('copy');}catch(e){}
+      status.textContent=copied?'♡ コピーできたよ！Scriptableに貼り付けてね。':'コードを長押しして「すべてを選択 → コピー」してね。';
+    };
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(()=>{
+        status.textContent='♡ コピーできたよ！Scriptableに貼り付けてね。';
+        btn.textContent='✓ コピーできたよ ♡';
+      }).catch(fallback);
+    }else fallback();
+  });
+})();
+</script>
+</body></html>
