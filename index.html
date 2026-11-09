@@ -243,6 +243,13 @@ body>.tabs .ko{white-space:nowrap}
 .reminder-test{display:block;width:100%;padding:10px;border:1px solid #e9c9dc;border-radius:11px;background:linear-gradient(125deg,#fbe6f2,#f2e6f8);color:#906883;font-size:12px;font-weight:700;min-height:42px}
 .reminder-test:disabled{opacity:.5;cursor:wait}
 .reminder-result{margin-top:7px}
+
+/* v0.12 · backend-enabled-only push subscription controls */
+.push-setup-panel{margin-top:13px;padding:13px 15px;border:1px solid #e8d3e2;border-radius:17px;background:rgba(255,253,255,.88)}
+.push-setup-title{font-size:13px;color:#8a6880;font-weight:750}
+.push-setup-panel p{font-size:10px;color:#a08999;line-height:1.7;margin:6px 0 10px}
+.push-setup-panel .reminder-test{margin-top:7px}
+.push-setup-panel .reminder-test:disabled{opacity:.55;cursor:wait}
 </style>
 </head>
 <body>
@@ -268,9 +275,16 @@ body>.tabs .ko{white-space:nowrap}
 </section>
 <section id="radar" class="page"><h1 class="page-title">雨雲レーダー ☁</h1><p class="page-sub">비구름 레이더 · 情報源を切り替えて確認</p><div class="radar-block"><div style="font-size:43px">🌧️</div><strong>雨雲の動きをチェック</strong><p>初期版では各サービスの公式レーダーに移動します。<br>アプリ内アニメーションは次の開発段階で追加予定。</p></div><div class="radar-links"><a href="https://www.jma.go.jp/bosai/rain/" target="_blank" rel="noopener noreferrer">気象庁 · 雨雲の動き <span>↗</span></a><a href="https://www.windy.com/" data-windy-link="true" target="_blank" rel="noopener noreferrer">Windy.com · 選択地点 <span>↗</span></a><a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank" rel="noopener noreferrer">Yahoo!天気 · 雨雲レーダー <span>↗</span></a></div><div class="notice">雷や警報の確認も、気象庁の公式情報を優先してね。現時点では雨雲の接近通知は未搭載です。</div></section>
 <section id="sites" class="page"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><details class="research-panel" id="research-panel"><summary>🌱 予報の蓄積状況 <small>確認する</small></summary><div class="research-data" id="research-data">公開観測所のデータを確認できるよ。</div><p class="research-note">公開観測所だけの研究データ。個人の現場情報は送信しません。作業の安全判断には使用しないでね。</p></details>
-<div class="reminder-panel"><strong>🔔 天気記録リマインダー</strong><p>毎日12:00の自動通知は準備中。まずiPhoneで通知表示を試そう♡</p><button type="button" id="reminder-test" class="reminder-test">テスト通知を表示する</button><div id="reminder-result" class="reminder-result" role="status" aria-live="polite">テストはまだ行っていません。</div></div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名<input id="site-name" maxlength="60" required placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><div class="two"><label class="field">緯度<input id="site-lat" type="number" min="-90" max="90" step="any" required placeholder="40.6"></label><label class="field">経度<input id="site-lon" type="number" min="-180" max="180" step="any" required placeholder="141.2"></label></div><button type="button" class="btn" id="fill-gps">⌖ GPSを使って入力</button><button type="submit" class="btn primary full">この現場を保存 ♡</button></form></div><div class="notice">現場名・座標・メモはこの端末内に保存。別の端末には自動同期されません。会社の機密情報は入力しないでね。</div></section>
+<div class="reminder-panel"><strong>🔔 天気記録リマインダー</strong><p>毎日12:00の自動通知は準備中。まずiPhoneで通知表示を試そう♡</p><button type="button" id="reminder-test" class="reminder-test">テスト通知を表示する</button><div id="reminder-result" class="reminder-result" role="status" aria-live="polite">テストはまだ行っていません。</div></div><div id="push-setup-panel" class="push-setup-panel hidden" aria-label="毎日12時の通知設定">
+  <div class="push-setup-title">♡ 毎日12時のお知らせを受け取る</div>
+  <p>端末の通知登録情報だけを専用サーバーに送信。現場名・GPS・天気記録は送信しないよ。</p>
+  <button type="button" id="push-enable" class="reminder-test">毎日12時の通知をオンにする</button>
+  <button type="button" id="push-disable" class="reminder-test hidden">毎日12時の通知をオフにする</button>
+  <button type="button" id="push-server-test" class="reminder-test hidden">サーバーからテスト通知を送る</button>
+  <div id="push-setup-status" class="reminder-result" role="status" aria-live="polite"></div>
+</div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名<input id="site-name" maxlength="60" required placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><div class="two"><label class="field">緯度<input id="site-lat" type="number" min="-90" max="90" step="any" required placeholder="40.6"></label><label class="field">経度<input id="site-lon" type="number" min="-180" max="180" step="any" required placeholder="141.2"></label></div><button type="button" class="btn" id="fill-gps">⌖ GPSを使って入力</button><button type="submit" class="btn primary full">この現場を保存 ♡</button></form></div><div class="notice">現場名・座標・メモはこの端末内に保存。別の端末には自動同期されません。会社の機密情報は入力しないでね。</div></section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.11 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.12 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <footer class="tabs" role="navigation" aria-label="ページ切り替え">
 <button class="tab active" data-tab="home" type="button" aria-label="ホーム"><span class="tab-label">ホーム</span><span class="ko" lang="ko">홈</span></button>
@@ -383,6 +397,152 @@ async function showReminderTest(){
   }finally{btn.disabled=false;}
 }
 $('reminder-test').addEventListener('click',showReminderTest);
+
+const pushOwnerKey='genbanosora.pushowner.v1';
+let pushServiceOrigin=null,pushPublicKey=null;
+const encodePushKey=(value)=>{
+  const text=String(value).replace(/-/g,'+').replace(/_/g,'/');
+  const padded=text+'='.repeat((4-text.length%4)%4);
+  const chars=atob(padded);
+  const bytes=new Uint8Array(chars.length);
+  for(let i=0;i<chars.length;i++)bytes[i]=chars.charCodeAt(i);
+  return bytes;
+};
+function pushOwnerToken(){
+  let token=null;
+  try{token=localStorage.getItem(pushOwnerKey);}catch(e){}
+  if(typeof token==='string'&&/^[A-Fa-f0-9]{64}$/.test(token))return token;
+  const random=crypto.getRandomValues(new Uint8Array(32));
+  token=Array.from(random,v=>v.toString(16).padStart(2,'0')).join('');
+  localStorage.setItem(pushOwnerKey,token);
+  return token;
+}
+function pushStatus(message){$('push-setup-status').textContent=message;}
+function pushLoading(on){
+  for(const id of ['push-enable','push-disable','push-server-test']){
+    $(id).disabled=on;
+  }
+}
+function isInstalledPwa(){
+  return navigator.standalone===true ||
+    !!(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
+}
+async function pushPost(path,payload){
+  if(!pushServiceOrigin)throw Error('push server unavailable');
+  const response=await fetch(pushServiceOrigin+path,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload),cache:'no-store'
+  });
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok)throw Error(result.error||('HTTP '+response.status));
+  return result;
+}
+function pushPublicKeyBytes(){
+  if(!pushPublicKey)throw Error('push public key missing');
+  return encodePushKey(pushPublicKey);
+}
+async function showPushButtons(){
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    const subscription=await reg.pushManager.getSubscription();
+    const active=!!subscription;
+    $('push-enable').classList.toggle('hidden',active);
+    $('push-disable').classList.toggle('hidden',!active);
+    $('push-server-test').classList.toggle('hidden',!active);
+    pushStatus(active?'このiPhoneはプッシュ購読済み。サーバー登録状態は初回のテスト送信で確認できるよ。':
+      'このiPhoneでは毎日12時のプッシュ通知がまだ有効ではありません。');
+  }catch(e){pushStatus('通知の登録状態を確認できません。')}
+}
+async function enableDailyPush(){
+  if(!pushServiceOrigin)return;
+  if(!isInstalledPwa()){
+    pushStatus('Safariではなく、ホーム画面の「하늘」から開いてね。');
+    return;
+  }
+  if(!('Notification' in window)||!('serviceWorker' in navigator)||!('PushManager' in window)){
+    pushStatus('この端末はWeb Push未対応です。');return;
+  }
+  pushLoading(true);
+  pushStatus('通知の許可を確認しています…');
+  try{
+    // On iPhone the permission request MUST start within the direct button tap.
+    const ask=Notification.requestPermission();
+    const permission=await ask;
+    if(permission!=='granted'){pushStatus('通知の許可が必要です。設定で許可してね。');return;}
+    const reg=await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(!sub)sub=await reg.pushManager.subscribe({
+      userVisibleOnly:true,applicationServerKey:pushPublicKeyBytes()
+    });
+    const json=sub.toJSON();
+    if(!json.endpoint||!json.keys?.p256dh||!json.keys?.auth){
+      throw Error('Push subscription incomplete');
+    }
+    await pushPost('/api/subscribe',{
+      endpoint:json.endpoint,
+      keys:{p256dh:json.keys.p256dh,auth:json.keys.auth},
+      token:pushOwnerToken()
+    });
+    await showPushButtons();
+    pushStatus('♡ 毎日12時の通知を登録したよ！正確な到着時刻は通信状況によって変わることがあるよ。');
+  }catch(e){
+    pushStatus('登録を完了できませんでした。通信状態を確認して、もう一度試してね。');
+  }finally{pushLoading(false);}
+}
+async function disableDailyPush(){
+  pushLoading(true);
+  pushStatus('通知の登録を解除しています…');
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.getSubscription();
+    if(!sub){await showPushButtons();return;}
+    const token=localStorage.getItem(pushOwnerKey);
+    if(token){
+      await pushPost('/api/unsubscribe',{endpoint:sub.endpoint,token});
+    }
+    await sub.unsubscribe();
+    await showPushButtons();
+    pushStatus('通知をオフにしたよ ♡');
+  }catch(e){
+    pushStatus('解除できませんでした。通信環境を確認して再度試してね。');
+  }finally{pushLoading(false);}
+}
+async function testDailyPushFromServer(){
+  pushLoading(true);pushStatus('サーバーからの通知をテスト中…');
+  try{
+    const reg=await navigator.serviceWorker.ready;
+    const sub=await reg.pushManager.getSubscription();
+    const token=localStorage.getItem(pushOwnerKey);
+    if(!sub||!token)throw Error('No subscription');
+    await pushPost('/api/test',{endpoint:sub.endpoint,token});
+    pushStatus('テスト通知を送信したよ。通知が届くか確かめてね ♡');
+  }catch(e){pushStatus('送信できませんでした。購読を登録し直すか通信を確認してね。');}
+  finally{pushLoading(false);}
+}
+$('push-enable').addEventListener('click',enableDailyPush);
+$('push-disable').addEventListener('click',disableDailyPush);
+$('push-server-test').addEventListener('click',testDailyPushFromServer);
+async function initializePushBackend(){
+  if(!('serviceWorker' in navigator)||!('PushManager' in window))return;
+  try{
+    const res=await fetch('./push-config.json',{cache:'no-store'});
+    if(!res.ok) return;
+    const conf=await res.json();
+    if(typeof conf.backendOrigin!=='string'||!conf.backendOrigin)return;
+    const url=new URL(conf.backendOrigin);
+    // Worker URL is public; private secrets stay in Cloudflare.
+    if(url.protocol!=='https:'||!url.hostname.endsWith('.workers.dev'))return;
+    const origin=url.origin;
+    const cfg=await fetch(origin+'/api/config',{cache:'no-store'}).then(r=>r.json());
+    if(!cfg.available||typeof cfg.publicKey!=='string'||cfg.publicKey.length<60)return;
+    pushServiceOrigin=origin;pushPublicKey=cfg.publicKey;
+    $('push-setup-panel').classList.remove('hidden');
+    await showPushButtons();
+  }catch(e){
+    // A missing or offline backend must not break the existing weather app.
+  }
+}
+initializePushBackend();
 const toast=msg=>{const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast._id);toast._id=setTimeout(()=>el.classList.remove('show'),3500)};
 const fmt=n=>Number.isFinite(Number(n))?Math.round(Number(n)*10)/10:'--';
 const datefmt=iso=>{try{return new Intl.DateTimeFormat('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(iso))}catch(e){return '不明'}};
