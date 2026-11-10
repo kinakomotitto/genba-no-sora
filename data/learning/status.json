@@ -1,10 +1,10 @@
 {
   "state": "experimental_collection",
-  "last_successful_run_utc": "2026-11-10T07:23:17Z",
+  "last_successful_run_utc": "2026-11-10T12:18:27Z",
   "source_forecast": "met-norway-locationforecast-2.0",
   "source_observation": "tenkinow-unofficial-jma",
-  "forecast_rows": 45,
-  "observation_rows": 15,
+  "forecast_rows": 54,
+  "observation_rows": 18,
   "new_forecast_rows": 9,
   "new_observation_rows": 3,
   "errors": [],
