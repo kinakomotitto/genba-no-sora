@@ -463,6 +463,41 @@ body.site-map-open{overflow:hidden}
 .site-map-canvas .leaflet-control-attribution{font-size:9px}
 @media(max-width:345px){.site-location-choices{grid-template-columns:1fr}.site-map-link{font-size:10px}}
 
+
+/* v0.20 · trusted Japan Meteorological Agency radar + selected-point 15-hour chance of rain */
+.radar-source-select{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:14px 0 14px}
+.radar-source{display:flex;flex-direction:column;gap:5px;align-items:flex-start;justify-content:center;min-height:77px;padding:12px 10px;border:1px solid var(--line);border-radius:15px;background:rgba(255,255,255,.69);color:var(--ink);text-align:left}
+.radar-source.active{background:linear-gradient(115deg,var(--pale),rgba(255,255,255,.9));box-shadow:0 3px 15px rgba(119,91,134,.09);border-color:var(--pink)}
+.radar-source strong{font-size:12px;line-height:1.3}
+.radar-source small{font-size:10px;color:var(--muted)}
+.radar-official-card,.radar-hourly-panel{padding:14px 13px 15px;border-radius:19px;border:1px solid var(--line);background:rgba(255,255,255,.81);box-shadow:var(--shadow);margin-bottom:15px}
+.radar-card-heading{display:flex;justify-content:space-between;gap:6px;align-items:center;font-size:14px;color:var(--pinkdark)}
+.radar-card-heading strong{font-weight:750}
+.radar-official-label{flex:none;font-size:10px;color:var(--muted);background:var(--pale);padding:5px 8px;border-radius:20px}
+.radar-helper{font-size:10px;color:var(--muted);line-height:1.65;margin:9px 0 12px}
+.radar-frame-container{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--pale);min-height:240px;position:relative}
+.radar-frame-start{display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:10px;min-height:255px;padding:25px 14px}
+.radar-frame-symbol{font-size:42px}
+.radar-frame-start strong{font-size:13px;color:var(--pinkdark)}
+.radar-frame-start p{font-size:11px;line-height:1.7;color:var(--muted);margin:0}
+.radar-frame-start button{min-height:44px;font-size:12px}
+.radar-iframe{display:block;width:100%;height:min(62dvh,520px);min-height:320px;background:#fff;border:0}
+.radar-primary-link{display:flex;align-items:center;justify-content:space-between;gap:7px;text-decoration:none;min-height:46px;border-radius:13px;border:1px solid var(--line);background:linear-gradient(110deg,var(--pale),rgba(255,255,255,.9));color:var(--pinkdark);padding:11px 12px;font-size:12px;font-weight:750}
+.radar-primary-link span{flex:none}
+.radar-hourly-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.radar-hour-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:88px;border:1px solid var(--line);border-radius:11px;background:rgba(255,255,255,.73);padding:8px 3px;color:var(--ink)}
+.radar-hour-time{font-size:10px;line-height:1.2;color:var(--muted)}
+.radar-hour-icon{font-size:16px;line-height:1.2}
+.radar-hour-value{font-size:14px;font-weight:750;color:var(--pinkdark)}
+.radar-hour-cell.high{background:var(--pale);border-color:var(--pink)}
+.radar-hour-cell.unknown .radar-hour-value{color:var(--muted)}
+.radar-hourly-status{font-size:10px;color:var(--muted);line-height:1.75;margin:10px 0 0}
+.radar-more{border:1px solid var(--line);padding:14px;border-radius:17px;background:rgba(255,255,255,.75);margin:0 0 14px}
+.radar-more>strong{display:block;color:var(--pinkdark);font-size:13px;margin-bottom:11px}
+.radar-more a{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:10px 0;color:var(--ink);font-size:12px;text-decoration:none;border-top:1px solid var(--line)}
+.radar-more a small{color:var(--muted);text-align:right}
+@media(max-width:345px){.radar-source strong{font-size:11px}.radar-hourly-grid{gap:4px}.radar-hour-cell{min-height:80px;padding:6px 2px}.radar-hour-value{font-size:12px}}
+
 </style>
 </head>
 <body>
@@ -486,7 +521,46 @@ body.site-map-open{overflow:hidden}
 <div class="section"><div class="section-head">気象サイトへ <span class="muted" style="font-weight:400;font-size:11px">바로가기</span></div><div class="link-grid"><a class="quicklink" href="https://www.jma.go.jp/bosai/rain/" target="_blank" rel="noopener noreferrer">☁️ 気象庁<small>公式レーダー ↗</small></a><a class="quicklink" href="https://www.windy.com/" data-windy-link="true" target="_blank" rel="noopener noreferrer">🌬️ Windy<small>選択地点を表示 ↗</small></a><a class="quicklink" href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank" rel="noopener noreferrer">🌧️ Yahoo!<small>雨雲レーダー ↗</small></a></div></div>
 <div class="toolbar"><button class="btn primary" id="refresh">↻ 天気を更新</button><button class="btn" id="gps">⌖ 現在地を取得</button></div>
 </section>
-<section id="radar" class="page"><h1 class="page-title">雨雲レーダー ☁</h1><p class="page-sub">비구름 레이더 · 情報源を切り替えて確認</p><div class="radar-block"><div style="font-size:43px">🌧️</div><strong>雨雲の動きをチェック</strong><p>初期版では各サービスの公式レーダーに移動します。<br>アプリ内アニメーションは次の開発段階で追加予定。</p></div><div class="radar-links"><a href="https://www.jma.go.jp/bosai/rain/" target="_blank" rel="noopener noreferrer">気象庁 · 雨雲の動き <span>↗</span></a><a href="https://www.windy.com/" data-windy-link="true" target="_blank" rel="noopener noreferrer">Windy.com · 選択地点 <span>↗</span></a><a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank" rel="noopener noreferrer">Yahoo!天気 · 雨雲レーダー <span>↗</span></a></div><div class="notice">雷や警報の確認も、気象庁の公式情報を優先してね。現時点では雨雲の接近通知は未搭載です。</div></section>
+
+<section id="radar" class="page" aria-label="雨雲レーダー">
+  <h1 class="page-title">雨雲レーダー ☁</h1>
+  <p class="page-sub">비구름 레이더 · 気象庁の情報を優先してチェック ♡</p>
+  <div class="radar-source-select" role="group" aria-label="気象庁の雨雲レーダー">
+    <button type="button" class="radar-source active" data-radar-mode="long" aria-pressed="true"><strong>🌧️ 15時間先まで</strong><small>気象庁 · 今後の雨</small></button>
+    <button type="button" class="radar-source" data-radar-mode="short" aria-pressed="false"><strong>☔ 1時間先まで</strong><small>気象庁 · 雨雲の動き</small></button>
+  </div>
+  <div class="radar-official-card">
+    <div class="radar-card-heading">
+      <strong id="radar-official-title">気象庁 · 今後の雨</strong>
+      <span class="radar-official-label">公式情報</span>
+    </div>
+    <p class="radar-helper" id="radar-official-description">今後15時間の雨の分布をチェック。6時間先までは約1km、7〜15時間先は約5kmの予測だよ。</p>
+    <div class="radar-frame-container">
+      <div id="radar-frame-start" class="radar-frame-start">
+        <span class="radar-frame-symbol" aria-hidden="true">🌧️</span>
+        <strong>気象庁の雨雲地図を表示する？</strong>
+        <p>公式ページをこのアプリ内に読み込むよ。表示できない場合は下の公式リンクから開いてね。</p>
+        <button type="button" class="btn primary" id="radar-open-inside">♡ アプリ内で表示を試す</button>
+      </div>
+      <iframe class="radar-iframe hidden" id="radar-iframe" title="気象庁 公式の雨雲予報" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="geolocation"></iframe>
+    </div>
+    <p class="radar-helper" id="radar-frame-status" role="status">表示は通信環境や気象庁側の埋め込み制限で使えない場合があります。位置は地図内の「現在地」で選べるよ。</p>
+    <a class="radar-primary-link" id="radar-official-link" href="https://www.jma.go.jp/bosai/rain/rasrf.html" target="_blank" rel="noopener noreferrer">気象庁の15時間予報を公式サイトで開く <span>↗</span></a>
+  </div>
+  <div class="radar-hourly-panel">
+    <div class="radar-card-heading"><strong>♡ この先15時間の降水確率</strong><span class="radar-official-label">예보</span></div>
+    <p class="radar-helper">アプリで選択中の地点の1時間ごとの降水確率（Open-Meteo）。上の気象庁レーダーとは別の予報データだよ。</p>
+    <div id="radar-forecast-15" class="radar-hourly-grid" aria-label="15時間先までの降水確率"></div>
+    <p class="radar-hourly-status" id="radar-forecast-15-status" role="status">天気を取得すると、ここに15時間分の予報が表示されるよ。</p>
+  </div>
+  <div class="radar-more">
+    <strong>もっと先まで見たいとき ♡</strong>
+    <a href="https://weathernews.jp/" target="_blank" rel="noopener noreferrer">🌦️ ウェザーニュース <small>会員なら30時間先まで ↗</small></a>
+    <a href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank" rel="noopener noreferrer">☔ Yahoo!天気 <small>雨雲レーダー ↗</small></a>
+    <a href="https://www.windy.com/" data-windy-link="true" target="_blank" rel="noopener noreferrer">🌬️ Windy <small>選択地点を開く ↗</small></a>
+  </div>
+  <div class="notice">長時間先ほど予報のずれが大きくなるよ。雷や大雨警報など、作業の安全判断には気象庁の最新の公式情報・現地の空を優先してね。雨雲接近の自動通知はまだ未搭載だよ。</div>
+</section>
 <section id="sites" class="page"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名（空欄なら自動で付けるよ）<input id="site-name" maxlength="60" placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><input type="hidden" id="site-lat"><input type="hidden" id="site-lon">
 <div class="site-location-label">📍 場所を決める <span>どちらかを選んでね</span></div>
 <div class="site-location-choices">
@@ -560,7 +634,7 @@ body.site-map-open{overflow:hidden}
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.19 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.20 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -963,15 +1037,98 @@ const keyFor=(lat,lon)=>`${Number(lat).toFixed(3)},${Number(lon).toFixed(3)}`;
 function setConnection(){const online=navigator.onLine; $('connection').classList.toggle('off',!online);$('connection-text').textContent=online?'オンライン':'オフライン';if(!online){const txt='圏外です。保存した天気は過去の情報です。新しい警報・雨雲接近情報は取得できません。';$('offline-notice').textContent=txt;$('offline-notice').classList.remove('hidden');}else{$('offline-notice').classList.add('hidden');}}
 function getCoords(){return selected.kind==='current'?lastGPS:{lat:selected.lat,lon:selected.lon}}
 function updateWindyLinks(){const p=getCoords();const valid=p&&Number.isFinite(Number(p.lat))&&Number.isFinite(Number(p.lon));const url=valid?`https://www.windy.com/?${Number(p.lat).toFixed(3)},${Number(p.lon).toFixed(3)},11`:'https://www.windy.com/';document.querySelectorAll('[data-windy-link]').forEach(a=>{a.href=url;a.title=valid?'選択中の地点を中心にWindyを開く':'Windy公式サイトを開く（GPS未取得）';});}
+
+// v0.20 — レーダーは気象庁公式ページ、15時間の確率はOpen-Meteoの別情報。
+const radarSources={
+  long:{url:'https://www.jma.go.jp/bosai/rain/rasrf.html',title:'気象庁 · 今後の雨',
+    description:'今後15時間の雨の分布をチェック。6時間先までは約1km、7〜15時間先は約5kmの予測だよ。',
+    link:'気象庁の15時間予報を公式サイトで開く'},
+  short:{url:'https://www.jma.go.jp/bosai/rain/',title:'気象庁 · 雨雲の動き',
+    description:'観測とナウキャストで1時間先までの雨雲を5分ごとに確認できるよ。',
+    link:'気象庁の1時間予報を公式サイトで開く'}
+};
+let radarMode='long',radarInsideStarted=false;
+function setRadarMode(mode){
+  if(!(mode in radarSources))return;
+  radarMode=mode;
+  const choice=radarSources[mode];
+  document.querySelectorAll('[data-radar-mode]').forEach(b=>{
+    const active=b.dataset.radarMode===mode;
+    b.classList.toggle('active',active);
+    b.setAttribute('aria-pressed',String(active));
+  });
+  $('radar-official-title').textContent=choice.title;
+  $('radar-official-description').textContent=choice.description;
+  $('radar-official-link').textContent=choice.link+' ↗';
+  $('radar-official-link').href=choice.url;
+  if(radarInsideStarted){
+    // 公式側がiframeを許可しないことがある。リンクは常に使えるよう残す。
+    $('radar-iframe').src=choice.url;
+    $('radar-frame-status').textContent='公式ページをアプリ内で読み込んでいるよ。表示されない場合は下の公式リンクを開いてね。';
+  }
+}
+document.querySelectorAll('[data-radar-mode]').forEach(b=>b.addEventListener('click',()=>setRadarMode(b.dataset.radarMode)));
+$('radar-open-inside').addEventListener('click',()=>{
+  radarInsideStarted=true;
+  $('radar-frame-start').classList.add('hidden');
+  $('radar-iframe').classList.remove('hidden');
+  setRadarMode(radarMode);
+});
+function renderRadar15h(){
+  const grid=$('radar-forecast-15'),status=$('radar-forecast-15-status');
+  if(!grid||!status)return;
+  grid.replaceChildren();
+  const p=getCoords();
+  if(!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lon)){
+    status.textContent='ホームで現在地を取得するか、保存した現場を選んでね。';
+    return;
+  }
+  const entry=cache[keyFor(p.lat,p.lon)];
+  const h=entry?.data?.hourly||{};
+  const times=h.time,probs=h.precipitation_probability;
+  if(!Array.isArray(times)||!Array.isArray(probs)){
+    status.textContent='この地点の予報がまだないよ。ホームで「天気を更新」を押してね。';
+    return;
+  }
+  const nowJP=new Date(Date.now()+9*3600000).toISOString().slice(0,13);
+  const values=[];
+  for(let i=0;i<times.length&&values.length<15;i++){
+    const t=String(times[i]);
+    if(t.slice(0,13)<=nowJP)continue;
+    const v=Number.isFinite(probs[i])?Math.min(100,Math.max(0,Math.round(probs[i]))):null;
+    values.push({t,prob:v,icon:weatherDesc(h.weather_code?.[i])[1]});
+  }
+  if(!values.length){
+    status.textContent='表示できる時間の予報がありません。最新データに更新してね。';
+    return;
+  }
+  for(const item of values){
+    const el=document.createElement('div');
+    el.className='radar-hour-cell'+(item.prob!==null&&item.prob>=65?' high':'')+(item.prob===null?' unknown':'');
+    const time=document.createElement('span');time.className='radar-hour-time';
+    // 日付を跨ぐ場合だけ「翌」を明記
+    time.textContent=(item.t.slice(0,10)!==nowJP.slice(0,10)?'翌 ':'')+item.t.slice(11,13)+'時';
+    const icon=document.createElement('span');icon.className='radar-hour-icon';icon.textContent=item.icon;
+    const value=document.createElement('strong');value.className='radar-hour-value';
+    value.textContent=item.prob===null?'--%':item.prob+'%';
+    el.append(time,icon,value);grid.append(el);
+  }
+  const retrieved=entry.fetched?new Date(entry.fetched).getTime():NaN;
+  const outdated=!Number.isFinite(retrieved)||Date.now()-retrieved>120*60*1000;
+  status.textContent=(outdated?'⚠ 前回取得した予報（最新ではない可能性あり） · ':'')+
+    'Open-Meteo · 最終取得 '+(entry.fetched?datefmt(entry.fetched):'不明')+
+    ' · ここは降水確率で、気象庁の雨雲レーダー画像ではありません。';
+}
+
 function renderRainOutlook(h,stale){const summary=$('rain-outlook-summary'),row=$('rain-outlook-hours');row.replaceChildren();const times=Array.isArray(h.time)?h.time:[];const probs=Array.isArray(h.precipitation_probability)?h.precipitation_probability:[];const nowJP=new Date(Date.now()+9*3600000).toISOString().slice(0,13)+':00';const first=times.findIndex(t=>t>=nowJP);const values=first<0?[]:times.slice(first,first+3).map((t,j)=>({time:t,prob:probs[first+j]}));if(!values.length){summary.textContent='この時間帯の予報はありません。取得済みデータが古い可能性があります。';return}const numbers=values.map(v=>v.prob).filter(v=>Number.isFinite(v));summary.textContent=numbers.length?`${stale?'前回保存した予報 · ':''}この3つの時間帯の最大降水確率 ${Math.round(Math.max(...numbers))}%`:'降水確率の数値がありません';for(const v of values){const chip=document.createElement('div');chip.className='rain-hour'+(Number.isFinite(v.prob)&&v.prob>=60?' high':'');const t=document.createElement('div');t.className='time';t.textContent=v.time.slice(11,16);const prob=document.createElement('div');prob.className='prob';prob.textContent=Number.isFinite(v.prob)?Math.round(v.prob)+'%':'--%';chip.append(t,prob);row.append(chip);}}
 
 function selectLoc(s){selected=s;updateWindyLinks();$('selected-location').textContent=s.name;$('geo-status').textContent=s.kind==='current'?'GPSの現在地':`保存現場 · ${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}`;showTab('home');const p=getCoords();if(p){const old=cache[keyFor(p.lat,p.lon)];if(old)renderWeather(old.data,old.fetched,true);if(navigator.onLine)fetchWeather(p.lat,p.lon);}else if(s.kind==='current')locate();}
-function showTab(id){const isChanging=!$(id)?.classList.contains('active');document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id===id));document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===(id==='settings'?'sites':id)));if(id==='sites')renderSites();if(isChanging)window.scrollTo(0,0);}
+function showTab(id){if(id==='radar')renderRadar15h();const isChanging=!$(id)?.classList.contains('active');document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id===id));document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===(id==='settings'?'sites':id)));if(id==='sites')renderSites();if(isChanging)window.scrollTo(0,0);}
 function gps(success,fail,options={}){if(!navigator.geolocation){fail&&fail('このブラウザではGPSが使えません');return}navigator.geolocation.getCurrentPosition(pos=>{lastGPS={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy,at:new Date().toISOString()};save();updateWindyLinks();success(lastGPS)},err=>{const msg=err.code===1?'位置情報の許可が必要です。ブラウザの設定で許可してください':err.code===3?'GPSの取得がタイムアウトしました':'GPSの位置を取得できませんでした';fail&&fail(msg)},{enableHighAccuracy:true,timeout:options.fresh?18000:12000,maximumAge:options.fresh?0:300000});}
 function locate(){$('geo-status').textContent='GPSを取得中…';gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}})}
 function renderWeather(data,fetched,stale){const c=data.current||{},h=data.hourly||{},desc=weatherDesc(c.weather_code);$('temperature').textContent=Number.isFinite(c.temperature_2m)?Math.round(c.temperature_2m)+'°':'--°';$('description').textContent=desc[0];$('weather-icon').textContent=desc[1];$('apparent').textContent=`体感温度 ${fmt(c.apparent_temperature)}°C · 湿度 ${fmt(c.relative_humidity_2m)}%`;$('wind').textContent=`${fmt(c.wind_speed_10m)} m/s`;$('gust').textContent=`${fmt(c.wind_gusts_10m)} m/s`;
 let first=-1;if(Array.isArray(h.time)){const thisHourJP=new Date(Date.now()+9*3600000).toISOString().slice(0,13)+':00';first=h.time.findIndex(t=>t>=thisHourJP);}$('rain-prob').textContent=first>=0&&Array.isArray(h.precipitation_probability)&&h.precipitation_probability[first]!=null?`${Math.round(h.precipitation_probability[first])}%`:'--%';
-renderRainOutlook(h,stale);const hours=$('hours');hours.replaceChildren();if(Array.isArray(h.time)&&first>=0){h.time.slice(first,first+8).forEach((t,j)=>{const i=first+j;const el=document.createElement('div');el.className='hour';const time=document.createElement('div');time.className='sub';time.textContent=new Date(t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});const ic=document.createElement('div');ic.style.fontSize='19px';ic.style.marginTop='6px';ic.textContent=weatherDesc(h.weather_code?.[i])[1];const temp=document.createElement('strong');temp.textContent=h.temperature_2m?.[i]!=null?Math.round(h.temperature_2m[i])+'°':'--°';const p=document.createElement('div');p.className='rain';p.textContent=h.precipitation_probability?.[i]!=null?'☂ '+h.precipitation_probability[i]+'%':'—';el.append(time,ic,temp,p);hours.append(el)})}else{hours.textContent='この時間帯の予報はありません。最新データを取得してください。'}
+renderRainOutlook(h,stale);if($('radar').classList.contains('active'))renderRadar15h();const hours=$('hours');hours.replaceChildren();if(Array.isArray(h.time)&&first>=0){h.time.slice(first,first+8).forEach((t,j)=>{const i=first+j;const el=document.createElement('div');el.className='hour';const time=document.createElement('div');time.className='sub';time.textContent=new Date(t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});const ic=document.createElement('div');ic.style.fontSize='19px';ic.style.marginTop='6px';ic.textContent=weatherDesc(h.weather_code?.[i])[1];const temp=document.createElement('strong');temp.textContent=h.temperature_2m?.[i]!=null?Math.round(h.temperature_2m[i])+'°':'--°';const p=document.createElement('div');p.className='rain';p.textContent=h.precipitation_probability?.[i]!=null?'☂ '+h.precipitation_probability[i]+'%':'—';el.append(time,ic,temp,p);hours.append(el)})}else{hours.textContent='この時間帯の予報はありません。最新データを取得してください。'}
 $('weather-state').textContent=(stale?'保存データ':'最新取得')+' · '+datefmt(fetched);$('saved-label').textContent=stale?'保存された予報です（最新ではありません）。最終取得：'+datefmt(fetched):'予報の取得時刻：'+datefmt(fetched)+' ／ 山間部の局地的な天気とは異なる場合があります。';if(stale){$('offline-notice').textContent='保存済みの予報を表示中。現在の状況とは異なる可能性があります。警報・雨雲接近情報は更新されません。';$('offline-notice').classList.remove('hidden')}else if(navigator.onLine)$('offline-notice').classList.add('hidden');}
 async function fetchWeather(lat,lon){const key=keyFor(lat,lon);if(!navigator.onLine){const old=cache[key];if(old)renderWeather(old.data,old.fetched,true);else toast('圏外で保存予報がありません');setConnection();return}fetchController?.abort();const controller=new AbortController();fetchController=controller;const timer=setTimeout(()=>controller.abort(),14000);$('weather-state').textContent='取得中…';const query=new URLSearchParams({latitude:lat.toFixed(5),longitude:lon.toFixed(5),current:'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m',hourly:'temperature_2m,precipitation_probability,weather_code',wind_speed_unit:'ms',timezone:'Asia/Tokyo',forecast_days:'2'});try{const r=await fetch('https://api.open-meteo.com/v1/forecast?'+query,{signal:controller.signal});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!data.current||!data.hourly)throw Error('予報データが不完全');if(controller!==fetchController)return;const fetched=new Date().toISOString();cache[key]={data,fetched};const keys=Object.keys(cache);if(keys.length>25){keys.sort((a,b)=>String(cache[a].fetched).localeCompare(String(cache[b].fetched)));for(const k of keys.slice(0,keys.length-25))delete cache[k]}save();renderWeather(data,fetched,false);}catch(e){if(controller!==fetchController)return;const old=cache[key];if(old){renderWeather(old.data,old.fetched,true);toast('更新できないため保存データを表示しています')}else{$('weather-state').textContent='取得失敗';$('description').textContent='天気を取得できませんでした';toast('通信環境を確認して「天気を更新」を押してね')}}finally{clearTimeout(timer);}}
 let savingGps=false;
