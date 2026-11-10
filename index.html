@@ -245,6 +245,31 @@ body>.tabs .ko{white-space:nowrap}
 .reminder-result{margin-top:7px}
 
 
+
+/* v0.27 · multiple weather model comparison */
+.home-compare{margin:0 0 15px;padding:15px 13px 13px;border:1px solid var(--line);border-radius:21px;background:rgba(255,255,255,.82);box-shadow:var(--shadow)}
+.home-compare summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:7px}
+.home-compare summary::-webkit-details-marker{display:none}
+.model-compare-title{font-weight:760;font-size:13px;color:var(--ink)}
+.model-compare-title small{font-weight:500;font-size:10px;color:var(--muted)}
+#model-compare-headline{font-size:10px;color:#a47795;white-space:nowrap}
+#model-compare-status{font-size:10px;color:var(--muted);line-height:1.7;margin:12px 0 8px}
+.model-compare-times{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:5px}
+.model-compare-time{min-width:0;padding:9px 0;border:1px solid #eadde9;border-radius:11px;background:#f9f8fc;color:#897989;font-size:11px}
+.model-compare-time.active{background:#ebdcec;border-color:#c89ebc;color:#765b78;font-weight:800}
+.model-compare-ranges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:11px 0}
+.model-compare-ranges>div{background:#f7f6fb;border-radius:12px;padding:9px 5px;text-align:center;min-width:0}
+.model-compare-ranges small{display:block;font-size:10px;color:var(--muted);margin-bottom:5px}
+.model-compare-ranges strong{display:block;font-size:11px;color:#996f8d;overflow-wrap:anywhere;line-height:1.45}
+.model-compare-table{border:1px solid var(--line);border-radius:13px;overflow:hidden;background:#fff}
+.model-compare-row{display:grid;grid-template-columns:minmax(83px,1.35fr) repeat(3,minmax(0,1fr));align-items:center;gap:2px;padding:9px 6px;border-top:1px solid #f0e9ee;text-align:center;font-size:11px;color:var(--ink)}
+.model-compare-row:first-child{border-top:none}
+.model-compare-row.heading{background:#f7f3f8;font-size:10px;color:var(--muted);font-weight:650}
+.model-compare-row.unavailable{opacity:.6}
+.model-compare-source{text-align:left;font-weight:700;line-height:1.4}
+.model-compare-source small{display:block;color:var(--muted);font-size:9px;font-weight:400;margin-top:3px}
+.model-compare-note{font-size:10px;color:var(--muted);line-height:1.65;margin:10px 0 0}
+
 /* v0.26 · compact six-hour wind outlook (forecast only) */
 .home-wind{margin:0 0 15px;padding:15px 14px 13px;border:1px solid var(--line);border-radius:21px;background:rgba(255,255,255,.83);box-shadow:var(--shadow)}
 .home-wind summary{list-style:none;cursor:pointer;display:flex;gap:9px;justify-content:space-between;align-items:center}
@@ -687,6 +712,23 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
     <p class="wind-trend-note">地上10mの予報値。山林・樹上の実測や作業可否の判断には使わず、現地の状況と会社の安全基準を優先してね。</p>
   </details>
 
+
+  <details class="section home-compare" id="model-compare" aria-label="複数の予報モデルによる雨と風の比較">
+    <summary><span class="model-compare-title">☁ 雨と風を3つの予報で比較 <small lang="ko">예보 비교</small></span><span id="model-compare-headline">比較する ⌄</span></summary>
+    <p id="model-compare-status" role="status">予報を取得すると各モデルを照合するよ。</p>
+    <div class="model-compare-times" id="model-compare-times" role="group" aria-label="比較する時刻"></div>
+    <div class="model-compare-ranges" aria-label="モデル間の予測範囲">
+      <div><small>🌬️ 風速</small><strong id="model-compare-wind">—</strong></div>
+      <div><small>🍃 突風予測</small><strong id="model-compare-gust">—</strong></div>
+      <div><small>🌧️ 降水量</small><strong id="model-compare-rain">—</strong></div>
+    </div>
+    <div class="model-compare-table" role="table" aria-label="気象モデルごとの予測">
+      <div class="model-compare-row heading" role="row"><div>予報モデル</div><div>風速</div><div>突風</div><div>雨量</div></div>
+      <div id="model-compare-rows"></div>
+    </div>
+    <p class="model-compare-note" id="model-compare-note">同じ地点・同じ時刻の予報値を比較するよ。</p>
+    <p class="model-compare-note">データ配信：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>。3つは異なる予報モデルで、独立した3サイトではありません。取得時刻はモデルの発表時刻とは異なります。雨量はmm/h、風は地上10mの予測。現場実測・警報・安全基準の代わりにはしないでね。</p>
+  </details>
   <div class="rain-outlook section home-rain" aria-label="この先3時間の降水確率">
     <div class="card-top">
       <span class="card-title">♡ この先3時間の雨 <span lang="ko" class="tiny">비 소식</span></span>
@@ -876,7 +918,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.26 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.27 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -903,6 +945,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
 <button class="tab" data-tab="sites" type="button" aria-label="現場"><span class="tab-label">現場</span><span class="ko" lang="ko">현장</span></button>
 </footer>
 <div id="toast" role="status" aria-live="polite"></div>
+<script src="./model-comparison.js"></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -1771,7 +1814,7 @@ function renderWeather(data,fetched,stale){const c=data.current||{},h=data.hourl
 let first=-1;if(Array.isArray(h.time)){const thisHourJP=new Date(Date.now()+9*3600000).toISOString().slice(0,13)+':00';first=h.time.findIndex(t=>t>=thisHourJP);}$('rain-prob').textContent=first>=0&&Array.isArray(h.precipitation_probability)&&h.precipitation_probability[first]!=null?`${Math.round(h.precipitation_probability[first])}%`:'--%';
 renderWindTrend(h,stale);renderRainOutlook(h,stale);if($('radar').classList.contains('active'))renderRadar15h();const hours=$('hours');hours.replaceChildren();if(Array.isArray(h.time)&&first>=0){h.time.slice(first,first+8).forEach((t,j)=>{const i=first+j;const el=document.createElement('div');el.className='hour';const time=document.createElement('div');time.className='sub';time.textContent=new Date(t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});const ic=document.createElement('div');ic.style.fontSize='19px';ic.style.marginTop='6px';ic.textContent=weatherDesc(h.weather_code?.[i])[1];const temp=document.createElement('strong');temp.textContent=h.temperature_2m?.[i]!=null?Math.round(h.temperature_2m[i])+'°':'--°';const p=document.createElement('div');p.className='rain';p.textContent=h.precipitation_probability?.[i]!=null?'☂ '+h.precipitation_probability[i]+'%':'—';el.append(time,ic,temp,p);hours.append(el)})}else{hours.textContent='この時間帯の予報はありません。最新データを取得してください。'}
 $('weather-state').textContent=(stale?'保存データ':'最新取得')+' · '+datefmt(fetched);$('saved-label').textContent=stale?'保存された予報です（最新ではありません）。最終取得：'+datefmt(fetched):'予報の取得時刻：'+datefmt(fetched)+' ／ 山間部の局地的な天気とは異なる場合があります。';if(stale){$('offline-notice').textContent='保存済みの予報を表示中。現在の状況とは異なる可能性があります。警報・雨雲接近情報は更新されません。';$('offline-notice').classList.remove('hidden')}else if(navigator.onLine)$('offline-notice').classList.add('hidden');}
-async function fetchWeather(lat,lon){const key=keyFor(lat,lon);if(!navigator.onLine){const old=cache[key];if(old)renderWeather(old.data,old.fetched,true);else toast('圏外で保存予報がありません');setConnection();return}fetchController?.abort();const controller=new AbortController();fetchController=controller;const timer=setTimeout(()=>controller.abort(),14000);$('weather-state').textContent='取得中…';const query=new URLSearchParams({latitude:lat.toFixed(5),longitude:lon.toFixed(5),current:'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m',hourly:'temperature_2m,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m',wind_speed_unit:'ms',timezone:'Asia/Tokyo',forecast_days:'2'});try{const r=await fetch('https://api.open-meteo.com/v1/forecast?'+query,{signal:controller.signal});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!data.current||!data.hourly)throw Error('予報データが不完全');if(controller!==fetchController)return;const fetched=new Date().toISOString();cache[key]={data,fetched};const keys=Object.keys(cache);if(keys.length>25){keys.sort((a,b)=>String(cache[a].fetched).localeCompare(String(cache[b].fetched)));for(const k of keys.slice(0,keys.length-25))delete cache[k]}save();renderWeather(data,fetched,false);}catch(e){if(controller!==fetchController)return;const old=cache[key];if(old){renderWeather(old.data,old.fetched,true);toast('更新できないため保存データを表示しています')}else{$('weather-state').textContent='取得失敗';$('description').textContent='天気を取得できませんでした';toast('通信環境を確認して「天気を更新」を押してね')}}finally{clearTimeout(timer);}}
+async function fetchWeather(lat,lon){const key=keyFor(lat,lon);window.SoraCompare?.prepare(lat,lon);if(!navigator.onLine){const old=cache[key];if(old)renderWeather(old.data,old.fetched,true);else toast('圏外で保存予報がありません');window.SoraCompare?.restore(lat,lon);setConnection();return}fetchController?.abort();const controller=new AbortController();fetchController=controller;const timer=setTimeout(()=>controller.abort(),14000);$('weather-state').textContent='取得中…';const query=new URLSearchParams({latitude:lat.toFixed(5),longitude:lon.toFixed(5),current:'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m',hourly:'temperature_2m,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m',wind_speed_unit:'ms',timezone:'Asia/Tokyo',forecast_days:'2'});try{const r=await fetch('https://api.open-meteo.com/v1/forecast?'+query,{signal:controller.signal});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!data.current||!data.hourly)throw Error('予報データが不完全');if(controller!==fetchController)return;const fetched=new Date().toISOString();cache[key]={data,fetched};const keys=Object.keys(cache);if(keys.length>25){keys.sort((a,b)=>String(cache[a].fetched).localeCompare(String(cache[b].fetched)));for(const k of keys.slice(0,keys.length-25))delete cache[k]}save();renderWeather(data,fetched,false);window.SoraCompare?.update(lat,lon);}catch(e){if(controller!==fetchController)return;const old=cache[key];if(old){renderWeather(old.data,old.fetched,true);window.SoraCompare?.restore(lat,lon);toast('更新できないため保存データを表示しています')}else{$('weather-state').textContent='取得失敗';$('description').textContent='天気を取得できませんでした';window.SoraCompare?.restore(lat,lon);toast('通信環境を確認して「天気を更新」を押してね')}}finally{clearTimeout(timer);}}
 let savingGps=false;
 function quickSaveCurrent(){
   if(savingGps)return;
@@ -2093,7 +2136,7 @@ window.addEventListener('hashchange',focusWxRecordFromNotification);
 if(location.hash==='#weather-record')setTimeout(focusWxRecordFromNotification,150);
 window.addEventListener('online',()=>{setConnection();const p=getCoords();if(p)fetchWeather(p.lat,p.lon)});window.addEventListener('offline',()=>{setConnection();const p=getCoords();if(p&&cache[keyFor(p.lat,p.lon)])renderWeather(cache[keyFor(p.lat,p.lon)].data,cache[keyFor(p.lat,p.lon)].fetched,true)});setConnection();renderSites();renderWxLogs();updateWindyLinks();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
-if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true);}locate();
+if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old){renderWeather(old.data,old.fetched,true);window.SoraCompare?.restore(lastGPS.lat,lastGPS.lon);}}locate();
 })();
 </script>
 </body>
