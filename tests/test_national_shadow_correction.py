@@ -115,6 +115,37 @@ class Tests(unittest.TestCase):
         self.assertIsNone(report["approved_model_weights"])
         self.assertEqual(report["by_lead"]["12"]["status"],"insufficient_history")
 
+    def test_seasonal_backtest_requires_four_untouched_quarterly_windows(self):
+        early=sc.trial(synthetic_matches(550))
+        readiness=early["by_lead"]["6"]["rolling_validation"]
+        self.assertFalse(readiness["passed"])
+        self.assertEqual(readiness["state"],"insufficient_seasonal_evidence")
+        enough=sc.trial(synthetic_matches(580))
+        rolling=enough["by_lead"]["6"]["rolling_validation"]
+        self.assertEqual(rolling["fold_count"],4)
+        self.assertEqual(rolling["required_folds"],4)
+        self.assertEqual(rolling["independent_days"],580)
+        self.assertEqual(len(rolling["seasons_covered"]),4)
+        dates=set()
+        for fold in rolling["folds"]:
+            self.assertLess(fold["training_through"],fold["holdout_from"])
+            self.assertLessEqual(fold["holdout_from"],fold["holdout_through"])
+            self.assertNotIn(fold["holdout_from"],dates)
+            dates.add(fold["holdout_from"])
+        self.assertFalse(enough["release_authorized"])
+        self.assertFalse(enough["automatic_correction_enabled"])
+
+    def test_guard_rejects_a_single_good_holdout_without_four_seasons(self):
+        trial={"mode":"offline_challenger_only","by_lead":{
+            "6":{"candidate_passed_holdout":True,
+                 "rolling_validation":{"passed":False,"fold_count":1},
+                 "wind":{"shadow_candidate_passed_strict_holdout_tests":True},
+                 "rain":{"shadow_candidate_passed_strict_holdout_tests":True}}}}
+        readiness={"lead_groups":{"6":{"evidence_sufficient_for_candidate_testing":True}}}
+        outcome=guard.decide(trial,{"state":"healthy"},readiness)
+        self.assertEqual(outcome["shadow_state"],"fallback_to_original_models")
+        self.assertFalse(outcome["candidate_lead_time_checks"]["6"])
+
     def test_no_future_information_leaks_into_calibration(self):
         rows=synthetic_matches()
         cohort=sc.common_cohorts(rows,6)
@@ -133,6 +164,7 @@ class Tests(unittest.TestCase):
         good_health={"state":"healthy"}
         accepted={"mode":"offline_challenger_only","by_lead":{
             "6":{"candidate_passed_holdout":True,
+                 "rolling_validation":{"passed":True,"fold_count":4},
                  "wind":{"shadow_candidate_passed_strict_holdout_tests":True},
                  "rain":{"shadow_candidate_passed_strict_holdout_tests":True}}}}
         readiness={"lead_groups":{"6":{"evidence_sufficient_for_candidate_testing":True}}}
