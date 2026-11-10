@@ -180,13 +180,26 @@ def common_cohorts(rows,lead):
         grouped[(sid,ts.isoformat())][r["model"]]=r
     def complete(group):
         if len(group)!=len(MODELS):return False
-        # Candidate readiness requires *both* wind and 1h precipitation,
-        # for all three models and the same quality-checked observation.
+        # The models must be from the same issuance/collection slot. Comparing
+        # a 6h-old prediction with a later rerun leaks recency advantage.
+        try:
+            issue_times=[timestamp(row["fetched_at"]) for row in group.values()]
+            if max(issue_times)-min(issue_times)>dt.timedelta(minutes=15):
+                return False
+        except (KeyError,TypeError,ValueError):
+            return False
+        # All models must have identical quality-checked target observations.
+        winds=[]
+        rainfall=[]
         for row in group.values():
             if any(safe_nonnegative(row.get(k)) is None for k in (
                 "wind_forecast_ms","wind_observed_ms",
                 "rain_forecast_mm","rain_observed_mm")):
                 return False
+            winds.append(float(row["wind_observed_ms"]))
+            rainfall.append(float(row["rain_observed_mm"]))
+        if max(winds)-min(winds)>0.01 or max(rainfall)-min(rainfall)>0.01:
+            return False
         return True
     return [g for g in grouped.values() if complete(g)]
 
