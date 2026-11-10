@@ -67,7 +67,7 @@ assert.equal(v.evaluate(record,gps,older).models[0].predicted,'cloud',
 
 const report=v.summary([
   {...record,verification:result},
-  {...record,id:'prior',at:'2026-11-10T23:20:00Z',verification:result},
+  {...record,id:'prior',at:'2026-11-10T00:20:00Z',verification:result},
   {...record,id:'old-day',verification:undefined},
   {...record,id:'skipped',verification:{status:'skipped',reason:'gps_old',models:[]}},
 ]);
