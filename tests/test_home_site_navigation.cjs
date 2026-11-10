@@ -106,5 +106,5 @@ assert.equal(context.selected.kind,'current','opening Site list must not retain 
 assert.equal(ids['weather-content'].parentElement,ids.home);
 context.showTab('radar');
 assert.match(ids['radar-target-chip'].textContent,/現在地/);
-assert(modelPrepares===0,'without GPS there should be no location-model fetch');
+assert(modelPrepares===2,'only the two explicitly selected site views should prepare model data');
 console.log('PASS: GPS Home, Site list, Site detail, Radar target, back, no stale observation or weather DOM');
