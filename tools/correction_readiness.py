@@ -53,6 +53,26 @@ def safe_nonnegative(value):
     v=number(value)
     return v if v is not None and v>=0 else None
 
+def research_region(station_id,metadata):
+    """Anchor-centred proximity buckets, never guessed prefecture boundaries."""
+    row=metadata.get(station_id) if isinstance(metadata,dict) else None
+    name=row.get("name") if isinstance(row,dict) else row
+    if name in REGIONS:return REGIONS[name]
+    if not isinstance(row,dict):return "地域未分類"
+    lat,lon=number(row.get("lat")),number(row.get("lon"))
+    if lat is None or lon is None:return "地域未分類"
+    anchors=[]
+    for candidate in metadata.values():
+        if not isinstance(candidate,dict) or candidate.get("name") not in REGIONS:
+            continue
+        a,b=number(candidate.get("lat")),number(candidate.get("lon"))
+        if a is None or b is None:continue
+        # Locally scaled longitude; nearest anchor is a research bucket, NOT
+        # an official administrative prefecture or accurate terrain class.
+        d=(lat-a)**2+((lon-b)*math.cos(math.radians((lat+a)/2)))**2
+        anchors.append((d,candidate["name"]))
+    return min(anchors)[1]+"近傍" if anchors else "地域未分類"
+
 def observation_matches(forecasts,observations,names=None):
     """Exact matching observation hour, no future/hindsight forecast information."""
     names=names or {}
@@ -83,7 +103,7 @@ def observation_matches(forecasts,observations,names=None):
         od=number(observed.get("wind_direction_deg"))
         local=valid.astimezone(JST)
         matches.append({
-            "station_id":sid,"region":REGIONS.get(names.get(sid,""),"その他"),
+            "station_id":sid,"region":research_region(sid,names),
             "model":model,"valid_at":valid.isoformat().replace("+00:00","Z"),
             "fetched_at":requested.isoformat().replace("+00:00","Z"),
             "lead_h":lead,"month":local.month,"season":month_season(local),
