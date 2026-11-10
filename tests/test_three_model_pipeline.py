@@ -119,6 +119,23 @@ class TestNationwidePilot(unittest.TestCase):
         previous["selected_station_count"]=9
         self.assertEqual(tc.adaptive_station_target(previous),18)
 
+    def test_off_schedule_collection_does_not_hammer_public_apis(self):
+        late=dt.datetime(2026,11,10,13,20,tzinfo=UTC)
+        self.assertEqual(tc.forecast_targets(late),{})
+        self.assertTrue(tc.forecast_targets(NOW))
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=Path(tmp)
+            file=folder/"latest.json"
+            file.write_text(json.dumps(snap()),encoding="utf-8")
+            called=[]
+            def no_network(model,subset):
+                called.append(model)
+                raise AssertionError("API must not be called")
+            status=tc.collect(file,folder/"results",no_network,lambda:late)
+            self.assertEqual(called,[])
+            self.assertEqual(status["calls_attempted"],0)
+            self.assertEqual(status["state"],"not_ready")
+
     def test_public_source_required(self):
         with self.assertRaises(ValueError):
             tc.select_public_stations({"source":"private-field","stations":stations()})
