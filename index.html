@@ -1061,7 +1061,43 @@ const wxKey='genbanosora.wxlogs.v1';
 let wxLogs=[];
 try {const v=JSON.parse(localStorage.getItem(wxKey)||'[]');if(Array.isArray(v))wxLogs=v.filter(x=>x&&['sun','cloud','rain','snow'].includes(x.weather)&&typeof x.at==='string').slice(0,500);}catch(e){}
 const wxLabels={sun:'☀️ 晴れ',cloud:'☁️ 曇り',rain:'🌧️ 雨',snow:'❄️ 雪'};
+function renderWxVerification(){
+  const output=$('wx-verify-status'),overview=$('wx-verify-summary');
+  const latest=wxLogs[0];
+  const verification=latest?.verification;
+  if(output){
+    if(!latest){
+      output.textContent='事前に保存した予報と、その場で見た空を参考照合するよ ♡';
+    }else if(verification?.status==='compared'){
+      const compared=verification.models||[];
+      output.textContent='🧪 記録時点の予報と照合：'+compared.length+'/3モデル\n'+
+        compared.map(x=>(x.matched?'○ ':'△ ')+(x.label||x.model)+'：'+
+          (wxLabels[x.predicted]||'分類なし')).join(' ／ ')+
+        '\n○=目視の分類と一致、△=不一致。正式な予報精度の順位ではないよ。';
+    }else if(verification){
+      output.textContent='🌱 記録は保存したよ。参考照合は見送り：'+
+        (window.SoraObservationCheck?.reasonText?.[verification.reason]||'比較に使える事前予報がありません');
+    }else{
+      output.textContent='この記録は従来の目視記録だよ。後から予報を取得して採点はしないよ。';
+    }
+  }
+  if(!overview)return;
+  const stats=window.SoraObservationCheck?.summary(wxLogs);
+  if(!stats){
+    overview.textContent='端末内の参考照合を準備中。記録はこれまでどおり保存されるよ。';
+    return;
+  }
+  if(!stats.comparedRecords){
+    overview.textContent='📊 事前予報との照合：まだ0件。\nGPSと事前取得の天気予報がそろったときだけ参考比較するよ。';
+    return;
+  }
+  overview.textContent='📊 事前予報と照合できた記録 '+stats.comparedRecords+'件\n'+
+    stats.models.map(m=>m.label+'：一致 '+m.matched+'/'+m.compared+
+      '（観測した日 '+m.independentDays+'日）').join('\n')+
+    '\n※ 一致件数は参考値。短期間での優劣判定や自動補正はしないよ。';
+}
 function renderWxLogs(){
+  renderWxVerification();
   const last=$('wx-last');
   if(last)last.textContent=wxLogs.length?'前回：'+wxLabels[wxLogs[0].weather]+' · '+datefmt(wxLogs[0].at)+'（累計'+wxLogs.length+'件）':'まだ記録がありません';
   const box=$('wx-history');
@@ -1079,6 +1115,14 @@ function recordWx(weather){
   if(!(weather in wxLabels))return;
   const now=new Date(),p=getCoords();
   const entry={id:Date.now().toString(36),at:now.toISOString(),weather,locationName:selected.name||'現在地',siteId:selected.kind==='site'?selected.id:null,lat:p&&Number.isFinite(p.lat)?p.lat:null,lon:p&&Number.isFinite(p.lon)?p.lon:null,kind:'manual_visual'};
+  // Match ONLY already-saved forecasts at the moment of the user's tap.
+  // Keep the visual record locally even when GPS/forecast verification fails.
+  try{
+    entry.verification=window.SoraObservationCheck?.verify(entry,lastGPS)||
+      {schema:1,status:'skipped',reason:'module_unavailable',models:[]};
+  }catch(_){
+    entry.verification={schema:1,status:'skipped',reason:'verification_error',models:[]};
+  }
   // 連打や訂正による重複を避けるため、同一地点で5分以内の記録は上書き
   const prev=wxLogs[0];
   if(prev&&now-new Date(prev.at)<5*60*1000&&prev.locationName===entry.locationName&&prev.siteId===entry.siteId){wxLogs.shift();}
