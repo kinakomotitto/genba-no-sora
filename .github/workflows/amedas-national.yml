@@ -1,10 +1,17 @@
-name: 気象庁アメダス・全国の公開観測値（低頻度）
+name: 全国アメダス・３モデル予報の自動検証
 on:
   schedule:
-    # UTC every 6h at :12, aligned to published JMA whole-hour observations in JST.
-    # The GitHub Actions scheduler can start late. Never assume real-time observation.
+    # UTC 00:12, 06:12, 12:12, 18:12 (JST 09:12, 15:12, 21:12, 03:12)
     - cron: '12 0,6,12,18 * * *'
   workflow_dispatch:
+  push:
+    # First live collection after enabling this workflow. Never trigger on stored data.
+    branches: [main]
+    paths:
+      - 'tools/amedas_snapshot.py'
+      - 'tools/three_model_collect.py'
+      - 'tools/score_amedas_models.py'
+      - '.github/workflows/amedas-national.yml'
 
 permissions:
   contents: write
@@ -16,22 +23,35 @@ concurrency:
 jobs:
   observe:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
-      - name: Verify offline parsing and time-alignment tests
+      - name: Check observation quality and precipitation-time tests offline
         run: python3 -m unittest discover -s tests -p test_amedas_snapshot.py -v
-      - name: Read public JMA national map (at most 3 GET requests)
+      - name: Check 3-model collection and scoring completely offline
+        run: python3 -m unittest discover -s tests -p test_three_model_pipeline.py -v
+      - name: Collect public JMA nationwide map (at most 3 HTTP GET requests)
+        id: amedas
+        continue-on-error: true
         run: python3 tools/amedas_snapshot.py
-      - name: Publish public observation snapshot only
+      - name: Capture three batched models for public reference stations
+        run: python3 tools/three_model_collect.py
+      - name: Score captured forecasts against prior quality-checked observations
+        run: python3 tools/score_amedas_models.py
+      - name: Commit only public, bounded research datasets
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A data/amedas/
+          git add -A data/amedas/ data/model-validation/
           if git diff --cached --quiet; then
-            echo "No new observation update"
+            echo "No new public weather records"
             exit 0
           fi
-          git commit -m "data: nationwide JMA AMeDAS public observation snapshot"
+          git commit -m "data: nationwide AMeDAS and three-model verification snapshots"
           git pull --rebase origin main
           git push origin HEAD:main
+      - name: Surface AMeDAS API failures without losing the model status report
+        if: steps.amedas.outcome == 'failure'
+        run: |
+          echo "::error::Nationwide AMeDAS collection did not succeed. Inspect the observation step; model status may be unavailable."
+          exit 1
