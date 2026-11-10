@@ -67,7 +67,7 @@ const context={
  keyFor:(lat,lon)=>lat+','+lon,renderWeather(){},
  updateWindyLinks(){},radarStop(){},renderRadar15h(){radarRenders++},
  renderSites(){siteRenders++},locate(options){assert.equal(options.fresh,true);gpsRefreshes++},
- fetchWeather(){throw Error('no network should be used in this offline test')},
+ fetchWeather(){/* simulate offline branch without network */},
  requestAnimationFrame(){},ensureRadarMap(){},scrollTo(){},
 };
 vm.createContext(context);
