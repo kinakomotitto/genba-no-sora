@@ -24,6 +24,8 @@ SITES=("札幌","青森","仙台","東京","名古屋","大阪","広島","福岡
 MAX_PUBLIC_REFERENCE_STATIONS=36
 MAX_DAILY_SITE_MODEL_UNITS=600  # 36 sites x 3 models x 4 UTC slots = 432.
 RUNS_PER_DAY=4
+MAX_STATIONS_PER_REQUEST=9  # avoid large all-or-nothing requests
+MAX_HTTP_GETS_PER_RUN=16  # 36 stations -> 4 chunks x 3 models = 12 GETs
 TARGET_LEADS=(6,12,24)
 KEEP_DAYS=21
 MAX_BYTES=1_000_000
@@ -188,6 +190,8 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
         "not_nationwide_model_coverage":True,
         "models":list(MODELS),"requested_site_names":list(SITES),
         "per_model":{},"calls_attempted":0,"forecast_rows_saved":0,
+        "max_http_get_requests":MAX_HTTP_GETS_PER_RUN,
+        "request_chunk_size":MAX_STATIONS_PER_REQUEST,
         "automatic_correction_enabled":False,
         "data_source":"Open-Meteo (CC BY 4.0); free API only for non-commercial trials"
     }
@@ -201,17 +205,36 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
         status["selection_method"]="9 anchor stations + deterministic farthest-point public stations with wind and rain observations"
         found=[]
         for model in MODELS:
-            status["calls_attempted"]+=1
-            try:
-                data=fetcher(model,stations)
-                rows=parse_forecast(model,stations,data,stamp)
-                if not rows:
-                    raise ValueError("No matching future times or valid model variables")
-                found.extend(rows)
-                status["per_model"][model]={"state":"ok","rows":len(rows)}
-            except Exception as exc:
-                # Avoid leaking URL or host internals to the public JSON.
-                status["per_model"][model]={"state":"unavailable","reason":type(exc).__name__}
+            rows=[]
+            failures=[]
+            successes=0
+            for start in range(0,len(stations),MAX_STATIONS_PER_REQUEST):
+                chunk=stations[start:start+MAX_STATIONS_PER_REQUEST]
+                if status["calls_attempted"]>=MAX_HTTP_GETS_PER_RUN:
+                    failures.append("request_budget_exhausted")
+                    break
+                status["calls_attempted"]+=1
+                try:
+                    # Each chunk has its own validation. A failed remote island
+                    # must never suppress all successful public stations.
+                    data=fetcher(model,chunk)
+                    piece=parse_forecast(model,chunk,data,stamp)
+                    if not piece:raise ValueError("No matching future hourly forecast")
+                    rows.extend(piece)
+                    successes+=len(chunk)
+                except Exception as exc:
+                    # HTTP status is useful for diagnosing provider limits, but
+                    # full URL/IP/token information is NEVER written to GitHub.
+                    code=getattr(exc,"code",None)
+                    reason="HTTP_"+str(code) if isinstance(code,int) else type(exc).__name__
+                    failures.append(reason)
+            found.extend(rows)
+            status["per_model"][model]={
+                "state":"ok" if not failures else ("partial" if successes else "unavailable"),
+                "rows":len(rows),"stations_successful":successes,
+                "failed_batches":len(failures),
+                "failure_types":sorted(set(failures))
+            }
         if found:
             save_daily(found,stamp,output)
         status["forecast_rows_saved"]=len(found)
