@@ -1,9 +1,8 @@
 name: 気象学習・公開観測所の試験収集
 
 on:
-  # GitHub側で4回/日。iPhoneを閉じていても動くが、定時実行保証はない。
-  schedule:
-    - cron: '17 0,6,12,18 * * *'
+  # 旧MET Norway + 非公式観測所の実験を自動では起動しない。
+  # 新しい全国アメダス＋3モデルの定期収集は amedas-national.yml に一本化。
   workflow_dispatch:
   push:
     paths:
