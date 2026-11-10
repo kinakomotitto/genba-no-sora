@@ -33,7 +33,7 @@ Open-Meteo Free APIは非商用用途のみ。非販売の個人開発アプリ�
 ## 通知（Cloudflare Workers Builds）の安定化
 **ユーザーのiPhoneでは実際のサーバーテスト通知と17:45の定時通知を受信済み。既存の本番Workerは動いている証拠がある。**
 
-一方、GitHubのCommit Checkには別の **Workers Builds: genba-no-sora-noon-push / failure** が繰り返し表示されている。GitHubから取得できるCheckの要約にはCloudflareの詳細ビルドログが含まれないため、**原因は未確定**。この状態だけで本番通知の停止と断定しない。
+2026-11-10の一部Pull Request等で **Workers Builds: genba-no-sora-noon-push / failure** が繰り返し出ていたが、v0.34をmainに統合したビルド、および全国データ保存をmainに記録したビルドは**success**。現在の本番ビルドは成功している。以前の失敗原因はCloudflare詳細ログ未確認のため未確定。再発までは正常稼働中のDB、秘密鍵、Cronを変更しない。
 
 本RepoはGitHub Pages PWAがルート、Cloudflare Workerのコードは\`push-backend/\`配下のモノレポ構造。CloudflareのGit連携設定を確認すること：
 
@@ -41,10 +41,16 @@ Open-Meteo Free APIは非商用用途のみ。非販売の個人開発アプリ�
 2. **Root directory**：\`/push-backend\`（このフォルダーの中に\`wrangler.toml\`と\`package.json\`がある）
 3. Build command：空欄（必要なら\`npm install --no-audit --no-fund\`）。Deploy command：\`npx wrangler deploy\`。**失敗ログを見てから**この値を調整
 4. **Build watch paths**：Includes \`push-backend/*\`、Excludes 空欄。これでホームの文言変更や定期収集データの更新ごとに通知Workerをビルドしない
-5. Cloudflare > Deployments / Builds の**直近失敗ログ**で失敗したステップを確認。認証/D1/Secretsの設定は既存の動作している値を保持
+5. **最新のビルドが成功しているなら設定を変更しない**。失敗が再発したときのみ Cloudflare > Deployments / Builds の詳細ログを開いて確認。認証/D1/Secretsの既存値を保持
 6. GitHubの \`.github/workflows/push-backend-check.yml\` はWorkerコードのテスト用。Cloudflare実環境の成功/失敗とは別に判断する
 
 **Cloudflareの設定画面はGitHubコネクターから変更できない。** 本番動作中のD1、秘密鍵、Cronをログも見ずに上書きしない。
+
+## 旧試験収集の整理
+- 旧 `weather-learning.yml` のMET Norway＋非公式観測所3地点の定期自動実行は停止した（手動実行・ファイル変更テストは残す）。
+- 新しい `amedas-national.yml` に全国アメダスと3モデルの研究データを一本化。重複した外部アクセスやGHA実行を減らす。
+- 2026-11-10の初回実測取得に成功：全国1,285地点、風913、降水1,282、気温915の品質0値。
+- 同時刻、代表9地点×3モデルで81予報スナップショットも保存成功。今後の実測と照合し、最新の `data/model-validation/status.json` に暫定評価を出す。
 
 ## 現在の画面・通知チェック
 - ホーム：現在地のGPS、保存現場は「現場」一覧から詳細へ
