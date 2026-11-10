@@ -82,6 +82,8 @@ body{background:linear-gradient(145deg,#efe4fa 0%,#fae2ef 42%,#fff9fc 100%)}
 .wx-record .wx-private{font-size:10px;color:#9e8699;margin-top:6px;line-height:1.6}
 .wx-history{display:grid;gap:7px;margin-top:11px}
 .wx-history-item{background:#fff9fc;border:1px solid #f2e3ee;border-radius:12px;padding:9px 12px;font-size:12px;color:#836c7d}
+.wx-verify-status{margin-top:10px;padding:9px 12px;background:#fff6fb;border:1px solid #f0dfe9;border-radius:12px;font-size:11px;line-height:1.7;color:#956a81;white-space:pre-line}
+.wx-verify-summary{padding:10px 12px;margin:11px 0 12px;background:#fff8fc;border:1px solid #f2e4ed;border-radius:12px;font-size:11px;line-height:1.8;color:#866a7e;white-space:pre-line}
 
 /* v0.10.2 · 画面下部に常時表示する固定ナビゲーション */
 #app{padding-bottom:calc(128px + env(safe-area-inset-bottom, 0px))}
@@ -843,7 +845,8 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
         <button class="wx-option" type="button" data-wx="snow" aria-label="雪・눈"><span class="wx-emoji">❄️</span><span lang="ko">눈</span></button>
       </div>
       <div class="wx-last" id="wx-last" role="status" aria-live="polite">まだ記録がありません</div>
-      <div class="wx-private">記録はこの端末だけに保存。外部へは送信しません。風速の実測値としては扱いません。</div>
+      <div class="wx-verify-status" id="wx-verify-status" role="status" aria-live="polite">記録したとき、事前に保存した3モデルの天気予報とも照合するよ ♡</div>
+      <div class="wx-private">記録と照合結果はこの端末だけに保存。外部へは送信しません。目視の参考照合で、公式観測・風速の実測・予報の自動補正には使いません。</div>
     </div>
   </details>
   <div class="home-save-site"><button id="quick-save-home" class="site-fast" type="button">♡ 今いる場所を現場に登録 <span class="ko" lang="ko">현장 저장</span></button></div>
@@ -912,7 +915,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
     </div>
     <div id="site-weather-host"></div>
   </div>
-  <div id="sites-index"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名（空欄なら自動で付けるよ）<input id="site-name" maxlength="60" placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><input type="hidden" id="site-lat"><input type="hidden" id="site-lon">
+  <div id="sites-index"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-verify-summary" class="wx-verify-summary" role="status">これから記録する天気を、事前に保存した3モデルの予報と照合するよ ♡</div><div id="wx-history" class="wx-history"></div></div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名（空欄なら自動で付けるよ）<input id="site-name" maxlength="60" placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><input type="hidden" id="site-lat"><input type="hidden" id="site-lon">
 <div class="site-location-label">📍 場所を決める <span>どちらかを選んでね</span></div>
 <div class="site-location-choices">
   <button type="button" class="btn" id="fill-gps">⌖ 現在地を使う</button>
@@ -993,7 +996,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.37.1 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.38 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -1021,6 +1024,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
 </footer>
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="./model-comparison.js"></script>
+<script src="./observation-verification.js"></script>
 <script src="./amedas-nearby.js"></script>
 <script>
 (()=>{'use strict';
@@ -1057,7 +1061,43 @@ const wxKey='genbanosora.wxlogs.v1';
 let wxLogs=[];
 try {const v=JSON.parse(localStorage.getItem(wxKey)||'[]');if(Array.isArray(v))wxLogs=v.filter(x=>x&&['sun','cloud','rain','snow'].includes(x.weather)&&typeof x.at==='string').slice(0,500);}catch(e){}
 const wxLabels={sun:'☀️ 晴れ',cloud:'☁️ 曇り',rain:'🌧️ 雨',snow:'❄️ 雪'};
+function renderWxVerification(){
+  const output=$('wx-verify-status'),overview=$('wx-verify-summary');
+  const latest=wxLogs[0];
+  const verification=latest?.verification;
+  if(output){
+    if(!latest){
+      output.textContent='事前に保存した予報と、その場で見た空を参考照合するよ ♡';
+    }else if(verification?.status==='compared'){
+      const compared=verification.models||[];
+      output.textContent='🧪 記録時点の予報と照合：'+compared.length+'/3モデル\n'+
+        compared.map(x=>(x.matched?'○ ':'△ ')+(x.label||x.model)+'：'+
+          (wxLabels[x.predicted]||'分類なし')).join(' ／ ')+
+        '\n○=目視の分類と一致、△=不一致。正式な予報精度の順位ではないよ。';
+    }else if(verification){
+      output.textContent='🌱 記録は保存したよ。参考照合は見送り：'+
+        (window.SoraObservationCheck?.reasonText?.[verification.reason]||'比較に使える事前予報がありません');
+    }else{
+      output.textContent='この記録は従来の目視記録だよ。後から予報を取得して採点はしないよ。';
+    }
+  }
+  if(!overview)return;
+  const stats=window.SoraObservationCheck?.summary(wxLogs);
+  if(!stats){
+    overview.textContent='端末内の参考照合を準備中。記録はこれまでどおり保存されるよ。';
+    return;
+  }
+  if(!stats.comparedRecords){
+    overview.textContent='📊 事前予報との照合：まだ0件。\nGPSと事前取得の天気予報がそろったときだけ参考比較するよ。';
+    return;
+  }
+  overview.textContent='📊 事前予報と照合できた記録 '+stats.comparedRecords+'件\n'+
+    stats.models.map(m=>m.label+'：一致 '+m.matched+'/'+m.compared+
+      '（観測した日 '+m.independentDays+'日）').join('\n')+
+    '\n※ 一致件数は参考値。短期間での優劣判定や自動補正はしないよ。';
+}
 function renderWxLogs(){
+  renderWxVerification();
   const last=$('wx-last');
   if(last)last.textContent=wxLogs.length?'前回：'+wxLabels[wxLogs[0].weather]+' · '+datefmt(wxLogs[0].at)+'（累計'+wxLogs.length+'件）':'まだ記録がありません';
   const box=$('wx-history');
@@ -1075,6 +1115,14 @@ function recordWx(weather){
   if(!(weather in wxLabels))return;
   const now=new Date(),p=getCoords();
   const entry={id:Date.now().toString(36),at:now.toISOString(),weather,locationName:selected.name||'現在地',siteId:selected.kind==='site'?selected.id:null,lat:p&&Number.isFinite(p.lat)?p.lat:null,lon:p&&Number.isFinite(p.lon)?p.lon:null,kind:'manual_visual'};
+  // Match ONLY already-saved forecasts at the moment of the user's tap.
+  // Keep the visual record locally even when GPS/forecast verification fails.
+  try{
+    entry.verification=window.SoraObservationCheck?.verify(entry,lastGPS)||
+      {schema:1,status:'skipped',reason:'module_unavailable',models:[]};
+  }catch(_){
+    entry.verification={schema:1,status:'skipped',reason:'verification_error',models:[]};
+  }
   // 連打や訂正による重複を避けるため、同一地点で5分以内の記録は上書き
   const prev=wxLogs[0];
   if(prev&&now-new Date(prev.at)<5*60*1000&&prev.locationName===entry.locationName&&prev.siteId===entry.siteId){wxLogs.shift();}

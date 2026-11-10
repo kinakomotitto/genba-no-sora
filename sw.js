@@ -1,8 +1,8 @@
 /* 現場の空 v0.8: ホーム画面用のアプリ本体をオフライン保存 */
-const CACHE = 'genba-no-sora-shell-v0.37.1';
+const CACHE = 'genba-no-sora-shell-v0.38';
 const PREFIX = 'genba-no-sora-shell-';
 const SHELL = [
-  './', './index.html', './model-comparison.js', './amedas-nearby.js', './manifest.webmanifest', './icon.svg',
+  './', './index.html', './model-comparison.js', './observation-verification.js', './amedas-nearby.js', './manifest.webmanifest', './icon.svg',
   './icon-180.png', './icon-192.png', './icon-512.png'
 ];
 self.addEventListener('install', event => {
