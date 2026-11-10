@@ -124,5 +124,9 @@ async function load(){
 }
 details.addEventListener('toggle',()=>{if(details.open)load()});
 e('amedas-refresh')?.addEventListener('click',()=>{cache=null;load()});
-window.SoraAmedas={setLocation,refresh:load};
+function clear(){
+  ++requestId;locationPoint=null;reset();
+  e('amedas-status').textContent='現在地を取得すると近くの観測所を表示できるよ。';
+}
+window.SoraAmedas={setLocation,refresh:load,clear};
 })();
