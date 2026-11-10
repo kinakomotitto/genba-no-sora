@@ -63,6 +63,10 @@ def assess(observation,collection,validation,now=None,previous=None):
     previous_count=previous.get("consecutive_degraded_checks",0)
     if not isinstance(previous_count,int) or isinstance(previous_count,bool) or previous_count<0:
         previous_count=0
+    old_at=utc_time(previous.get("assessed_at_utc"))
+    if old_at is None or not (0<=((now-old_at).total_seconds()/3600)<=8.5):
+        # A skipped schedule should not falsely count as consecutive checks.
+        previous_count=0
     consecutive=min(previous_count+1,1000) if reasons else 0
     alert_open_eligible=consecutive>=3
     return {
