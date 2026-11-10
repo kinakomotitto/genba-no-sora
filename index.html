@@ -254,7 +254,7 @@ body>.tabs .ko{white-space:nowrap}
 .site-detail-name{font-size:21px;line-height:1.4;color:var(--ink);font-weight:800;overflow-wrap:anywhere;margin:0}
 .site-detail-caption{font-size:11px;color:var(--muted);line-height:1.6;margin:7px 0 0}
 .site-detail-location{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--pinkdark);margin-bottom:8px}
-.site-title-open{display:block;max-width:100%;padding:2px 3px;border:0;background:transparent;color:inherit;font:inherit;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.site-title-open{display:block;max-width:100%;padding:2px 3px;border:0;background:transparent;color:inherit;font-family:inherit;text-align:left;cursor:pointer;overflow-wrap:anywhere}
 .site-title-open:focus-visible,.site-detail-back:focus-visible{outline:2px solid #b588ac;outline-offset:3px}
 .radar-target-chip{display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:8px 11px;margin:4px 0 12px;border:1px solid var(--line);background:rgba(255,255,255,.75);color:var(--pinkdark);border-radius:13px;font-size:11px;overflow-wrap:anywhere}
 
@@ -1811,7 +1811,7 @@ function resetWeatherDashboard(message){
   $('offline-notice')?.classList.add('hidden');
 }
 function showCachedWeatherFor(p){
-  if(!p){resetWeatherDashboard('GPSの現在地を取得してね');return}
+  if(!p){resetWeatherDashboard('GPSの現在地を取得してね');window.SoraCompare?.clear();window.SoraAmedas?.clear();return}
   const old=cache[keyFor(p.lat,p.lon)];
   if(old)renderWeather(old.data,old.fetched,true);
   else resetWeatherDashboard('この地点の天気を取得中…');
@@ -1829,7 +1829,7 @@ function restoreHomeLocation(){
     selected={kind:'current',name:'現在地'};
     $('selected-location').textContent='現在地';
     $('geo-status').textContent=lastGPS
-      ?'GPSの現在地 · '+lastGPS.lat.toFixed(4)+', '+lastGPS.lon.toFixed(4)
+      ?'前回のGPS · '+lastGPS.lat.toFixed(4)+', '+lastGPS.lon.toFixed(4)+'（位置を更新中）'
       :'GPSの位置情報を取得中…';
     showCachedWeatherFor(lastGPS);
   }
