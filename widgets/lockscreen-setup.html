@@ -35,7 +35,7 @@
     .lock-sample b{display:block;font-size:17px;margin:2px 0}
     .lock-hour{display:flex;gap:6px;font-size:10px}
     .lock-pair{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-    .lock-pair .lock-sample{width:100%;max-width:none;min-height:95px;padding:11px 8px;overflow:hidden}
+    .lock-pair .lock-sample{width:100%;max-width:none;min-height:95px;padding:4px 2px;overflow:hidden;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center}
     .lock-pair .lock-sample span{font-size:10px;white-space:nowrap}
     .lock-pair .lock-sample b{margin:5px 0 7px}
     .lock-rows{display:flex;flex-direction:column;gap:3px;margin-top:7px;font-weight:700}
@@ -77,23 +77,23 @@
   </div>
   <p class="micro">♡ 上は決定したガラス調デザインのイメージ。数字はサンプルだよ。</p>
   <section class="actual">
-    <p class="actual-heading">📱 ロック画面は、長方形を左右に2つ並べるよ</p>
+    <p class="actual-heading">📱 A案：左右2つの中身を中央揃え＆余白を小さく</p>
     <div class="lock-pair">
       <div class="lock-sample">
-        <span>♡ 하늘　📍현재 위치</span>
-        <b style="font-size:24px">☁ 5°</b>
-        <span style="font-size:10px">흐림 · 강수 27%</span>
+        <span style="font-size:12px">♡ 하늘</span>
+        <b style="font-size:28px;margin:4px 0">☁ 5°</b>
+        <span style="font-size:10px">📍현재 위치 · 흐림</span>
       </div>
       <div class="lock-sample">
-        <span>♡ 시간별 예보</span>
-        <div class="lock-rows">
-          <span>12시　☁　5°</span>
-          <span>13시　⛅　6°</span>
-          <span>14시　☀　7°</span>
+        <span style="font-size:12px">♡ 예보</span>
+        <div class="lock-rows" style="align-items:center;margin-top:3px;font-size:12px">
+          <span>12시 ☁ 5°</span>
+          <span>13시 ⛅ 6°</span>
+          <span>14시 ☀ 7°</span>
         </div>
       </div>
     </div>
-    <p class="micro">※ これは配置イメージ。ロック画面の文字色・背景・サイズはiOSが調整するよ。</p>
+    <p class="micro">※ これは中央揃えの配置イメージ。ロック画面の文字色・背景・外枠サイズはiOSが調整するよ。</p>
   </section>
   <section class="steps">
     <h2>♡ iPhoneへの入れ方</h2>
@@ -107,7 +107,7 @@
     <div class="step"><span class="num">5</span><p><b>右の長方形</b>もスクリプトに「하늘」を選んで、<b>Parameter に <code>forecast</code></b> と入力する。最後に「完了」を押してね♡</p></div>
     <p class="note">📍 保存した現場ではなく、その時の現在地の天気を取得するよ。位置情報の概略座標は天気取得先のOpen-Meteoに送られるけど、現場名やメモは送らないよ。天気・予報の更新頻度はiOS次第で、常時リアルタイムではないよ。仕事の安全判断には公式の警報・現地確認も使ってね。</p>
     <details><summary>うまくコピーできないとき：コードを直接表示</summary>
-      <textarea id="source" spellcheck="false" readonly aria-label="ウィジェットのソースコード">// 하늘 ♡ · 現在地の空 — Scriptable ロック画面ウィジェット v1.3
+      <textarea id="source" spellcheck="false" readonly aria-label="ウィジェットのソースコード">// 하늘 ♡ · 現在地の空 — Scriptable ロック画面ウィジェット v1.4
 // ロック画面の長方形を左右に2つ。左「今」、右「予報」を見やすく表示。
 // ホーム画面の小・中ウィジェットなら最大5時間分まで表示。
 // ※ ロック画面の色・背景・形はiOS側が調整するため、完全なガラス調
@@ -229,32 +229,45 @@ if(family===&quot;accessoryInline&quot;){
   const center=textLine(widget,temperature,21,true);center.centerAlignText();
   const foot=textLine(widget,desc.mark,10,false);foot.centerAlignText();
 }else if(family===&quot;accessoryRectangular&quot;){
-  // 長方形2つを時計の下へ配置：左が現在、右が毎時予報
-  widget.setPadding(1,2,1,2);
+  // Aデザイン：左右の長方形とも内側余白ゼロ、文字は水平・垂直中央揃え。
+  // addSpacer()を上下に置くことで、固定枠内の空間を均等に配分。
+  widget.setPadding(0,0,0,0);
   widget.spacing=0;
+  function centerLine(content,size,bold,minScale=0.85){
+    // テキストだけの中央寄せだと狭いサイズで偏ることがあるため、
+    // 左右に伸縮スペーサーを持つ横Stackで内容を中心に固定。
+    const line=widget.addStack();
+    line.layoutHorizontally();
+    line.centerAlignContent();
+    line.addSpacer();
+    const txt=textLine(line,content,size,bold);
+    txt.centerAlignText();
+    txt.minimumScaleFactor=minScale;
+    line.addSpacer();
+    return txt;
+  }
+  const shortKo=desc.ko===&quot;구름 조금&quot;?&quot;구름&quot;:desc.ko;
+  widget.addSpacer();
   if(widgetMode===&quot;forecast&quot;){
-    const label=textLine(widget,&quot;♡ 시간별 예보 · 1시간씩&quot;,10,true);
-    label.minimumScaleFactor=0.85;
+    centerLine(&quot;♡ 예보&quot;,11,true);
+    widget.addSpacer(2);
     const nextHours=hours.slice(0,3);
     if(nextHours.length){
       nextHours.forEach((f,i)=&gt;{
-        const label=textLine(widget,f.hour+&quot;시    &quot;+f.mark+&quot;    &quot;+f.temp+&quot;°&quot;,11,i===0);
-        label.minimumScaleFactor=0.9;
+        centerLine(f.hour+&quot;시  &quot;+f.mark+&quot;  &quot;+f.temp+&quot;°&quot;,12,i===0,0.90);
+        if(i&lt;nextHours.length-1)widget.addSpacer(1);
       });
     }else{
-      textLine(widget,&quot;예보 없음 · 予報なし&quot;,10,false);
+      centerLine(&quot;시간별 예보 없음&quot;,10,false);
     }
   }else{
-    const heading=textLine(widget,&quot;♡ 하늘  📍현재 위치&quot;,10,true);
-    heading.minimumScaleFactor=0.9;
+    centerLine(&quot;♡ 하늘&quot;,12,true);
     widget.addSpacer(2);
-    const currentLine=textLine(widget,desc.mark+&quot;  &quot;+temperature,29,true);
-    currentLine.minimumScaleFactor=0.93;
+    centerLine(desc.mark+&quot; &quot;+temperature,30,true,0.94);
     widget.addSpacer(2);
-    const ko=desc.ko===&quot;구름 조금&quot;?&quot;구름&quot;:desc.ko;
-    const detail=textLine(widget,ko+&quot;  ·  &quot;+rainText+(fromCache?&quot; · 前回&quot;:&quot;&quot;),9.5,false);
-    detail.minimumScaleFactor=0.82;
+    centerLine(&quot;📍현재 위치 · &quot;+(fromCache?&quot;前回&quot;:shortKo),10,false,0.80);
   }
+  widget.addSpacer();
 }else{
   // ホーム画面用：透明感のある淡いピンク・ラベンダーのカード。
   const gradient=new LinearGradient();
@@ -296,7 +309,7 @@ Script.complete();
       <p class="micro">長押し → すべてを選択 → コピーでもOK！</p>
     </details>
   </section>
-  <footer>하늘 ♡ Made for your little sky · v1.3</footer>
+  <footer>하늘 ♡ Made for your little sky · v1.4</footer>
 </main>
 <script>
 (function(){
