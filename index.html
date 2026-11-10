@@ -534,31 +534,171 @@ button.radar-hour-cell{font-family:inherit;cursor:pointer}
 .radar-map .leaflet-control-attribution{font-size:9px!important}
 .radar-hour-cell.selected{border:2px solid var(--pink)}
 
+
+/* v0.24 — Korean-soft home + practical field-weather information, without duplicate radar cards */
+#home{padding-top:3px}
+.home-location{margin:1px 0 14px}
+.home-location .locrow{margin-bottom:0;gap:8px;align-items:center}
+.home-location .location-name{font-size:16px;line-height:1.3;letter-spacing:.01em}
+.home-location .home-location-change{font-size:11px;font-weight:650;padding:0 11px;min-height:37px;white-space:nowrap;background:rgba(255,255,255,.75)}
+.home-hero{padding:21px 19px 18px;border:1px solid rgba(255,255,255,.55);margin-bottom:12px;box-shadow:0 9px 28px rgba(136,90,128,.075)}
+.home-hero .section-kicker{font-size:13px;font-weight:750;letter-spacing:.015em}
+.home-hero .home-kicker-jp{font-size:10px;font-weight:550;color:var(--muted)}
+.home-hero #weather-state{font-size:10px;text-align:right;max-width:49%;line-height:1.35;color:var(--muted)}
+.home-hero .hero-main{margin:17px 0 20px;align-items:center;gap:12px}
+.home-hero .home-hero-copy{min-width:0;flex:1}
+.home-hero .big-temp{font-size:clamp(59px,17vw,73px);line-height:.98;letter-spacing:-.055em;font-weight:400;color:var(--ink)}
+.home-hero .weather-name{font-size:14px;font-weight:750;margin-top:9px;line-height:1.35}
+.home-hero #apparent{font-size:11px;margin-top:4px}
+.home-hero .emoji{font-size:clamp(47px,13vw,61px);flex:none;filter:drop-shadow(0 5px 8px rgba(141,118,154,.09))}
+.home-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding-top:14px;border-top:1px solid rgba(158,124,151,.18)}
+.home-metrics .metric{min-width:0;padding:4px 1px 3px}
+.home-metrics .metric+.metric{border-left:1px solid rgba(158,124,151,.15);padding-left:8px}
+.home-metrics .metric-label{font-size:10px;white-space:nowrap;color:var(--muted);letter-spacing:-.02em}
+.home-metrics .metric-value{font-size:clamp(13px,3.65vw,17px);font-weight:800;letter-spacing:-.035em;white-space:nowrap;margin-top:7px;color:var(--pinkdark)}
+.home-hero-note{font-size:10px;line-height:1.5;color:var(--muted);margin:12px 0 0}
+.home-rain{padding:17px 16px 12px;margin:0 0 18px;border:1px solid var(--line);border-radius:19px;background:rgba(255,255,255,.77);box-shadow:0 5px 20px rgba(121,76,93,.045)}
+.home-rain .card-title{font-size:14px;letter-spacing:.01em;color:var(--ink)}
+.home-rain .outlook-summary{margin:10px 0 12px;color:var(--pinkdark);font-size:11px;line-height:1.55}
+.home-rain .rain-hours{gap:8px}
+.home-rain .rain-hour{background:var(--pale);border:1px solid rgba(195,148,181,.12);border-radius:12px;padding:10px 4px}
+.home-rain .rain-hour .prob{font-size:18px;margin-top:6px;color:var(--pinkdark)}
+.home-rain .rain-hour.high{background:var(--rose)}
+.home-radar-link{margin-top:14px;padding:11px 12px;width:100%;display:flex;align-items:center;gap:11px;border-radius:13px;border:1px solid var(--line);color:var(--ink);background:linear-gradient(120deg,var(--pale),rgba(255,255,255,.95));text-align:left}
+.home-radar-symbol{font-size:22px}
+.home-radar-copy{display:flex;flex:1;flex-direction:column;min-width:0;gap:3px}
+.home-radar-copy strong{font-size:12px;color:var(--pinkdark);font-weight:750}
+.home-radar-copy small{font-size:10px;color:var(--muted)}
+.home-radar-arrow{font-size:24px;font-weight:300;color:var(--pinkdark);line-height:1}
+.home-rain .rain-note{margin:8px 1px 0;font-size:9px;color:var(--muted)}
+.home-forecast{margin:5px 0 18px}
+.home-forecast .section-head{margin:0 0 10px;font-size:14px;color:var(--ink)}
+.home-forecast .section-head .muted{float:right;font-weight:500;font-size:11px}
+.home-forecast .hour{min-width:80px;padding:12px 7px;box-shadow:0 3px 10px rgba(121,76,93,.025)}
+.home-warning{border:1px solid var(--line);background:rgba(255,255,255,.66);border-radius:16px;margin:8px 0 15px;padding:0 13px 9px}
+.home-warning>a{display:flex;align-items:center;gap:11px;min-height:49px;padding:9px 0}
+.home-warning>a>span:first-child{font-size:20px}
+.home-warning>a>span:nth-child(2){flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.home-warning strong{font-size:12px}
+.home-warning small,.home-warning p{color:var(--muted);font-size:10px}
+.home-warning .home-warning-arrow{color:var(--pinkdark);font-size:16px}
+.home-warning p{margin:0 0 1px 31px;line-height:1.55}
+details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margin-bottom:10px;border:1px solid var(--line);border-radius:16px}
+.home-record>summary{list-style:none;display:flex;align-items:center;gap:11px;min-height:66px;cursor:pointer;outline-offset:4px}
+.home-record>summary::-webkit-details-marker{display:none}
+.home-record-icon{width:32px;height:32px;flex:none;display:flex;align-items:center;justify-content:center;background:var(--pale);border-radius:11px;font-size:20px;color:var(--pinkdark)}
+.home-record-head{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.home-record-head strong{font-size:13px;color:var(--pinkdark)}
+.home-record-head small{font-size:10px;line-height:1.35;color:var(--muted)}
+.home-record-arrow{font-size:19px;color:var(--pinkdark);transition:transform .2s}
+.home-record[open] .home-record-arrow{transform:rotate(180deg)}
+.home-record-body{padding:0 0 15px}
+.home-record .wx-description{margin:2px 0 12px;font-size:11px}
+.home-record .wx-option{min-height:60px;border-radius:12px}
+.home-record .wx-option .wx-emoji{font-size:20px}
+.home-save-site{margin:0 0 12px}
+.home-save-site .site-fast{font-size:12px;min-height:48px;background:rgba(255,255,255,.75);border:1px solid var(--line);border-radius:14px}
+.home-save-site .site-fast .ko{font-size:10px}
+.home-toolbar{gap:9px}
+.home-toolbar .btn{flex:1;min-width:0;font-size:12px;padding:10px 7px;min-height:44px}
+@media(max-width:355px){.home-hero{padding:18px 13px}.home-metrics{gap:2px}.home-metrics .metric+.metric{padding-left:4px}.home-metrics .metric-label{font-size:9px}.home-metrics .metric-value{font-size:12px}.home-kicker-jp{display:none}.home-record-head small{font-size:9px}}
+
 </style>
 </head>
 <body>
 <div id="app"><div class="main-layer">
 <header><div><div class="brand">現場の空 <span class="cloud">☁</span></div><div class="ko">오늘의 날씨 · 今日のお天気</div></div><div id="connection" class="status-pill"><i class="dot"></i><span id="connection-text">通信確認中</span></div></header>
+
 <section id="home" class="page active">
-<div class="locrow"><div><div class="location-name"><span class="pin">⌖</span><span id="selected-location">現在地</span></div><div id="geo-status" class="sub" style="margin:4px 0 0 22px">位置情報の取得待ち</div></div><button class="btn" id="choose-location">地点切替⌄</button></div>
-<div class="site-fast-wrap"><button id="quick-save-home" class="site-fast" type="button">♡ 今いる場所を現場に登録 <span class="ko" lang="ko">현장 저장</span></button></div>
-<div class="wx-record" id="weather-record" aria-label="現地の天気のワンタッチ記録"><div class="wx-heading">♡ 現地の天気を記録 <span class="ko" lang="ko">오늘의 현장 날씨</span></div><p class="wx-description">いま見えている空は？ ひとつ押すだけで日時と一緒に保存するよ ☁️</p><div class="wx-options" role="group" aria-label="現場の天気を記録"><button class="wx-option" type="button" data-wx="sun" aria-label="晴れ・맑음"><span class="wx-emoji">☀️</span><span lang="ko">맑음</span></button><button class="wx-option" type="button" data-wx="cloud" aria-label="曇り・흐림"><span class="wx-emoji">☁️</span><span lang="ko">흐림</span></button><button class="wx-option" type="button" data-wx="rain" aria-label="雨・비"><span class="wx-emoji">🌧️</span><span lang="ko">비</span></button><button class="wx-option" type="button" data-wx="snow" aria-label="雪・눈"><span class="wx-emoji">❄️</span><span lang="ko">눈</span></button></div><div class="wx-last" id="wx-last" role="status" aria-live="polite">まだ記録がありません</div><div class="wx-private">記録はこの端末だけに保存。外部には送信しません。風速の実測値としては扱いません。毎日の通知は準備中です。</div></div>
-<div class="section hero"><div class="card-top"><div class="section-kicker">今日の天気 · 오늘 날씨</div><span id="weather-state" class="source">取得前</span></div><div class="hero-main"><div><div id="temperature" class="big-temp">--°</div><div id="description" class="weather-name">現在地の天気を読み込みます</div><div id="apparent" class="tagline">体感温度 --°C</div></div><div id="weather-icon" class="emoji">☁️</div></div><div class="details"><div class="metric"><div class="metric-label">降水確率</div><div id="rain-prob" class="metric-value">--%</div></div><div class="metric"><div class="metric-label">風速</div><div id="wind" class="metric-value">-- m/s</div></div><div class="metric"><div class="metric-label">最大瞬間風速</div><div id="gust" class="metric-value">-- m/s</div></div></div></div>
-<div class="rain-outlook section" aria-label="これから約2時間の降水確率">
-<div class="card-top"><span class="card-title">このあとの雨 ☂</span><span class="tiny">곧 비가 올까?</span></div>
-<div id="rain-outlook-summary" class="outlook-summary">天気を取得すると、時間別の降水確率が表示されるよ。</div>
-<div id="rain-outlook-hours" class="rain-hours" aria-live="polite"><div class="rain-hour"><div class="time">—</div><div class="prob">--%</div></div><div class="rain-hour"><div class="time">—</div><div class="prob">--%</div></div><div class="rain-hour"><div class="time">—</div><div class="prob">--%</div></div></div>
-<div class="rain-note">1時間ごとの予報です。雨雲の到達時刻や雨の接近通知ではありません。</div>
-</div>
-<div id="offline-notice" class="notice off hidden"></div>
-<div class="section card warn"><div class="card-top"><span class="card-title">♡ 警報・注意報</span><span class="tiny">기상 특보</span></div><div class="tagline">気象庁の最新発表は公式ページで確認してね。自動取得は次の開発段階で追加予定。</div><a class="btn soft" style="display:inline-flex;align-items:center;margin-top:11px" href="https://www.jma.go.jp/bosai/warning/" target="_blank" rel="noopener noreferrer">気象庁の警報・注意報 ↗</a></div>
-<div class="section"><div class="section-head">これからの予報 <span class="muted" style="font-weight:400;font-size:11px">시간별 날씨</span></div><div id="hours" class="forecast"><div class="hour muted">取得後に表示</div></div></div>
-<div class="section card"><div class="card-top"><span class="card-title">雨雲レーダー</span><button class="smallbtn" data-tab="radar">もっと見る ↗</button></div><div class="radar-visual"><span>雨雲を見る ☁</span></div><p class="tagline">気象庁やWindyの公式レーダーをワンタップで開けるよ。</p><button class="btn soft full" data-tab="radar">レーダーを開く</button></div>
-<div class="section"><div class="section-head">気象サイトへ <span class="muted" style="font-weight:400;font-size:11px">바로가기</span></div><div class="link-grid"><a class="quicklink" href="https://www.jma.go.jp/bosai/rain/" target="_blank" rel="noopener noreferrer">☁️ 気象庁<small>公式レーダー ↗</small></a><a class="quicklink" href="https://www.windy.com/" data-windy-link="true" target="_blank" rel="noopener noreferrer">🌬️ Windy<small>選択地点を表示 ↗</small></a><a class="quicklink" href="https://weather.yahoo.co.jp/weather/zoomradar/" target="_blank" rel="noopener noreferrer">🌧️ Yahoo!<small>雨雲レーダー ↗</small></a></div></div>
-<div class="toolbar"><button class="btn primary" id="refresh">↻ 天気を更新</button><button class="btn" id="gps">⌖ 現在地を取得</button></div>
+  <div class="home-location">
+    <div class="locrow">
+      <div>
+        <div class="location-name"><span class="pin">⌖</span><span id="selected-location">現在地</span></div>
+        <div id="geo-status" class="sub" style="margin:4px 0 0 22px">位置情報の取得待ち</div>
+      </div>
+      <button class="btn home-location-change" id="choose-location" type="button">地点切替 ⌄</button>
+    </div>
+  </div>
+  <div class="section hero home-hero">
+    <div class="card-top">
+      <div class="section-kicker">♡ 오늘의 하늘 <span class="home-kicker-jp">· 今日の空</span></div>
+      <span id="weather-state" class="source">取得前</span>
+    </div>
+    <div class="hero-main">
+      <div class="home-hero-copy">
+        <div id="temperature" class="big-temp">--°</div>
+        <div id="description" class="weather-name">現在地の天気を読み込みます</div>
+        <div id="apparent" class="tagline">体感温度 --°C</div>
+      </div>
+      <div id="weather-icon" class="emoji" aria-hidden="true">☁️</div>
+    </div>
+    <div class="details home-metrics">
+      <div class="metric"><div class="metric-label">🌬️ 風速</div><div id="wind" class="metric-value">-- m/s</div></div>
+      <div class="metric"><div class="metric-label">🍃 最大瞬間風速</div><div id="gust" class="metric-value">-- m/s</div></div>
+      <div class="metric"><div class="metric-label">☂ 降水確率</div><div id="rain-prob" class="metric-value">--%</div></div>
+    </div>
+    <p class="home-hero-note">風と雨の数値は予報値。現場の実測・警報とは違うよ。</p>
+  </div>
+
+  <div class="rain-outlook section home-rain" aria-label="この先3時間の降水確率">
+    <div class="card-top">
+      <span class="card-title">♡ この先3時間の雨 <span lang="ko" class="tiny">비 소식</span></span>
+      <span class="tiny">1時間ごとの予報</span>
+    </div>
+    <div id="rain-outlook-summary" class="outlook-summary">天気を取得すると、これからの雨が分かるよ。</div>
+    <div id="rain-outlook-hours" class="rain-hours" aria-live="polite">
+      <div class="rain-hour"><div class="time">—</div><div class="prob">--%</div></div>
+      <div class="rain-hour"><div class="time">—</div><div class="prob">--%</div></div>
+      <div class="rain-hour"><div class="time">—</div><div class="prob">--%</div></div>
+    </div>
+    <button class="home-radar-link" type="button" data-tab="radar">
+      <span class="home-radar-symbol" aria-hidden="true">🌧️</span>
+      <span class="home-radar-copy"><strong>雨雲の動きを地図で見る</strong><small>直近の雨・15時間先の予測</small></span>
+      <span class="home-radar-arrow" aria-hidden="true">›</span>
+    </button>
+    <p class="rain-note">降水確率は雨雲の到達時刻・雨雲接近通知ではありません。</p>
+  </div>
+
+  <div id="offline-notice" class="notice off hidden"></div>
+
+  <div class="section home-forecast">
+    <div class="section-head">♡ これからの天気 <span class="muted" lang="ko">시간별 날씨</span></div>
+    <div id="hours" class="forecast" aria-label="この先の時間別天気"><div class="hour muted">取得後に表示</div></div>
+  </div>
+
+  <div class="home-warning">
+    <a href="https://www.jma.go.jp/bosai/warning/" target="_blank" rel="noopener noreferrer">
+      <span aria-hidden="true">⚠️</span>
+      <span><strong>警報・注意報</strong><small>気象庁の最新情報を確認</small></span>
+      <span class="home-warning-arrow" aria-hidden="true">↗</span>
+    </a>
+    <p>警報は自動取得していません。作業前に公式情報を確認してね。</p>
+  </div>
+
+  <details class="wx-record home-record" id="weather-record" aria-label="現地の天気のワンタッチ記録">
+    <summary class="home-record-toggle">
+      <span class="home-record-icon" aria-hidden="true">♡</span>
+      <span class="home-record-head"><strong>現地の天気を記録</strong><small>いま見えている空をワンタップで保存 · 날씨 기록</small></span>
+      <span class="home-record-arrow" aria-hidden="true">⌄</span>
+    </summary>
+    <div class="home-record-body">
+      <p class="wx-description">今の空はどれ？ ひとつ押すと日時と一緒に保存できるよ ☁️</p>
+      <div class="wx-options" role="group" aria-label="現場の天気を記録">
+        <button class="wx-option" type="button" data-wx="sun" aria-label="晴れ・맑음"><span class="wx-emoji">☀️</span><span lang="ko">맑음</span></button>
+        <button class="wx-option" type="button" data-wx="cloud" aria-label="曇り・흐림"><span class="wx-emoji">☁️</span><span lang="ko">흐림</span></button>
+        <button class="wx-option" type="button" data-wx="rain" aria-label="雨・비"><span class="wx-emoji">🌧️</span><span lang="ko">비</span></button>
+        <button class="wx-option" type="button" data-wx="snow" aria-label="雪・눈"><span class="wx-emoji">❄️</span><span lang="ko">눈</span></button>
+      </div>
+      <div class="wx-last" id="wx-last" role="status" aria-live="polite">まだ記録がありません</div>
+      <div class="wx-private">記録はこの端末だけに保存。外部へは送信しません。風速の実測値としては扱いません。</div>
+    </div>
+  </details>
+  <div class="home-save-site"><button id="quick-save-home" class="site-fast" type="button">♡ 今いる場所を現場に登録 <span class="ko" lang="ko">현장 저장</span></button></div>
+  <div class="toolbar home-toolbar">
+    <button class="btn primary" id="refresh" type="button">↻ 天気を更新</button>
+    <button class="btn" id="gps" type="button">⌖ 現在地を取得</button>
+  </div>
 </section>
-
-
 <section id="radar" class="page" aria-label="雨雲レーダー">
   <h1 class="page-title">雨雲レーダー ☁</h1>
   <p class="page-sub">비구름 레이더 · 무료 ♡ 無料で時間を動かせる雨マップ</p>
@@ -681,7 +821,7 @@ button.radar-hour-cell{font-family:inherit;cursor:pointer}
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.23 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.24 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -1765,7 +1905,7 @@ function focusWxRecordFromNotification(){
   showTab('home');
   requestAnimationFrame(()=>{
     const record=$('weather-record');
-    if(record)record.scrollIntoView({behavior:'smooth',block:'start'});
+    if(record){record.open=true;record.scrollIntoView({behavior:'smooth',block:'start'});}
   });
 }
 window.addEventListener('hashchange',focusWxRecordFromNotification);
