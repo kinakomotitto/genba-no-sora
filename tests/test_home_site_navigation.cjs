@@ -25,6 +25,20 @@ assert.equal(count('id="refresh"'),1,'only one refresh control');
 assert.equal(count('id="wind-trend-chart"'),1,'only one wind chart');
 assert.equal(count('id="model-compare"'),1,'only one model comparison');
 assert.equal(count('id="amedas-nearby"'),1,'only one AMeDAS panel');
+
+/* Guard against accidentally inserting the Sites list inside Home or leaving an unclosed div. */
+const beforeScripts=html.slice(html.indexOf('<body>'),html.indexOf('<script src="./model-comparison.js">'));
+const voidTags=new Set(['area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr']);
+const tagStack=[];
+const tagPattern=/<(\/?)([A-Za-z][A-Za-z0-9:-]*)([^>]*)>/g;
+for(const match of beforeScripts.matchAll(tagPattern)){
+  const name=match[2].toLowerCase();
+  if(voidTags.has(name)||match[3].trimEnd().endsWith('/'))continue;
+  if(!match[1])tagStack.push(name);
+  else assert.equal(tagStack.pop(),name,'malformed HTML nesting near '+match.index);
+}
+assert.deepEqual(tagStack,['body'],'unbalanced HTML elements inside page body');
+
 const script=html.slice(html.indexOf('<script>\n(()=>{')+8,html.indexOf('</script>',html.indexOf('<script>\n(()=>{')));
 new Function(script); // entire inlined app must remain valid JS
 function node(id){
