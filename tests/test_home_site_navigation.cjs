@@ -10,7 +10,7 @@ for(const id of ['weather-content','site-weather-detail','site-weather-host','si
   'site-detail-back','site-detail-name','radar-target-chip','selected-location']){
   assert.equal(count('id="'+id+'"'),1,'duplicate or missing '+id);
 }
-assert.match(html,/表示版 v0\.35/);
+assert.match(html,/表示版 v0\.36/);
 assert.match(html,/>現場一覧へ ›<\/button>/);
 assert.match(html,/<header class="app-header">/);
 assert.match(html,/<span lang="ko">하늘<\/span>/);
@@ -20,6 +20,9 @@ assert.doesNotMatch(html,/<span class="cloud"/);
 assert.match(html,/font-family:"Dongle"/);
 assert.match(html,/\.\/data\/model-validation\/status\.json/);
 assert.match(html,/correction_readiness/);
+assert.match(html,/shadow-correction\.json/);
+assert.match(html,/correction-guard\.json/);
+assert.match(html,/pipeline-health\.json/);
 assert.match(html,/独立|長期学習/);
 assert.match(html,/\.\/data\/amedas\/latest\.json/);
 assert.match(html,/\.app-header\s*\{[\s\S]*?padding:12px 0;[\s\S]*?margin-bottom:12px;/);
