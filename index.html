@@ -1849,7 +1849,7 @@ function selectLoc(s){
   updateWindyLinks();
   showCachedWeatherFor(s);
   showTab('sites',{siteDetail:true});
-  if(navigator.onLine)fetchWeather(s.lat,s.lon);
+  fetchWeather(s.lat,s.lon); // offline handler restores saved site predictions too
 }
 function showTab(id,options={}){
   const detail=id==='sites'&&options.siteDetail===true;
