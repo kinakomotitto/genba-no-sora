@@ -173,6 +173,10 @@ async function update(lat,lon){
   if(!navigator.onLine){restore(lat,lon);return}
   const models=await Promise.all(STATIONS.map(s=>requestModel(s,lat,lon)));
   if(id!==requestID)return;
+  if(!models.some(m=>m.ok)){
+    const old=restoreModels(lat,lon);
+    if(old.at){activeModels=old.models;retrievedAt=old.at;isStale=true;activeTime='';display();return}
+  }
   activeModels=models;retrievedAt=new Date().toISOString();isStale=false;activeTime='';
   if(models.some(m=>m.ok)){
     memory.set(point,{models,at:retrievedAt});
@@ -187,5 +191,14 @@ function restore(lat,lon){
   activeModels=old.models;retrievedAt=old.at;isStale=true;activeTime='';
   if(old.at)display();else showFailure();
 }
-window.SoraCompare={update,restore};
+function prepare(lat,lon){
+  if(!Number.isFinite(lat)||!Number.isFinite(lon))return;
+  const target=keyOf(lat,lon);
+  if(target===point)return;
+  ++requestID;point=target;activeModels=[];activeTime='';retrievedAt='';isStale=false;
+  display();
+  const status=one('model-compare-status');
+  if(status)status.textContent='この地点の予報を確認するよ…';
+}
+window.SoraCompare={update,restore,prepare};
 })();
