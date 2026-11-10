@@ -1,0 +1,37 @@
+name: 気象庁アメダス・全国の公開観測値（低頻度）
+on:
+  schedule:
+    # UTC every 6h at :12, aligned to published JMA whole-hour observations in JST.
+    # The GitHub Actions scheduler can start late. Never assume real-time observation.
+    - cron: '12 0,6,12,18 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: jma-national-snapshot
+  cancel-in-progress: false
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify offline parsing and time-alignment tests
+        run: python3 -m unittest discover -s tests -p test_amedas_snapshot.py -v
+      - name: Read public JMA national map (at most 3 GET requests)
+        run: python3 tools/amedas_snapshot.py
+      - name: Publish public observation snapshot only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A data/amedas/
+          if git diff --cached --quiet; then
+            echo "No new observation update"
+            exit 0
+          fi
+          git commit -m "data: nationwide JMA AMeDAS public observation snapshot"
+          git pull --rebase origin main
+          git push origin HEAD:main
