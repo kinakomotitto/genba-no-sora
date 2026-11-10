@@ -41,6 +41,18 @@ class EvaluationTest(unittest.TestCase):
         self.assertIsNone(report["optimal_model"])
         self.assertFalse(report["auto_correction_enabled"])
 
+    def test_three_model_common_count_requires_same_issuance_and_both_metrics(self):
+        valid=BASE+dt.timedelta(hours=6)
+        forecasts=[prediction(m,valid) for m in mv.MODELS]
+        measured=[observation(valid)]
+        self.assertEqual(mv.evaluate(forecasts,measured)["common_three_model_station_hours"]["6"],1)
+        incomplete=[dict(f) for f in forecasts]
+        incomplete[-1].pop("precipitation_1h_mm")
+        self.assertEqual(mv.evaluate(incomplete,measured)["common_three_model_station_hours"]["6"],0)
+        unequal_times=[dict(f) for f in forecasts]
+        unequal_times[-1]["fetched_at"]=stamp(valid-dt.timedelta(hours=6,minutes=30))
+        self.assertEqual(mv.evaluate(unequal_times,measured)["common_three_model_station_hours"]["6"],0)
+
     def test_missing_is_not_zero_and_insufficient_does_not_score(self):
         valid=BASE+dt.timedelta(hours=6)
         forecast=prediction("jma_msm",valid)
