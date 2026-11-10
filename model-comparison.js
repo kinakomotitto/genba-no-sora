@@ -201,5 +201,9 @@ function prepare(lat,lon){
   const status=one('model-compare-status');
   if(status)status.textContent='この地点の予報を確認するよ…';
 }
-window.SoraCompare={update,restore,prepare};
+function clear(){
+  ++requestID;point=null;activeModels=[];activeTime='';retrievedAt='';isStale=false;
+  display();
+}
+window.SoraCompare={update,restore,prepare,clear};
 })();
