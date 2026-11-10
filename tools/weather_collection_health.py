@@ -39,7 +39,7 @@ def age_hours(when,now):
     value=utc_time(when)
     return round((now-value).total_seconds()/3600,2) if value else None
 
-def assess(observation,collection,validation,now=None):
+def assess(observation,collection,validation,now=None,previous=None):
     now=now or dt.datetime.now(UTC)
     if now.tzinfo is None:raise ValueError("timezone-aware now required")
     now=now.astimezone(UTC)
@@ -59,9 +59,18 @@ def assess(observation,collection,validation,now=None):
     verification_age=age_hours((validation or {}).get("updated_at_utc"),now)
     if verification_age is None or verification_age>MAX_FORECAST_HOURS:
         reasons.append("verification_status_not_updated")
+    previous=previous if isinstance(previous,dict) else {}
+    previous_count=previous.get("consecutive_degraded_checks",0)
+    if not isinstance(previous_count,int) or isinstance(previous_count,bool) or previous_count<0:
+        previous_count=0
+    consecutive=min(previous_count+1,1000) if reasons else 0
+    alert_open_eligible=consecutive>=3
     return {
-        "schema":1,"assessed_at_utc":now.isoformat().replace("+00:00","Z"),
+        "schema":2,"assessed_at_utc":now.isoformat().replace("+00:00","Z"),
         "state":"healthy" if not reasons else "degraded",
+        "consecutive_degraded_checks":consecutive,
+        "sustained_outage_alert_eligible":alert_open_eligible,
+        "sustained_outage_after_checks":3,
         "reasons":reasons,
         "national_observation_station_count":station_count,
         "observation_age_hours":obs_hours,
@@ -77,7 +86,8 @@ def run(root=ROOT,now=None):
     obs=read_json(root/"data"/"amedas"/"latest.json")
     collection=read_json(root/"data"/"model-validation"/"collection-status.json")
     validation=read_json(root/"data"/"model-validation"/"status.json")
-    report=assess(obs,collection,validation,now)
+    previous=read_json(root/"data"/"model-validation"/"pipeline-health.json")
+    report=assess(obs,collection,validation,now,previous)
     output=root/"data"/"model-validation"/"pipeline-health.json"
     output.parent.mkdir(parents=True,exist_ok=True)
     output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
