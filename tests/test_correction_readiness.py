@@ -85,6 +85,19 @@ class CorrectionGateTests(unittest.TestCase):
         self.assertEqual(cr.observation_matches([obj],[dict(obs,quality="suspect")]),[])
         self.assertEqual(cr.observation_matches([obj],[dict(obs,station_id="99999")]),[])
 
+    def test_different_model_issue_hours_or_observations_do_not_form_common_cohort(self):
+        base=pair_rows(1,stations=1)
+        self.assertEqual(len(cr.common_cohorts(base,6)),1)
+        later=[dict(x) for x in base]
+        later[-1]["fetched_at"]=(START-dt.timedelta(hours=6,minutes=40)).isoformat()
+        self.assertEqual(len(cr.common_cohorts(later,6)),0)
+        inconsistent=[dict(x) for x in base]
+        inconsistent[-1]["wind_observed_ms"]+=1
+        self.assertEqual(len(cr.common_cohorts(inconsistent,6)),0)
+        inconsistent=[dict(x) for x in base]
+        inconsistent[-1]["rain_observed_mm"]+=0.1
+        self.assertEqual(len(cr.common_cohorts(inconsistent,6)),0)
+
     def test_incomplete_rain_or_wind_does_not_count_as_three_model_coverage(self):
         records=pair_rows(550,stations=5)
         for row in records:
