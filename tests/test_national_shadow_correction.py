@@ -79,6 +79,27 @@ class Tests(unittest.TestCase):
                             collection,evaluation,now)
         self.assertIn("observation_missing_or_stale",stale["reasons"])
 
+    def test_health_only_alerts_on_three_consecutive_scheduled_bad_checks(self):
+        now=dt.datetime(2026,11,10,12,tzinfo=UTC)
+        obs={"observed_at":"2026-11-10T11:00:00Z","metrics":{"stations":1250}}
+        bad={"state":"no_forecasts_available","fetched_at":"2026-11-10T11:30:00Z",
+             "per_model":{m:{"state":"unavailable"} for m in MODELS}}
+        good={"state":"saved","fetched_at":"2026-11-10T11:30:00Z",
+              "per_model":{m:{"state":"ok"} for m in MODELS}}
+        verification={"updated_at_utc":"2026-11-10T11:30:00Z"}
+        former={"assessed_at_utc":"2026-11-10T06:00:00Z",
+                "consecutive_degraded_checks":2}
+        report=health.assess(obs,bad,verification,now,former)
+        self.assertEqual(report["consecutive_degraded_checks"],3)
+        self.assertTrue(report["sustained_outage_alert_eligible"])
+        healed=health.assess(obs,good,verification,now,report)
+        self.assertEqual(healed["consecutive_degraded_checks"],0)
+        self.assertFalse(healed["sustained_outage_alert_eligible"])
+        old=dict(former,assessed_at_utc="2026-11-09T12:00:00Z")
+        gap=health.assess(obs,bad,verification,now,old)
+        self.assertEqual(gap["consecutive_degraded_checks"],1)
+        self.assertFalse(gap["sustained_outage_alert_eligible"])
+
     def test_chronological_shadow_uses_unseen_90_days_and_does_not_go_live(self):
         data=synthetic_matches()
         report=sc.trial(data)
