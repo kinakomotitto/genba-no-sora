@@ -5,7 +5,7 @@ const ROOT='https://api.open-meteo.com/v1/forecast';
 const STATIONS=[
   {id:'jma_msm',label:'気象庁 MSM',gust:false},
   {id:'ecmwf_ifs',label:'ECMWF IFS',gust:true},
-  {id:'icon_global',label:'ICON Global',gust:true}
+  {id:'icon_seamless',label:'DWD ICON',gust:true}
 ];
 const STORAGE='genbanosora.modelhistory.v1';
 const MAX_RECORDS=120,TTL=20*60*1000,KEEP_DAYS=14;
