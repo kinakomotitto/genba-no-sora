@@ -151,7 +151,12 @@ def parse_forecast(model,stations,data,fetched):
         if not isinstance(times,list):
             raise ValueError("Hourly time vector is missing")
         for i,time in enumerate(times):
-            if time not in targets:
+            if not isinstance(time,str):continue
+            try:
+                target_key=dt.datetime.fromisoformat(time.replace("Z","+00:00")).strftime("%Y-%m-%dT%H:%M")
+            except ValueError:
+                continue
+            if target_key not in targets:
                 continue
             def metric(name):
                 a=h.get(name)
@@ -165,7 +170,7 @@ def parse_forecast(model,stations,data,fetched):
                 continue
             output.append({
                 "station_id":station["id"],"model":model,
-                "fetched_at":stamp,"valid_at":targets[time],
+                "fetched_at":stamp,"valid_at":targets[target_key],
                 "wind_ms":round(wind,2) if wind is not None else None,
                 "wind_direction_deg":round(direction%360,1) if direction is not None else None,
                 "precipitation_1h_mm":round(rain,2) if rain is not None else None
@@ -268,7 +273,15 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
                     piece=parse_forecast(model,chunk,data,stamp)
                     if not piece:raise ValueError("No matching future hourly forecast")
                     rows.extend(piece)
-                    successes+=len(chunk)
+                    expected={v for v in forecast_targets(stamp).values()}
+                    completed={}
+                    for item in piece:
+                        if item["wind_ms"] is not None and item["precipitation_1h_mm"] is not None:
+                            completed.setdefault(str(item["station_id"]),set()).add(item["valid_at"])
+                    complete=sum(1 for site in chunk if completed.get(str(site["id"]))==expected)
+                    successes+=complete
+                    if complete<len(chunk):
+                        failures.append("incomplete_station_or_target_hours")
                 except Exception as exc:
                     # HTTP status is useful for diagnosing provider limits, but
                     # full URL/IP/token information is NEVER written to GitHub.
