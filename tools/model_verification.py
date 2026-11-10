@@ -91,7 +91,8 @@ def evaluate(forecasts, observations, min_samples=MIN_SAMPLES):
             continue
 
     measurements = {}
-    for (station, valid_text, lead, model), forecast in valid_rows(forecasts).items():
+    issued_forecasts=valid_rows(forecasts)
+    for (station, valid_text, lead, model), forecast in issued_forecasts.items():
         valid = timestamp(valid_text)
         nearby = [(abs((when-valid).total_seconds()), when, obs)
                   for when, obs in obs_by_station[station]
@@ -137,12 +138,23 @@ def evaluate(forecasts, observations, min_samples=MIN_SAMPLES):
                 "state":"diagnostics_only" if verified else "insufficient_data",
             })
     # Pairwise/common-sample counts prevent misleading raw-MAE rankings.
-    cohort=defaultdict(set)
+    cohort=defaultdict(dict)
     for station,valid,lead,model in measurements:
-        cohort[(station,valid,lead)].add(model)
-    common={str(lead):sum(1 for (_,_,l),models in cohort.items()
-                          if l==lead and set(MODELS).issubset(models))
-            for lead in LEAD_WINDOWS}
+        samples=measurements[(station,valid,lead,model)]
+        if "wind_ms" not in samples or "precipitation_1h_mm" not in samples:
+            continue
+        cohort[(station,valid,lead)][model]=timestamp(
+            issued_forecasts[(station,valid,lead,model)]["fetched_at"])
+    common={}
+    for lead in LEAD_WINDOWS:
+        groups=0
+        for (_,_,l),issued in cohort.items():
+            if l!=lead or not all(m in issued for m in MODELS):
+                continue
+            times=list(issued.values())
+            if max(times)-min(times)<=dt.timedelta(minutes=15):
+                groups+=1
+        common[str(lead)]=groups
     return {
         "schema":1,
         "state":"evaluation_prototype_only",

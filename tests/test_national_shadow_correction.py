@@ -79,6 +79,61 @@ class Tests(unittest.TestCase):
                             collection,evaluation,now)
         self.assertIn("observation_missing_or_stale",stale["reasons"])
 
+    def test_health_only_alerts_on_three_consecutive_scheduled_bad_checks(self):
+        now=dt.datetime(2026,11,10,12,tzinfo=UTC)
+        obs={"observed_at":"2026-11-10T11:00:00Z","metrics":{"stations":1250}}
+        bad={"state":"no_forecasts_available","fetched_at":"2026-11-10T11:30:00Z",
+             "per_model":{m:{"state":"unavailable"} for m in MODELS}}
+        good={"state":"saved","fetched_at":"2026-11-10T11:30:00Z",
+              "per_model":{m:{"state":"ok"} for m in MODELS}}
+        verification={"updated_at_utc":"2026-11-10T11:30:00Z"}
+        former={"assessed_at_utc":"2026-11-10T06:00:00Z",
+                "consecutive_degraded_checks":2}
+        report=health.assess(obs,bad,verification,now,former)
+        self.assertEqual(report["consecutive_degraded_checks"],3)
+        self.assertTrue(report["sustained_outage_alert_eligible"])
+        healed=health.assess(obs,good,verification,now,report)
+        self.assertEqual(healed["consecutive_degraded_checks"],0)
+        self.assertFalse(healed["sustained_outage_alert_eligible"])
+        old=dict(former,assessed_at_utc="2026-11-09T12:00:00Z")
+        gap=health.assess(obs,bad,verification,now,old)
+        self.assertEqual(gap["consecutive_degraded_checks"],1)
+        self.assertFalse(gap["sustained_outage_alert_eligible"])
+
+    def test_national_observation_coverage_drop_cannot_be_called_healthy(self):
+        now=dt.datetime(2026,11,10,12,tzinfo=UTC)
+        obs={"observed_at":"2026-11-10T11:00:00Z",
+             "metrics":{"stations":400,"valid_wind":120,"valid_rain":390}}
+        models={"state":"saved","fetched_at":"2026-11-10T11:30:00Z",
+                "per_model":{m:{"state":"ok"} for m in MODELS}}
+        verification={"updated_at_utc":"2026-11-10T11:30:00Z"}
+        previous={"assessed_at_utc":"2026-11-10T06:00:00Z",
+                  "national_observation_station_count":1285,
+                  "consecutive_degraded_checks":0}
+        result=health.assess(obs,models,verification,now,previous)
+        self.assertIn("national_observation_coverage_dropped",result["reasons"])
+        self.assertIn("national_observation_metric_missing",result["reasons"])
+        self.assertEqual(result["state"],"degraded")
+
+    def test_health_does_not_accept_wrong_model_ids_or_future_verification(self):
+        now=dt.datetime(2026,11,10,12,tzinfo=UTC)
+        obs={"source":"jma-amedas-public-homepage-json",
+             "observed_at":"2026-11-10T11:00:00Z",
+             "metrics":{"stations":1285,"valid_wind":913,"valid_rain":1282}}
+        collection={"state":"saved","fetched_at":"2026-11-10T11:30:00Z",
+                    "forecast_rows_saved":0,"per_model":{
+                        "made_up_1":{"state":"ok"},
+                        "made_up_2":{"state":"ok"},
+                        "made_up_3":{"state":"ok"}}}
+        verification={"updated_at_utc":"2026-11-10T13:30:00Z"}
+        result=health.assess(obs,collection,verification,now)
+        self.assertEqual(result["state"],"degraded")
+        self.assertIn("model_coverage_degraded",result["reasons"])
+        self.assertIn("verification_status_not_updated",result["reasons"])
+        wrong=dict(obs,source="unverified_private_forecast")
+        result2=health.assess(wrong,collection,verification,now)
+        self.assertIn("unexpected_observation_source",result2["reasons"])
+
     def test_chronological_shadow_uses_unseen_90_days_and_does_not_go_live(self):
         data=synthetic_matches()
         report=sc.trial(data)
@@ -93,6 +148,37 @@ class Tests(unittest.TestCase):
         self.assertIsNone(report["candidate_selected_for_app"])
         self.assertIsNone(report["approved_model_weights"])
         self.assertEqual(report["by_lead"]["12"]["status"],"insufficient_history")
+
+    def test_seasonal_backtest_requires_four_untouched_quarterly_windows(self):
+        early=sc.trial(synthetic_matches(550))
+        readiness=early["by_lead"]["6"]["rolling_validation"]
+        self.assertFalse(readiness["passed"])
+        self.assertEqual(readiness["state"],"insufficient_seasonal_evidence")
+        enough=sc.trial(synthetic_matches(580))
+        rolling=enough["by_lead"]["6"]["rolling_validation"]
+        self.assertEqual(rolling["fold_count"],4)
+        self.assertEqual(rolling["required_folds"],4)
+        self.assertEqual(rolling["independent_days"],580)
+        self.assertEqual(len(rolling["seasons_covered"]),4)
+        dates=set()
+        for fold in rolling["folds"]:
+            self.assertLess(fold["training_through"],fold["holdout_from"])
+            self.assertLessEqual(fold["holdout_from"],fold["holdout_through"])
+            self.assertNotIn(fold["holdout_from"],dates)
+            dates.add(fold["holdout_from"])
+        self.assertFalse(enough["release_authorized"])
+        self.assertFalse(enough["automatic_correction_enabled"])
+
+    def test_guard_rejects_a_single_good_holdout_without_four_seasons(self):
+        trial={"mode":"offline_challenger_only","by_lead":{
+            "6":{"candidate_passed_holdout":True,
+                 "rolling_validation":{"passed":False,"fold_count":1},
+                 "wind":{"shadow_candidate_passed_strict_holdout_tests":True},
+                 "rain":{"shadow_candidate_passed_strict_holdout_tests":True}}}}
+        readiness={"lead_groups":{"6":{"evidence_sufficient_for_candidate_testing":True}}}
+        outcome=guard.decide(trial,{"state":"healthy"},readiness)
+        self.assertEqual(outcome["shadow_state"],"fallback_to_original_models")
+        self.assertFalse(outcome["candidate_lead_time_checks"]["6"])
 
     def test_no_future_information_leaks_into_calibration(self):
         rows=synthetic_matches()
@@ -112,6 +198,7 @@ class Tests(unittest.TestCase):
         good_health={"state":"healthy"}
         accepted={"mode":"offline_challenger_only","by_lead":{
             "6":{"candidate_passed_holdout":True,
+                 "rolling_validation":{"passed":True,"fold_count":4},
                  "wind":{"shadow_candidate_passed_strict_holdout_tests":True},
                  "rain":{"shadow_candidate_passed_strict_holdout_tests":True}}}}
         readiness={"lead_groups":{"6":{"evidence_sufficient_for_candidate_testing":True}}}

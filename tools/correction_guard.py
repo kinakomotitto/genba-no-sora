@@ -26,7 +26,9 @@ def decide(shadow,health,readiness,previous=None):
         details=statuses.get(lead,{})
         wind=details.get("wind") if isinstance(details,dict) else None
         rain=details.get("rain") if isinstance(details,dict) else None
+        rolling=details.get("rolling_validation") if isinstance(details,dict) else None
         passed=bool(evidence and details.get("candidate_passed_holdout")
+                    and isinstance(rolling,dict) and rolling.get("passed") is True
                     and wind and wind.get("shadow_candidate_passed_strict_holdout_tests")
                     and rain and rain.get("shadow_candidate_passed_strict_holdout_tests"))
         candidates[lead]=passed

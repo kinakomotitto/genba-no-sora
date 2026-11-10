@@ -89,7 +89,10 @@ def run(obs_folder=AMEDAS,forecast_folder=FORECASTS,output=OUTPUT):
     catalog=ROOT/"data"/"amedas"/"latest.json"
     if catalog.exists():
         latest=json.loads(catalog.read_text(encoding="utf-8"))
-        names={str(row["id"]):str(row.get("name","")) for row in latest.get("stations",[])
+        names={str(row["id"]):{
+                    "name":str(row.get("name","")),
+                    "lat":row.get("lat"),"lon":row.get("lon")}
+               for row in latest.get("stations",[])
                if isinstance(row,dict) and row.get("id")}
     matched=observation_matches(forecasts,observations,names)
     new_records=archive_matches(matched)

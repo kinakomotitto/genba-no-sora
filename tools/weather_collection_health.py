@@ -39,29 +39,62 @@ def age_hours(when,now):
     value=utc_time(when)
     return round((now-value).total_seconds()/3600,2) if value else None
 
-def assess(observation,collection,validation,now=None):
+def assess(observation,collection,validation,now=None,previous=None):
     now=now or dt.datetime.now(UTC)
     if now.tzinfo is None:raise ValueError("timezone-aware now required")
     now=now.astimezone(UTC)
     reasons=[]
     obs_hours=age_hours((observation or {}).get("observed_at"),now)
-    station_count=int((observation or {}).get("metrics",{}).get("stations",0))
+    metrics=(observation or {}).get("metrics") or {}
+    if not isinstance(metrics,dict):metrics={}
+    count=metrics.get("stations",0)
+    station_count=count if isinstance(count,int) and not isinstance(count,bool) and count>=0 else 0
+    previous=previous if isinstance(previous,dict) else {}
+    prior_stations=previous.get("national_observation_station_count")
+    if isinstance(prior_stations,int) and not isinstance(prior_stations,bool) and prior_stations>=200:
+        if station_count<prior_stations*.8:
+            reasons.append("national_observation_coverage_dropped")
+    for metric in ("valid_wind","valid_rain"):
+        value=metrics.get(metric)
+        if isinstance(value,int) and not isinstance(value,bool) and value<200:
+            reasons.append("national_observation_metric_missing")
     if obs_hours is None or obs_hours<-.1 or obs_hours>MAX_OBSERVATION_HOURS:
         reasons.append("observation_missing_or_stale")
     if station_count<200:
         reasons.append("national_observation_coverage_incomplete")
+    if isinstance(observation,dict) and observation.get("source") not in (
+            None,"jma-amedas-public-homepage-json"):
+        reasons.append("unexpected_observation_source")
     forecast_hours=age_hours((collection or {}).get("fetched_at"),now)
     if forecast_hours is None or forecast_hours<-.1 or forecast_hours>MAX_FORECAST_HOURS:
         reasons.append("forecast_collection_missing_or_stale")
-    good=[k for k,v in (collection or {}).get("per_model",{}).items() if isinstance(v,dict) and v.get("state")=="ok"]
-    if len(good)<3 or (collection or {}).get("state")!="saved":
+    model_map=(collection or {}).get("per_model") or {}
+    if not isinstance(model_map,dict):model_map={}
+    required=("jma_msm","ecmwf_ifs","icon_seamless")
+    good=[model for model in required if isinstance(model_map.get(model),dict)
+          and model_map[model].get("state")=="ok"]
+    saved_rows=(collection or {}).get("forecast_rows_saved")
+    rows_missing=isinstance(saved_rows,int) and not isinstance(saved_rows,bool) and saved_rows<=0
+    if len(good)<3 or (collection or {}).get("state")!="saved" or rows_missing:
         reasons.append("model_coverage_degraded")
     verification_age=age_hours((validation or {}).get("updated_at_utc"),now)
-    if verification_age is None or verification_age>MAX_FORECAST_HOURS:
+    if verification_age is None or verification_age<-.1 or verification_age>MAX_FORECAST_HOURS:
         reasons.append("verification_status_not_updated")
+    previous_count=previous.get("consecutive_degraded_checks",0)
+    if not isinstance(previous_count,int) or isinstance(previous_count,bool) or previous_count<0:
+        previous_count=0
+    old_at=utc_time(previous.get("assessed_at_utc"))
+    if old_at is None or not (0<=((now-old_at).total_seconds()/3600)<=8.5):
+        # A skipped schedule should not falsely count as consecutive checks.
+        previous_count=0
+    consecutive=min(previous_count+1,1000) if reasons else 0
+    alert_open_eligible=consecutive>=3
     return {
-        "schema":1,"assessed_at_utc":now.isoformat().replace("+00:00","Z"),
+        "schema":2,"assessed_at_utc":now.isoformat().replace("+00:00","Z"),
         "state":"healthy" if not reasons else "degraded",
+        "consecutive_degraded_checks":consecutive,
+        "sustained_outage_alert_eligible":alert_open_eligible,
+        "sustained_outage_after_checks":3,
         "reasons":reasons,
         "national_observation_station_count":station_count,
         "observation_age_hours":obs_hours,
@@ -77,7 +110,8 @@ def run(root=ROOT,now=None):
     obs=read_json(root/"data"/"amedas"/"latest.json")
     collection=read_json(root/"data"/"model-validation"/"collection-status.json")
     validation=read_json(root/"data"/"model-validation"/"status.json")
-    report=assess(obs,collection,validation,now)
+    previous=read_json(root/"data"/"model-validation"/"pipeline-health.json")
+    report=assess(obs,collection,validation,now,previous)
     output=root/"data"/"model-validation"/"pipeline-health.json"
     output.parent.mkdir(parents=True,exist_ok=True)
     output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")

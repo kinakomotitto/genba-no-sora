@@ -3,7 +3,7 @@
 
 Personal research prototype. Only exact PUBLIC station coordinates are sent to
 Open-Meteo; no user GPS, saved sites, contact details or job-site data.
-Three batched HTTP GET requests maximum per run, one per independent model.
+At most 16 bounded HTTP GET requests per run across 3 models.
 A coordinate in a batch still consumes provider API allocation; this is capped.
 No winner / correction claims. Failed models are recorded, not imputed as zero.
 """
@@ -31,13 +31,19 @@ KEEP_DAYS=21
 MAX_BYTES=1_000_000
 UTC=dt.timezone.utc
 
+class ForecastResponseError(ValueError):
+    def __init__(self,reason_code):
+        # Only these static codes go into the public Git repository.
+        self.reason_code=str(reason_code)
+        super().__init__(self.reason_code)
+
 def now_utc():
     return dt.datetime.now(UTC)
 
 def numeric(v):
     return float(v) if isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(v) else None
 
-def select_public_stations(snapshot,max_sites=MAX_PUBLIC_REFERENCE_STATIONS):
+def select_public_stations(snapshot,max_sites=MAX_PUBLIC_REFERENCE_STATIONS,preferred_station_ids=None):
     if not isinstance(max_sites,int) or not len(SITES)<=max_sites<=MAX_PUBLIC_REFERENCE_STATIONS:
         raise ValueError("Invalid limit for public reference stations")
     if snapshot.get("source")!="jma-amedas-public-homepage-json":
@@ -62,10 +68,19 @@ def select_public_stations(snapshot,max_sites=MAX_PUBLIC_REFERENCE_STATIONS):
         if numeric(row.get("wind_ms")) is None or numeric(row.get("precipitation_1h_mm")) is None:
             continue
         candidates.append(row)
-    # Greedy farthest-point spacing avoids "more samples only near Tokyo".
-    # Always deterministic and capped; only publicly listed reference sites.
+    # Keep the same public stations over time, otherwise the changing JMA
+    # missing-value pattern makes longitudinal evaluation incomparable.
     found=list(anchors)
     chosen={str(x["id"]) for x in found}
+    by_id={str(row["id"]):row for row in candidates}
+    if isinstance(preferred_station_ids,list):
+        for station_id in preferred_station_ids[:MAX_PUBLIC_REFERENCE_STATIONS]:
+            sid=str(station_id)
+            if len(found)>=max_sites:break
+            if sid not in chosen and sid in by_id:
+                found.append(by_id[sid])
+                chosen.add(sid)
+    # Only expand remaining slots by geographically separated public stations.
     candidates=sorted((row for row in candidates if str(row["id"]) not in chosen),
                       key=lambda item:str(item["id"]))
     def distance_km(a,b):
@@ -99,19 +114,19 @@ def request_model(model,stations):
     with urllib.request.urlopen(request,timeout=25) as response:
         data=response.read(MAX_BYTES+1)
     if len(data)>MAX_BYTES:
-        raise ValueError("Forecast response larger than 1MB")
+        raise ForecastResponseError("response_too_large")
     parsed=json.loads(data.decode("utf-8"))
     if not isinstance(parsed,list):
-        raise ValueError("Expected a batch response list")
+        raise ForecastResponseError("invalid_batch_response_type")
     if len(parsed)!=len(stations):
-        raise ValueError("Incorrect number of model locations")
+        raise ForecastResponseError("missing_requested_locations")
     for item,station in zip(parsed,stations):
         if not isinstance(item,dict) or item.get("error") or not isinstance(item.get("hourly"),dict):
-            raise ValueError("Invalid hourly model output")
+            raise ForecastResponseError("model_missing_hourly_or_error")
         # Numerical model gridpoints may differ slightly from the requested coordinates.
         lat,lon=numeric(item.get("latitude")),numeric(item.get("longitude"))
         if lat is None or lon is None or abs(lat-station["lat"])>0.4 or abs(lon-station["lon"])>0.4:
-            raise ValueError("Model location does not match requested station")
+            raise ForecastResponseError("model_grid_location_mismatch")
     return parsed
 
 def forecast_targets(fetched):
@@ -142,7 +157,12 @@ def parse_forecast(model,stations,data,fetched):
         if not isinstance(times,list):
             raise ValueError("Hourly time vector is missing")
         for i,time in enumerate(times):
-            if time not in targets:
+            if not isinstance(time,str):continue
+            try:
+                target_key=dt.datetime.fromisoformat(time.replace("Z","+00:00")).strftime("%Y-%m-%dT%H:%M")
+            except ValueError:
+                continue
+            if target_key not in targets:
                 continue
             def metric(name):
                 a=h.get(name)
@@ -156,7 +176,7 @@ def parse_forecast(model,stations,data,fetched):
                 continue
             output.append({
                 "station_id":station["id"],"model":model,
-                "fetched_at":stamp,"valid_at":targets[time],
+                "fetched_at":stamp,"valid_at":targets[target_key],
                 "wind_ms":round(wind,2) if wind is not None else None,
                 "wind_direction_deg":round(direction%360,1) if direction is not None else None,
                 "precipitation_1h_mm":round(rain,2) if rain is not None else None
@@ -230,7 +250,9 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
             # Prevent needless API requests and misleading "failed weather"
             # alerts for code pushes made at arbitrary hours.
             raise ValueError("forecast_collection_outside_scheduled_hour")
-        stations=select_public_stations(snapshot,max_sites=target)
+        preferred=previous.get("station_ids") if isinstance(previous,dict) else None
+        stations=select_public_stations(snapshot,max_sites=target,
+                                        preferred_station_ids=preferred)
         status["selected_station_target"]=target
         status["adaptive_backoff_used"]=bool(
             isinstance(previous,dict) and target<previous.get("selected_station_count",0))
@@ -240,12 +262,16 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
         status["maximum_daily_site_model_units"]=MAX_DAILY_SITE_MODEL_UNITS
         status["selection_method"]="9 anchor stations + deterministic farthest-point public stations with wind and rain observations"
         found=[]
+        api_throttled=False
         for model in MODELS:
             rows=[]
             failures=[]
             successes=0
             for start in range(0,len(stations),MAX_STATIONS_PER_REQUEST):
                 chunk=stations[start:start+MAX_STATIONS_PER_REQUEST]
+                if api_throttled:
+                    failures.append("upstream_rate_limited_stop")
+                    break
                 if status["calls_attempted"]>=MAX_HTTP_GETS_PER_RUN:
                     failures.append("request_budget_exhausted")
                     break
@@ -257,16 +283,31 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
                     piece=parse_forecast(model,chunk,data,stamp)
                     if not piece:raise ValueError("No matching future hourly forecast")
                     rows.extend(piece)
-                    successes+=len(chunk)
+                    expected={v for v in forecast_targets(stamp).values()}
+                    completed={}
+                    for item in piece:
+                        if item["wind_ms"] is not None and item["precipitation_1h_mm"] is not None:
+                            completed.setdefault(str(item["station_id"]),set()).add(item["valid_at"])
+                    complete=sum(1 for site in chunk if completed.get(str(site["id"]))==expected)
+                    successes+=complete
+                    if complete<len(chunk):
+                        failures.append("incomplete_station_or_target_hours")
                 except Exception as exc:
                     # HTTP status is useful for diagnosing provider limits, but
                     # full URL/IP/token information is NEVER written to GitHub.
                     code=getattr(exc,"code",None)
-                    reason="HTTP_"+str(code) if isinstance(code,int) else type(exc).__name__
+                    reason=("HTTP_"+str(code) if isinstance(code,int)
+                            else getattr(exc,"reason_code",type(exc).__name__))
                     failures.append(reason)
+                    # Stop immediately on shared-IP rate limits or disabled
+                    # access; do not retry or query other models this run.
+                    if code in (401,403,429):
+                        api_throttled=True
+                        break
             found.extend(rows)
             status["per_model"][model]={
-                "state":"ok" if not failures else ("partial" if successes else "unavailable"),
+                "state":"ok" if not failures and successes==len(stations)
+                  else ("partial" if successes else "unavailable"),
                 "rows":len(rows),"stations_successful":successes,
                 "failed_batches":len(failures),
                 "failure_types":sorted(set(failures))
@@ -277,7 +318,20 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
         status["state"]="saved" if len(found)>0 else "no_forecasts_available"
     except Exception as exc:
         status["state"]="not_ready"
-        status["reason"]=type(exc).__name__
+        # Avoid leaking raw third-party response bodies or full request URLs.
+        status["reason"]="outside_scheduled_window" if str(exc)=="forecast_collection_outside_scheduled_hour" else type(exc).__name__
+    # A "saved" collection can still have only one model and cannot support
+    # three-way verification. Count consecutive imperfect scheduled runs.
+    previous_count=(previous or {}).get("consecutive_model_failures",0) if isinstance(previous,dict) else 0
+    if not isinstance(previous_count,int) or previous_count<0:previous_count=0
+    fully_healthy=(status["state"]=="saved" and
+                   all(status["per_model"].get(m,{}).get("state")=="ok" for m in MODELS))
+    # Off-window manual runs are not weather failures and must not pollute streak.
+    if status.get("reason")=="outside_scheduled_window":
+        status["consecutive_model_failures"]=previous_count
+    else:
+        status["consecutive_model_failures"]=0 if fully_healthy else min(previous_count+1,1000)
+    status["all_three_models_collected"]=fully_healthy
     output.mkdir(parents=True,exist_ok=True)
     (output/"collection-status.json").write_text(
         json.dumps(status,ensure_ascii=False,indent=2)+"\n",encoding="utf-8"
