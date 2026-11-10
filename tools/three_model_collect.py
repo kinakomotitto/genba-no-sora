@@ -120,6 +120,10 @@ def forecast_targets(fetched):
         raise ValueError("Timezone-aware fetch time required")
     t=fetched.astimezone(UTC).replace(minute=0,second=0,microsecond=0)
     t-=dt.timedelta(hours=t.hour%6)
+    # A push/manual run outside the :00/:06/:12/:18 UTC collection window is
+    # NOT a genuine 6/12/24-hour forecast. Never query the API in that case.
+    if abs((fetched.astimezone(UTC)-t).total_seconds())>3600:
+        return {}
     targets={}
     for lead in TARGET_LEADS:
         valid=t+dt.timedelta(hours=lead)
@@ -222,6 +226,10 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
             try:previous=json.loads(old_status.read_text(encoding="utf-8"))
             except (OSError,ValueError):pass
         target=adaptive_station_target(previous)
+        if not forecast_targets(stamp):
+            # Prevent needless API requests and misleading "failed weather"
+            # alerts for code pushes made at arbitrary hours.
+            raise ValueError("forecast_collection_outside_scheduled_hour")
         stations=select_public_stations(snapshot,max_sites=target)
         status["selected_station_target"]=target
         status["adaptive_backoff_used"]=bool(
