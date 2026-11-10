@@ -169,6 +169,25 @@ class TestNationwidePilot(unittest.TestCase):
         previous["selected_station_count"]=9
         self.assertEqual(tc.adaptive_station_target(previous),18)
 
+    def test_http_429_quota_stop_prevents_all_remaining_api_requests(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            file=root/"snap.json"
+            file.write_text(json.dumps(snap()),encoding="utf-8")
+            calls=[]
+            class Limited(RuntimeError):
+                code=429
+            def rate_limited(model,sites):
+                calls.append(model)
+                raise Limited("quota")
+            result=tc.collect(file,root/"out",rate_limited,lambda:NOW)
+            self.assertEqual(calls,["jma_msm"])
+            self.assertEqual(result["calls_attempted"],1)
+            self.assertEqual(result["per_model"]["jma_msm"]["failure_types"],["HTTP_429"])
+            self.assertEqual(result["per_model"]["ecmwf_ifs"]["failure_types"],["upstream_rate_limited_stop"])
+            self.assertEqual(result["per_model"]["icon_seamless"]["failure_types"],["upstream_rate_limited_stop"])
+            self.assertEqual(result["state"],"no_forecasts_available")
+
     def test_off_schedule_collection_does_not_hammer_public_apis(self):
         late=dt.datetime(2026,11,10,13,20,tzinfo=UTC)
         self.assertEqual(tc.forecast_targets(late),{})
