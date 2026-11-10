@@ -11,11 +11,13 @@ on:
       - 'tools/shadow_correction.py'
       - 'tools/correction_guard.py'
       - 'tools/weather_collection_health.py'
+      - 'tools/research_failure_issue.py'
       - 'tests/test_amedas_snapshot.py'
       - 'tests/test_three_model_pipeline.py'
       - 'tests/test_correction_readiness.py'
       - 'tests/test_forecast_skill_audit.py'
       - 'tests/test_national_shadow_correction.py'
+      - 'tests/test_research_failure_issue.py'
       - '.github/workflows/three-model-pipeline-tests.yml'
   pull_request:
     paths:
@@ -28,11 +30,13 @@ on:
       - 'tools/shadow_correction.py'
       - 'tools/correction_guard.py'
       - 'tools/weather_collection_health.py'
+      - 'tools/research_failure_issue.py'
       - 'tests/test_amedas_snapshot.py'
       - 'tests/test_three_model_pipeline.py'
       - 'tests/test_correction_readiness.py'
       - 'tests/test_forecast_skill_audit.py'
       - 'tests/test_national_shadow_correction.py'
+      - 'tests/test_research_failure_issue.py'
       - '.github/workflows/three-model-pipeline-tests.yml'
 permissions:
   contents: read
@@ -52,6 +56,8 @@ jobs:
         run: python3 -m unittest discover -s tests -p test_forecast_skill_audit.py -v
       - name: National research health, chronological shadow and rollback (synthetic)
         run: python3 -m unittest discover -s tests -p test_national_shadow_correction.py -v
+      - name: Github Issue incident alert decisions (offline)
+        run: python3 -m unittest discover -s tests -p test_research_failure_issue.py -v
       - name: Historical model evaluator (synthetic)
         run: python3 -m unittest discover -s tests -p test_model_verification.py -v
       - name: Browser weather modules syntax
