@@ -1,5 +1,5 @@
-// 하늘 ♡ · 現在地の空 — Scriptable ロック画面ウィジェット v1.2
-// 「長方形」のロック画面ウィジェットで現在の天気とこの先3時間を表示。
+// 하늘 ♡ · 現在地の空 — Scriptable ロック画面ウィジェット v1.3
+// ロック画面の長方形を左右に2つ。左「今」、右「予報」を見やすく表示。
 // ホーム画面の小・中ウィジェットなら最大5時間分まで表示。
 // ※ ロック画面の色・背景・形はiOS側が調整するため、完全なガラス調
 //    （自由な背景ぼかしや大きなカード）は再現できません。
@@ -9,6 +9,9 @@
 
 const APP_URL = "https://kinakomotitto.github.io/genba-no-sora/";
 const family = config.widgetFamily || "accessoryRectangular";
+// 2つ目のScriptableウィジェットの「Parameter」に forecast と入力すると予報専用に。
+// 1つ目は何も入力しなければ「今の天気」専用になります。
+const widgetMode = (typeof args!=="undefined" && String(args.widgetParameter||"").trim().toLowerCase()==="forecast")?"forecast":"now";
 const widget = new ListWidget();
 widget.url = APP_URL; // タップするとサイトを開く（iOSによってSafariになる）。
 widget.refreshAfterDate = new Date(Date.now() + 30 * 60 * 1000);
@@ -117,27 +120,31 @@ if(family==="accessoryInline"){
   const center=textLine(widget,temperature,21,true);center.centerAlignText();
   const foot=textLine(widget,desc.mark,10,false);foot.centerAlignText();
 }else if(family==="accessoryRectangular"){
-  // iOSの小さな長方形枠は3行だけ。気温を最大にして、3時間予報を優先。
-  // より大きいガラス調カードはホーム画面「中」ウィジェットで利用できます。
-  widget.setPadding(0,0,0,0);
+  // 長方形2つを時計の下へ配置：左が現在、右が毎時予報
+  widget.setPadding(1,2,1,2);
   widget.spacing=0;
-  const shortKorean=desc.ko==="구름 조금"?"구름":desc.ko;
-  const heading=textLine(widget,"♡ 하늘  📍현재 위치 · "+(fromCache?"前回":shortKorean),10,true);
-  heading.minimumScaleFactor=0.84;
-  const big=textLine(widget,desc.mark+"  "+temperature,25,true);
-  big.minimumScaleFactor=0.9;
-  const future=widget.addStack();
-  future.layoutHorizontally();
-  future.centerAlignContent();
-  const upcoming=hours.slice(0,3);
-  if(upcoming.length){
-    upcoming.forEach((f,i)=>{
-      const line=textLine(future,f.hour+"시"+f.mark+f.temp+"°",10,true);
-      line.minimumScaleFactor=0.84;
-      if(i<upcoming.length-1)future.addSpacer(3);
-    });
+  if(widgetMode==="forecast"){
+    const label=textLine(widget,"♡ 시간별 예보 · 1시간씩",10,true);
+    label.minimumScaleFactor=0.85;
+    const nextHours=hours.slice(0,3);
+    if(nextHours.length){
+      nextHours.forEach((f,i)=>{
+        const label=textLine(widget,f.hour+"시    "+f.mark+"    "+f.temp+"°",11,i===0);
+        label.minimumScaleFactor=0.9;
+      });
+    }else{
+      textLine(widget,"예보 없음 · 予報なし",10,false);
+    }
   }else{
-    textLine(future,"시간별 예보 없음",10,false);
+    const heading=textLine(widget,"♡ 하늘  📍현재 위치",10,true);
+    heading.minimumScaleFactor=0.9;
+    widget.addSpacer(2);
+    const currentLine=textLine(widget,desc.mark+"  "+temperature,29,true);
+    currentLine.minimumScaleFactor=0.93;
+    widget.addSpacer(2);
+    const ko=desc.ko==="구름 조금"?"구름":desc.ko;
+    const detail=textLine(widget,ko+"  ·  "+rainText+(fromCache?" · 前回":""),9.5,false);
+    detail.minimumScaleFactor=0.82;
   }
 }else{
   // ホーム画面用：透明感のある淡いピンク・ラベンダーのカード。
