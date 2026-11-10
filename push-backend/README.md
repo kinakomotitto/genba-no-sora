@@ -1,6 +1,8 @@
 # 現場の空 — 12時通知サーバー（Cloudflare Workers 試作）
 
-**状態：初回デプロイ用の設定ファイルを作成済み／サーバー公開未確認／定時通知未開始。**
+**状態（2026-11-10）：ユーザーのiPhoneで単発Pushと指定時刻17:45のPush受信が確認済み。本番Workerは一度は配信できた。一方、Git連携のWorkers Buildsが失敗する問題は別途調査中。**
+
+運用・原因調査手順：[`../docs/operations-v034.md`](../docs/operations-v034.md)。
 
 ## iPhoneからのCloudflare初回デプロイ（安全な仮公開）
 
@@ -8,7 +10,7 @@
 - Cloudflare Workers BuildsのRoot directory（Advanced settings > Path）は `/push-backend` に設定する。
 - Project nameも **`genba-no-sora-noon-push`** に一致させる。Cloudflare公式はWrangler設定とプロジェクト名の一致を要求している。
 - Build commandは空、Deploy commandは `npx wrangler deploy` のまま。API tokenは初期設定の新規発行でよい。Advanced settingsのBuild variablesは空欄にする。
-- この初回公開では **D1バインディング、秘密鍵、Cron予定時刻は設定していない**。Web Pushは送信されない。画面の /health は not_configured、/api/config は available:false のはず。
+- この段落は**初回セットアップ当時の参考手順**。現在の`wrangler.toml`にはD1とCronが記載済みで、iPhoneへの実送信も成功している。既存の秘密鍵・D1・Cronを再作成したり上書きしたりしない。
 - 初回公開を検証後、Cloudflare管理画面でD1を作成・マイグレーションし、D1バインディングを `DB` で追加。さらに4種のWorker runtime secretを追加する。
 - `wrangler.toml` にD1のdatabase_idと Cron `*/15 * * * *` を追記するのは、購読テストが成功した後。**Build variableはWorker runtime secretの代わりにはならない。**
 - 書類・端末名・現場名・緯度経度はWorkerに送らない。秘密鍵・Push購読情報を公開リポジトリに置かない。
@@ -26,7 +28,7 @@
 - 対応API: \`/api/subscribe\` は \`times\` を登録し、\`/api/preferences\` は本人の購読所有トークンで \`times\` を変更する。
 - 非公開D1の\`schedule_json\`に時刻配列を保存し、\`push_delivery_log\` の日時・送信時刻の組み合わせで重複を防ぐ。
 - 将来のCronは\`*/15 * * * *\`（UTC）。Workerが日本時間に換算してユーザーの時刻と照合する。
-- **現在Cronは無効**。D1・Secrets・端末テストが済んでから有効にする。Cloudflare Cronは遅延し得るため、通知到着時刻を保証できない。
+- **現在の`wrangler.toml`には`*/15 * * * *`のCron設定済み**。iPhoneの17:45の自動通知受信も確認済み。ただし現在のCloudflare本番設定がソースと同一か、定期実行が継続しているかはCloudflare側のTriggers/ログで確認が必要。遅延するため、到着時刻は保証しない。
 - **以前の固定12:00専用スキーマは本番稼働していない**前提。既に古いDBを作ってある場合は新スキーマを上書きせず、移行手順を設計してから対応する。
 
 
