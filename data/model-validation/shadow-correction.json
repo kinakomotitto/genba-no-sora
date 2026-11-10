@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "state": "collecting_data",
+  "mode": "offline_challenger_only",
+  "experiment_scope": "public_station_only",
+  "automatic_correction_enabled": false,
+  "release_authorized": false,
+  "candidate_selected_for_app": null,
+  "approved_model_weights": null,
+  "by_lead": {
+    "3": {
+      "split": {
+        "independent_days": 0,
+        "train_days": 0,
+        "holdout_days": 0
+      },
+      "status": "insufficient_history",
+      "wind": null,
+      "rain": null,
+      "candidate_for_public_release": false
+    },
+    "6": {
+      "split": {
+        "independent_days": 0,
+        "train_days": 0,
+        "holdout_days": 0
+      },
+      "status": "insufficient_history",
+      "wind": null,
+      "rain": null,
+      "candidate_for_public_release": false
+    },
+    "12": {
+      "split": {
+        "independent_days": 0,
+        "train_days": 0,
+        "holdout_days": 0
+      },
+      "status": "insufficient_history",
+      "wind": null,
+      "rain": null,
+      "candidate_for_public_release": false
+    },
+    "24": {
+      "split": {
+        "independent_days": 0,
+        "train_days": 0,
+        "holdout_days": 0
+      },
+      "status": "insufficient_history",
+      "wind": null,
+      "rain": null,
+      "candidate_for_public_release": false
+    }
+  },
+  "cautions": [
+    "Candidate models are fit only on preceding dates; withheld dates never tune parameters.",
+    "No live app, push notification, GPS, job-site forecasts or safety decisions are modified.",
+    "Even a passing holdout challenger does not prove mountain/forestry-site accuracy.",
+    "Rainfall is one-hour total; strong-event cutoffs are research diagnostics, not work thresholds."
+  ],
+  "evaluated_at_utc": "2026-11-10T13:06:32.220648Z"
+}

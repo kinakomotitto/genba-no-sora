@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "shadow_state": "fallback_to_original_models",
+  "previous_shadow_state": "fallback_to_original_models",
+  "shadow_rollback_activated": false,
+  "fallback_reason_codes": [
+    "research_feed_not_healthy",
+    "no_candidate_passed_independent_evaluation"
+  ],
+  "candidate_lead_time_checks": {
+    "3": false,
+    "6": false,
+    "12": false,
+    "24": false
+  },
+  "live_forecast_source": "original_uncorrected_models",
+  "automatic_correction_enabled": false,
+  "production_rollout_authorized": false,
+  "user_gps_uploaded": false,
+  "notice": "Shadow-only guard; no corrections can reach iPhone weather display.",
+  "updated_at_utc": "2026-11-10T13:06:32.313245Z"
+}
