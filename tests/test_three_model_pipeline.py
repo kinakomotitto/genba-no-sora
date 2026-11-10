@@ -59,10 +59,13 @@ class TestNationwidePilot(unittest.TestCase):
             self.assertEqual(result["forecast_rows_saved"],54)
             self.assertEqual(result["per_model"]["icon_seamless"]["state"],"unavailable")
             self.assertEqual(result["state"],"saved")
+            self.assertEqual(result["consecutive_model_failures"],1)
+            self.assertFalse(result["all_three_models_collected"])
             self.assertEqual(len(tc.jsonl if hasattr(tc,"jsonl") else
                 (root/"model-validation"/"forecasts"/"2026-11-10.jsonl").read_text().splitlines()),54)
             result2=tc.collect(inp,root/"model-validation",fake,lambda:NOW)
             self.assertEqual(result2["state"],"saved")
+            self.assertEqual(result2["consecutive_model_failures"],2)
             self.assertEqual(len((root/"model-validation"/"forecasts"/"2026-11-10.jsonl").read_text().splitlines()),54)
 
     def test_split_nationwide_requests_and_preserve_partial_results(self):
@@ -104,6 +107,53 @@ class TestNationwidePilot(unittest.TestCase):
             self.assertEqual(state["per_model"]["icon_seamless"]["stations_successful"],9)
             self.assertTrue(state["forecast_rows_saved"]>200)
             self.assertEqual(state["daily_site_model_units_estimate"],432)
+
+    def test_incomplete_hourly_wind_or_rain_is_not_an_all_model_success(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            file=root/"snap.json"
+            file.write_text(json.dumps(snap()),encoding="utf-8")
+            def incomplete(model,sites):
+                results=fake_model(model,sites)
+                if model=="icon_seamless":
+                    results[0]["hourly"]["precipitation"]=[None]*48
+                return results
+            out=tc.collect(file,root/"data",incomplete,lambda:NOW)
+            self.assertEqual(out["state"],"saved")
+            self.assertFalse(out["all_three_models_collected"])
+            self.assertEqual(out["per_model"]["icon_seamless"]["state"],"partial")
+            self.assertEqual(out["per_model"]["icon_seamless"]["stations_successful"],8)
+            self.assertIn("incomplete_station_or_target_hours",
+                          out["per_model"]["icon_seamless"]["failure_types"])
+
+    def test_previous_public_stations_are_stable_across_national_runs(self):
+        items=stations()+[
+            {"id":str(20000+i),"name":f"公開地点{i}",
+             "lat":23+(i%12)*1.7,"lon":126+(i//12)*2,
+             "wind_ms":1,"precipitation_1h_mm":0}
+            for i in range(60)]
+        data={"source":"jma-amedas-public-homepage-json","stations":items}
+        first=tc.select_public_stations(data, max_sites=27)
+        rotated=list(reversed(items))
+        second=tc.select_public_stations({
+            "source":"jma-amedas-public-homepage-json","stations":rotated},
+            max_sites=27,preferred_station_ids=[r["id"] for r in first])
+        self.assertEqual([r["id"] for r in first],
+                         [r["id"] for r in second])
+
+    def test_consecutive_failures_reset_when_all_models_recover(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            file=root/"snap.json"
+            file.write_text(json.dumps(snap()),encoding="utf-8")
+            def fail(model,sites):
+                if model=="icon_seamless":raise RuntimeError("down")
+                return fake_model(model,sites)
+            a=tc.collect(file,root/"out",fail,lambda:NOW)
+            b=tc.collect(file,root/"out",fail,lambda:NOW)
+            c=tc.collect(file,root/"out",fake_model,lambda:NOW)
+            self.assertEqual([x["consecutive_model_failures"] for x in (a,b,c)],[1,2,0])
+            self.assertTrue(c["all_three_models_collected"])
 
     def test_adaptive_recovery_restarts_with_9_sites_after_failing_at_36(self):
         self.assertEqual(tc.adaptive_station_target(None),9)
