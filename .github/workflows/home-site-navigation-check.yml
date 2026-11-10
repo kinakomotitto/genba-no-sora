@@ -1,0 +1,26 @@
+name: ホーム・現場ナビゲーションの検証
+on:
+  push:
+    paths:
+      - 'index.html'
+      - 'sw.js'
+      - 'tests/test_home_site_navigation.cjs'
+      - '.github/workflows/home-site-navigation-check.yml'
+  pull_request:
+    paths:
+      - 'index.html'
+      - 'sw.js'
+      - 'tests/test_home_site_navigation.cjs'
+      - '.github/workflows/home-site-navigation-check.yml'
+permissions:
+  contents: read
+jobs:
+  navigation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Home GPS and Sites detail navigation without real GPS
+        run: node tests/test_home_site_navigation.cjs
+      - name: Check PWA background script
+        run: node --check sw.js

@@ -247,6 +247,17 @@ body>.tabs .ko{white-space:nowrap}
 
 
 
+
+/* v0.31: Current GPS is always Home, saved sites open in the Sites detail view */
+.site-detail-header{margin:2px 0 17px;padding:0 2px}
+.site-detail-back{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:13px;padding:10px 13px;margin:0 0 16px;background:rgba(255,255,255,.84);color:var(--pinkdark);font-size:12px;font-weight:700}
+.site-detail-name{font-size:21px;line-height:1.4;color:var(--ink);font-weight:800;overflow-wrap:anywhere;margin:0}
+.site-detail-caption{font-size:11px;color:var(--muted);line-height:1.6;margin:7px 0 0}
+.site-detail-location{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--pinkdark);margin-bottom:8px}
+.site-title-open{display:block;max-width:100%;padding:2px 3px;border:0;background:transparent;color:inherit;font-family:inherit;text-align:left;cursor:pointer;overflow-wrap:anywhere}
+.site-title-open:focus-visible,.site-detail-back:focus-visible{outline:2px solid #b588ac;outline-offset:3px}
+.radar-target-chip{display:inline-flex;align-items:center;gap:7px;max-width:100%;padding:8px 11px;margin:4px 0 12px;border:1px solid var(--line);background:rgba(255,255,255,.75);color:var(--pinkdark);border-radius:13px;font-size:11px;overflow-wrap:anywhere}
+
 /* v0.30 — opt-in nearby JMA AMeDAS observations */
 .home-amedas{margin:0 0 15px;padding:15px 13px 13px;border:1px solid var(--line);border-radius:21px;background:rgba(255,255,255,.83);box-shadow:var(--shadow)}
 .home-amedas summary{display:flex;align-items:center;justify-content:space-between;cursor:pointer;list-style:none;gap:8px}
@@ -694,10 +705,11 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
         <div class="location-name"><span class="pin">⌖</span><span id="selected-location">現在地</span></div>
         <div id="geo-status" class="sub" style="margin:4px 0 0 22px">位置情報の取得待ち</div>
       </div>
-      <button class="btn home-location-change" id="choose-location" type="button">地点切替 ⌄</button>
+      <button class="btn home-location-change" id="choose-location" type="button">現場一覧へ ›</button>
     </div>
   </div>
-  <div class="section hero home-hero">
+  <div id="weather-content">
+<div class="section hero home-hero">
     <div class="card-top">
       <div class="section-kicker">♡ 오늘의 하늘 <span class="home-kicker-jp">· 今日の空</span></div>
       <span id="weather-state" class="source">取得前</span>
@@ -817,10 +829,11 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
     <button class="btn primary" id="refresh" type="button">↻ 天気を更新</button>
     <button class="btn" id="gps" type="button">⌖ 現在地を取得</button>
   </div>
+</div>
 </section>
 <section id="radar" class="page" aria-label="雨雲レーダー">
   <h1 class="page-title">雨雲レーダー ☁</h1>
-  <p class="page-sub">비구름 레이더 · 무료 ♡ 無料で時間を動かせる雨マップ</p>
+  <p class="page-sub">비구름 레이더 · 무료 ♡ 無料で時間を動かせる雨マップ</p><div class="radar-target-chip" id="radar-target-chip" role="status">⌖ レーダーの表示地点：現在地</div>
   <div class="radar-source-select" role="group" aria-label="雨の地図の種類">
     <button type="button" class="radar-source" data-radar-mode="short" aria-pressed="false"><strong>☁ 直近の雨</strong><small>過去2時間の観測画像</small></button>
     <button type="button" class="radar-source active" data-radar-mode="long" aria-pressed="true"><strong>🌧 15時間先</strong><small>気象庁モデル・降水予測</small></button>
@@ -867,7 +880,17 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   </div>
   <div class="notice">「直近の雨」は過去のレーダー観測、「15時間先」は数値モデルによる降水量の予測。精度や表現方法は違うよ。雷・警報・現場の安全確認には気象庁公式情報と現地の状況を優先してね。雨雲接近の自動通知は未搭載です。</div>
 </section>
-<section id="sites" class="page"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名（空欄なら自動で付けるよ）<input id="site-name" maxlength="60" placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><input type="hidden" id="site-lat"><input type="hidden" id="site-lon">
+<section id="sites" class="page">
+  <div id="site-weather-detail" class="hidden">
+    <div class="site-detail-header">
+      <button type="button" class="site-detail-back" id="site-detail-back">‹ 現場一覧に戻る</button>
+      <div class="site-detail-location">📍 保存した現場の天気 · 현장 날씨</div>
+      <h1 class="site-detail-name" id="site-detail-name">現場の天気</h1>
+      <p class="site-detail-caption" id="site-detail-coords">現場の位置情報</p>
+    </div>
+    <div id="site-weather-host"></div>
+  </div>
+  <div id="sites-index"><h1 class="page-title">保存した現場 ♡</h1><p class="page-sub">저장한 장소 · お気に入り地点</p><button class="btn soft full" id="use-current">⌖ 現在地の天気に戻る</button><div class="site-fast-wrap" style="margin-top:13px"><button id="quick-save-site" type="button" class="site-fast">♡ ワンタッチで現在地を登録 <span class="ko" lang="ko">한 번에 저장</span></button><div id="save-current-status" role="status" aria-live="polite">位置情報を許可すると、自動で現場を保存します。名前は後から変更できるよ。</div></div><div id="site-list" style="margin-top:15px"></div><div class="card" style="margin-top:15px"><div class="card-top"><span class="card-title">♡ 現地の天気記録</span><span class="tiny">기록</span></div><div class="tagline">タップで残した目視の記録（この端末にのみ保存）</div><div id="wx-history" class="wx-history"></div></div><div class="card" style="margin-top:15px"><div class="card-title">＋ 新しい現場を保存</div><p class="tagline">現場名を指定したいときはこちら。GPS入力もできるよ。</p><form id="site-form" class="fields"><label class="field">現場名（空欄なら自動で付けるよ）<input id="site-name" maxlength="60" placeholder="例：〇〇線 3号〜4号鉄塔"></label><label class="field">メモ（任意）<textarea id="site-note" maxlength="250" placeholder="集合場所や現場の目印など"></textarea></label><input type="hidden" id="site-lat"><input type="hidden" id="site-lon">
 <div class="site-location-label">📍 場所を決める <span>どちらかを選んでね</span></div>
 <div class="site-location-choices">
   <button type="button" class="btn" id="fill-gps">⌖ 現在地を使う</button>
@@ -880,7 +903,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
     <span class="settings-entry-copy"><strong>設定・カスタマイズ ♡</strong><small>通知・スキン・予報データ</small></span>
     <span class="settings-entry-arrow" aria-hidden="true">›</span>
   </button>
-</div></section>
+</div></div></section>
 <section id="settings" class="page settings-screen" aria-label="設定画面">
   <button type="button" class="settings-back" id="settings-back">‹ 現場に戻る</button>
   <h1 class="page-title">設定 ♡ <span aria-hidden="true">⚙️</span></h1>
@@ -948,7 +971,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.30 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.31 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -1764,10 +1787,92 @@ function renderRadar15h(){
 }
 function renderRainOutlook(h,stale){const summary=$('rain-outlook-summary'),row=$('rain-outlook-hours');row.replaceChildren();const times=Array.isArray(h.time)?h.time:[];const probs=Array.isArray(h.precipitation_probability)?h.precipitation_probability:[];const nowJP=new Date(Date.now()+9*3600000).toISOString().slice(0,13)+':00';const first=times.findIndex(t=>t>=nowJP);const values=first<0?[]:times.slice(first,first+3).map((t,j)=>({time:t,prob:probs[first+j]}));if(!values.length){summary.textContent='この時間帯の予報はありません。取得済みデータが古い可能性があります。';return}const numbers=values.map(v=>v.prob).filter(v=>Number.isFinite(v));summary.textContent=numbers.length?`${stale?'前回保存した予報 · ':''}この3つの時間帯の最大降水確率 ${Math.round(Math.max(...numbers))}%`:'降水確率の数値がありません';for(const v of values){const chip=document.createElement('div');chip.className='rain-hour'+(Number.isFinite(v.prob)&&v.prob>=60?' high':'');const t=document.createElement('div');t.className='time';t.textContent=v.time.slice(11,16);const prob=document.createElement('div');prob.className='prob';prob.textContent=Number.isFinite(v.prob)?Math.round(v.prob)+'%':'--%';chip.append(t,prob);row.append(chip);}}
 
-function selectLoc(s){selected=s;updateWindyLinks();$('selected-location').textContent=s.name;$('geo-status').textContent=s.kind==='current'?'GPSの現在地':`保存現場 · ${s.lat.toFixed(4)}, ${s.lon.toFixed(4)}`;showTab('home');const p=getCoords();if(p){const old=cache[keyFor(p.lat,p.lon)];if(old)renderWeather(old.data,old.fetched,true);if(navigator.onLine)fetchWeather(p.lat,p.lon);}else if(s.kind==='current')locate();}
-function showTab(id){if(id==='radar'){renderRadar15h();}else{radarStop();}const isChanging=!$(id)?.classList.contains('active');document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id===id));document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===(id==='settings'?'sites':id)));if(id==='sites')renderSites();if(id==='radar')requestAnimationFrame(()=>ensureRadarMap());if(isChanging)window.scrollTo(0,0);}
+// v0.31: Move one existing weather dashboard; no duplicate IDs or duplicate API screens.
+function resetWeatherDashboard(message){
+  const labels={
+    'temperature':'--°','description':message||'現在地の天気を読み込みます',
+    'apparent':'体感温度 --°C','weather-icon':'☁️','wind':'-- m/s',
+    'gust':'-- m/s','rain-prob':'--%','weather-state':'取得待ち',
+    'rain-outlook-summary':'予報を取得すると表示するよ。',
+    'wind-trend-status':'天気を取得すると表示するよ。',
+    'model-compare-status':'地点の予報を確認中…',
+    'model-compare-headline':'比較する ⌄','amedas-status':'観測地点を確認中…',
+    'amedas-wind-value':'—','amedas-rain-value':'—',
+    'amedas-wind-station':'観測所を確認中','amedas-rain-station':'観測所を確認中',
+    'saved-label':'選択地点の天気予報を取得中…'
+  };
+  for(const [id,value] of Object.entries(labels)){const el=$(id);if(el)el.textContent=value}
+  for(const id of ['hours','rain-outlook-hours','wind-trend-hours','wind-trend-chart',
+                   'model-compare-rows','model-compare-times'])$(id)?.replaceChildren();
+  for(const id of ['model-compare-wind','model-compare-gust','model-compare-rain']){
+    if($(id))$(id).textContent='—';
+  }
+  if($('model-compare-note'))$('model-compare-note').textContent='予報の取得後に比較するよ。';
+  $('offline-notice')?.classList.add('hidden');
+}
+function showCachedWeatherFor(p){
+  if(!p){resetWeatherDashboard('GPSの現在地を取得してね');window.SoraCompare?.clear();window.SoraAmedas?.clear();return}
+  const old=cache[keyFor(p.lat,p.lon)];
+  if(old)renderWeather(old.data,old.fetched,true);
+  else resetWeatherDashboard('この地点の天気を取得中…');
+  window.SoraCompare?.prepare(p.lat,p.lon);
+  window.SoraAmedas?.setLocation(p.lat,p.lon);
+}
+function restoreHomeLocation(){
+  const dashboard=$('weather-content');
+  if(dashboard.parentElement!==$('home'))$('home').append(dashboard);
+  $('sites-index').classList.remove('hidden');
+  $('site-weather-detail').classList.add('hidden');
+  if(selected.kind==='site'){
+    fetchController?.abort();
+    fetchController=null; // a delayed site response must never repaint the Home screen
+    selected={kind:'current',name:'現在地'};
+    $('selected-location').textContent='現在地';
+    $('geo-status').textContent=lastGPS
+      ?'前回のGPS · '+lastGPS.lat.toFixed(4)+', '+lastGPS.lon.toFixed(4)+'（位置を更新中）'
+      :'GPSの位置情報を取得中…';
+    showCachedWeatherFor(lastGPS);
+  }
+  updateWindyLinks();
+}
+function selectLoc(s){
+  if(s.kind!=='site'){showTab('home');return}
+  if(!Number.isFinite(s.lat)||!Number.isFinite(s.lon))return;
+  fetchController?.abort();
+  fetchController=null;
+  selected={...s,kind:'site'};
+  $('site-weather-host').append($('weather-content'));
+  $('sites-index').classList.add('hidden');
+  $('site-weather-detail').classList.remove('hidden');
+  $('site-detail-name').textContent=s.name;
+  $('site-detail-coords').textContent='保存現場 · '+s.lat.toFixed(4)+', '+s.lon.toFixed(4);
+  updateWindyLinks();
+  showCachedWeatherFor(s);
+  showTab('sites',{siteDetail:true});
+  fetchWeather(s.lat,s.lon); // offline handler restores saved site predictions too
+}
+function showTab(id,options={}){
+  const detail=id==='sites'&&options.siteDetail===true;
+  if(id==='home'||(id==='sites'&&!detail))restoreHomeLocation();
+  if(id==='sites'){
+    $('site-weather-detail').classList.toggle('hidden',!detail);
+    $('sites-index').classList.toggle('hidden',detail);
+  }
+  if(id==='radar'){
+    const label=selected.kind==='site'?'保存現場：'+selected.name:'現在地';
+    $('radar-target-chip').textContent='⌖ レーダーの表示地点：'+label;
+    renderRadar15h();
+  }else radarStop();
+  const isChanging=!$(id)?.classList.contains('active');
+  document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id===id));
+  document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===(id==='settings'?'sites':id)));
+  if(id==='sites'&&!detail)renderSites();
+  if(id==='radar')requestAnimationFrame(()=>ensureRadarMap());
+  if(isChanging)window.scrollTo(0,0);
+  if(id==='home')locate({fresh:true});
+}
 function gps(success,fail,options={}){if(!navigator.geolocation){fail&&fail('このブラウザではGPSが使えません');return}navigator.geolocation.getCurrentPosition(pos=>{lastGPS={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy,at:new Date().toISOString()};save();updateWindyLinks();success(lastGPS)},err=>{const msg=err.code===1?'位置情報の許可が必要です。ブラウザの設定で許可してください':err.code===3?'GPSの取得がタイムアウトしました':'GPSの位置を取得できませんでした';fail&&fail(msg)},{enableHighAccuracy:true,timeout:options.fresh?18000:12000,maximumAge:options.fresh?0:300000});}
-function locate(){$('geo-status').textContent='GPSを取得中…';gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}})}
+function locate(options={}){$('geo-status').textContent='GPSを取得中…';gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
 
 function renderWindTrend(hourly,stale){
   const status=$('wind-trend-status'),chart=$('wind-trend-chart'),hours=$('wind-trend-hours');
@@ -1896,8 +2001,11 @@ function renderSites(){
 
     const top=document.createElement('div');
     top.className='site-compact-top';
-    const name=document.createElement('div');
-    name.className='site-name site-compact-name';
+    const name=document.createElement('button');
+    name.type='button';
+    name.className='site-name site-compact-name site-title-open';
+    name.onclick=()=>selectLoc({kind:'site',...s});
+    name.setAttribute('aria-label',s.name+'の天気を見る');
     name.textContent='♡ '+s.name;
     name.title=s.name;
 
@@ -2152,7 +2260,7 @@ $('site-map-save-now').addEventListener('click',()=>{
   showTab('sites');
 });
 
-$('choose-location').onclick=()=>showTab('sites');$('use-current').onclick=()=>selectLoc({kind:'current',name:'現在地'});$('refresh').onclick=()=>{const p=getCoords();p?fetchWeather(p.lat,p.lon):locate()};$('gps').onclick=()=>selectLoc({kind:'current',name:'現在地'});$('settings-open').addEventListener('click',()=>showTab('settings'));
+$('site-detail-back').onclick=()=>showTab('sites');$('choose-location').onclick=()=>showTab('sites');$('use-current').onclick=()=>selectLoc({kind:'current',name:'現在地'});$('refresh').onclick=()=>{const p=getCoords();p?fetchWeather(p.lat,p.lon):locate()};$('gps').onclick=()=>selectLoc({kind:'current',name:'現在地'});$('settings-open').addEventListener('click',()=>showTab('settings'));
 $('settings-back').addEventListener('click',()=>showTab('sites'));
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 function focusWxRecordFromNotification(){
