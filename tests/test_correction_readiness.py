@@ -98,6 +98,18 @@ class CorrectionGateTests(unittest.TestCase):
         inconsistent[-1]["rain_observed_mm"]+=0.1
         self.assertEqual(len(cr.common_cohorts(inconsistent,6)),0)
 
+    def test_public_station_nearest_anchor_region_is_explicitly_approximate(self):
+        metadata={
+            "11000":{"name":"青森","lat":40.82,"lon":140.75},
+            "11001":{"name":"札幌","lat":43.05,"lon":141.35},
+            "11002":{"name":"公開観測所","lat":40.70,"lon":140.60}
+        }
+        self.assertEqual(cr.research_region("11000",metadata),"東北")
+        self.assertEqual(cr.research_region("11002",metadata),"青森近傍")
+        self.assertEqual(cr.research_region("99999",metadata),"地域未分類")
+        # Old tests still provide the name string instead of a metadata record.
+        self.assertEqual(cr.research_region("11000",{"11000":"青森"}),"東北")
+
     def test_incomplete_rain_or_wind_does_not_count_as_three_model_coverage(self):
         records=pair_rows(550,stations=5)
         for row in records:
