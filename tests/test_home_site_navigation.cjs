@@ -58,7 +58,7 @@ let aborted=0;
 const context={
  document:{getElementById(id){return ids[id]||(ids[id]=node(id))},
    querySelectorAll(selector){if(selector==='.page')return pages;if(selector==='.tab')return tabs;return[]}},
- window:{SoraCompare:{prepare(){modelPrepares++},clear(){modelsCleared++}},
+ window:{scrollTo(){},SoraCompare:{prepare(){modelPrepares++},clear(){modelsCleared++}},
    SoraAmedas:{setLocation(){},clear(){amedasCleared++}}},
  navigator:{onLine:false},cache:{},lastGPS:null,
  fetchController:{abort(){aborted++}},
