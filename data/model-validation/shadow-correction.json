@@ -17,7 +17,18 @@
       "status": "insufficient_history",
       "wind": null,
       "rain": null,
-      "candidate_for_public_release": false
+      "candidate_for_public_release": false,
+      "rolling_validation": {
+        "state": "insufficient_seasonal_evidence",
+        "required_independent_days": 570,
+        "independent_days": 0,
+        "required_folds": 4,
+        "fold_count": 0,
+        "seasons_covered": [],
+        "all_folds_passed": false,
+        "passed": false,
+        "folds": []
+      }
     },
     "6": {
       "split": {
@@ -28,7 +39,18 @@
       "status": "insufficient_history",
       "wind": null,
       "rain": null,
-      "candidate_for_public_release": false
+      "candidate_for_public_release": false,
+      "rolling_validation": {
+        "state": "insufficient_seasonal_evidence",
+        "required_independent_days": 570,
+        "independent_days": 0,
+        "required_folds": 4,
+        "fold_count": 0,
+        "seasons_covered": [],
+        "all_folds_passed": false,
+        "passed": false,
+        "folds": []
+      }
     },
     "12": {
       "split": {
@@ -39,7 +61,18 @@
       "status": "insufficient_history",
       "wind": null,
       "rain": null,
-      "candidate_for_public_release": false
+      "candidate_for_public_release": false,
+      "rolling_validation": {
+        "state": "insufficient_seasonal_evidence",
+        "required_independent_days": 570,
+        "independent_days": 0,
+        "required_folds": 4,
+        "fold_count": 0,
+        "seasons_covered": [],
+        "all_folds_passed": false,
+        "passed": false,
+        "folds": []
+      }
     },
     "24": {
       "split": {
@@ -50,7 +83,18 @@
       "status": "insufficient_history",
       "wind": null,
       "rain": null,
-      "candidate_for_public_release": false
+      "candidate_for_public_release": false,
+      "rolling_validation": {
+        "state": "insufficient_seasonal_evidence",
+        "required_independent_days": 570,
+        "independent_days": 0,
+        "required_folds": 4,
+        "fold_count": 0,
+        "seasons_covered": [],
+        "all_folds_passed": false,
+        "passed": false,
+        "folds": []
+      }
     }
   },
   "cautions": [
@@ -59,5 +103,5 @@
     "Even a passing holdout challenger does not prove mountain/forestry-site accuracy.",
     "Rainfall is one-hour total; strong-event cutoffs are research diagnostics, not work thresholds."
   ],
-  "evaluated_at_utc": "2026-11-10T13:11:22.544753Z"
+  "evaluated_at_utc": "2026-11-10T18:56:16.636577Z"
 }
