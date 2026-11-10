@@ -1,0 +1,22 @@
+name: 全国気象収集計画のオフライン検査
+on:
+  push:
+    paths:
+      - 'tools/nationwide_collection_plan.py'
+      - 'tests/test_nationwide_collection_plan.py'
+      - '.github/workflows/nationwide-plan-check.yml'
+  pull_request:
+    paths:
+      - 'tools/nationwide_collection_plan.py'
+      - 'tests/test_nationwide_collection_plan.py'
+      - '.github/workflows/nationwide-plan-check.yml'
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify dry-run national scheduler (no weather API calls)
+        run: python3 -m unittest discover -s tests -p test_nationwide_collection_plan.py -v
