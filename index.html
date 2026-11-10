@@ -993,7 +993,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.36 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.37 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -1137,6 +1137,10 @@ async function showResearchStatus(){
     if(health){
       lines.push(health.state==='healthy'?'🩺 データ収集：最新の自動点検は正常':
         '🩺 データ収集：欠測や遅延の可能性あり（補正候補は停止）');
+      const failed=Number(health.consecutive_degraded_checks||0);
+      if(failed>=2){
+        lines.push('研究用データの連続異常：'+failed+'回（3回以上ならGitHubで確認対象）');
+      }
     }
     const holdout=shadow?.by_lead?.['6'];
     if(holdout){
