@@ -199,6 +199,73 @@ def score_predictions(held,model,metric,adjustments):
         "shadow_candidate_passed_strict_holdout_tests":gate
     }
 
+def rolling_origin_validation(cohorts,train_days=TRAIN_DAYS,
+                              holdout_days=HOLDOUT_DAYS,min_folds=4):
+    """Four or more disjoint 90-day windows spanning all calendar seasons.
+
+    Models and correction parameters are refit at the start of each fold using
+    only preceding dates. The same held-out window is NEVER used in training.
+    """
+    dates=sorted({jst_day(g) for g in cohorts})
+    required_days=train_days+min_folds*holdout_days
+    summary={
+        "state":"insufficient_seasonal_evidence",
+        "required_independent_days":required_days,
+        "independent_days":len(dates),
+        "required_folds":min_folds,
+        "fold_count":0,"seasons_covered":[],
+        "all_folds_passed":False,
+        "passed":False,"folds":[]
+    }
+    if len(dates)<required_days:
+        return summary
+    for offset in range(train_days,len(dates)-holdout_days+1,holdout_days):
+        train_cut=set(dates[:offset])
+        hold_cut=set(dates[offset:offset+holdout_days])
+        train=[g for g in cohorts if jst_day(g) in train_cut]
+        held=[g for g in cohorts if jst_day(g) in hold_cut]
+        if not train or not held:
+            continue
+        assessments={}
+        for metric in ("wind","rain"):
+            model,_=best_training_model(train,metric)
+            calibration=train_adjustments(train,model,metric,train_days)
+            assessments[metric]=score_predictions(held,model,metric,calibration)
+        seasons=sorted({g[MODELS[0]].get("season") for g in held
+                        if g[MODELS[0]].get("season") in ("春","夏","秋","冬")})
+        success=bool(all(assessments[k] and
+                   assessments[k]["shadow_candidate_passed_strict_holdout_tests"]
+                   for k in ("wind","rain")))
+        summary["folds"].append({
+            "training_through":dates[offset-1],
+            "holdout_from":dates[offset],
+            "holdout_through":dates[offset+holdout_days-1],
+            "independent_train_days":offset,
+            "independent_holdout_days":holdout_days,
+            "seasons":seasons,
+            "wind_passed":bool(assessments["wind"] and assessments["wind"]["shadow_candidate_passed_strict_holdout_tests"]),
+            "rain_passed":bool(assessments["rain"] and assessments["rain"]["shadow_candidate_passed_strict_holdout_tests"]),
+            "no_new_safety_misses":all(
+                assessments[k] and
+                assessments[k]["safety_counts"]["missed_strong_wind"]<=
+                assessments[k]["safety_counts"]["baseline_missed_strong_wind"] and
+                assessments[k]["safety_counts"]["missed_heavy_rain"]<=
+                assessments[k]["safety_counts"]["baseline_missed_heavy_rain"] and
+                assessments[k]["safety_counts"]["missed_wet"]<=
+                assessments[k]["safety_counts"]["baseline_missed_wet"]
+                for k in ("wind","rain")),
+            "passed":success,
+        })
+    covered={s for f in summary["folds"] for s in f["seasons"]}
+    summary["fold_count"]=len(summary["folds"])
+    summary["seasons_covered"]=sorted(covered)
+    summary["all_folds_passed"]=bool(summary["folds"]) and all(f["passed"] for f in summary["folds"])
+    summary["passed"]=(len(summary["folds"])>=min_folds and
+                       covered=={"春","夏","秋","冬"} and
+                       summary["all_folds_passed"])
+    summary["state"]="passed_shadow_only_requires_review" if summary["passed"] else "seasonal_evidence_not_proven"
+    return summary
+
 def trial(rows,readiness=None,min_train_days=TRAIN_DAYS,holdout_days=HOLDOUT_DAYS):
     """Compute isolated evidence. No live weather endpoint reads the result."""
     output={
@@ -221,7 +288,8 @@ def trial(rows,readiness=None,min_train_days=TRAIN_DAYS,holdout_days=HOLDOUT_DAY
         common=common_cohorts(rows,lead)
         train,held,split=chronological_partition(common,min_train_days,holdout_days)
         result={"split":split,"status":"insufficient_history","wind":None,"rain":None,
-                "candidate_for_public_release":False}
+                "candidate_for_public_release":False,
+                "rolling_validation":rolling_origin_validation(common,min_train_days,holdout_days)}
         if train and held:
             result["status"]="shadow_evaluated"
             for metric in ("wind","rain"):
@@ -234,7 +302,7 @@ def trial(rows,readiness=None,min_train_days=TRAIN_DAYS,holdout_days=HOLDOUT_DAY
                 .get("evidence_sufficient_for_candidate_testing",False))
             result["candidate_passed_holdout"]=candidate_pass
             result["long_term_evidence_passed"]=readiness_pass
-            if candidate_pass and readiness_pass:
+            if candidate_pass and readiness_pass and result["rolling_validation"]["passed"]:
                 result["status"]="passes_shadow_checks_requires_separate_release_review"
                 # Deliberately never automatically authorize a live change.
         output["by_lead"][str(lead)]=result
