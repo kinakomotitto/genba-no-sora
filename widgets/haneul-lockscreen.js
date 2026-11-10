@@ -1,4 +1,4 @@
-// 하늘 ♡ · 現在地の空 — Scriptable ロック画面ウィジェット v1.4
+// 하늘 ♡ · 現在地の空 — Scriptable ロック画面ウィジェット v1.5
 // ロック画面の長方形を左右に2つ。左「今」、右「予報」を見やすく表示。
 // ホーム画面の小・中ウィジェットなら最大5時間分まで表示。
 // ※ ロック画面の色・背景・形はiOS側が調整するため、完全なガラス調
@@ -101,6 +101,17 @@ const hours=reading&&Array.isArray(reading.hours)?reading.hours.slice(0,5):[];
 const rainText=reading&&reading.rain!==null?"강수 "+reading.rain+"%":"강수 --";
 const timeLabel=reading&&reading.weatherTime?reading.weatherTime:"--:--";
 const updated=fromCache?"前回 "+timeLabel:timeLabel;
+// 実際にAPIから取得した時刻（予報対象時刻ではない）を日本時間で表示。
+// オフライン時は保存済みの取得時刻を「前回」として区別する。
+function fetchedClock(ms){
+  if(!Number.isFinite(ms))return "--:--";
+  try{
+    return new Intl.DateTimeFormat("ja-JP",{
+      timeZone:"Asia/Tokyo",hour:"2-digit",minute:"2-digit",hourCycle:"h23"
+    }).format(new Date(ms));
+  }catch(_){return "--:--";}
+}
+const fetchedLabel=reading?fetchedClock(reading.fetchedAt):"--:--";
 function textLine(parent,content,size,bold){
   const item=parent.addText(content);
   item.font=bold?Font.semiboldSystemFont(size):Font.mediumSystemFont(size);
@@ -156,7 +167,7 @@ if(family==="accessoryInline"){
     widget.addSpacer(2);
     centerLine(desc.mark+" "+temperature,30,true,0.94);
     widget.addSpacer(2);
-    centerLine("📍현재 위치 · "+(fromCache?"前回":shortKo),10,false,0.80);
+    centerLine("📍현재 위치 · "+(reading?(fromCache?"前回":"↻")+fetchedLabel:"未取得"),10,false,0.78);
   }
   widget.addSpacer();
 }else{
