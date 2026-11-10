@@ -1,0 +1,22 @@
+name: 気象モデルの検証計算（オフライン）
+on:
+  push:
+    paths:
+      - 'tools/model_verification.py'
+      - 'tests/test_model_verification.py'
+      - '.github/workflows/model-verification-check.yml'
+  pull_request:
+    paths:
+      - 'tools/model_verification.py'
+      - 'tests/test_model_verification.py'
+      - '.github/workflows/model-verification-check.yml'
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check model evaluation without external APIs
+        run: python3 -m unittest discover -s tests -p test_model_verification.py -v
