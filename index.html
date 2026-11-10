@@ -993,7 +993,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.35 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.36 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -1094,10 +1094,13 @@ async function showResearchStatus(){
     return await response.json();
   };
   try{
-    const [report,collection,national]=await Promise.all([
+    const [report,collection,national,health,shadow,guard]=await Promise.all([
       getJson('./data/model-validation/status.json'),
       getJson('./data/model-validation/collection-status.json'),
       getJson('./data/amedas/latest.json'),
+      getJson('./data/model-validation/pipeline-health.json'),
+      getJson('./data/model-validation/shadow-correction.json'),
+      getJson('./data/model-validation/correction-guard.json'),
     ]);
     const lines=[];
     if(national?.observed_at&&national?.metrics){
@@ -1109,6 +1112,9 @@ async function showResearchStatus(){
     if(collection){
       const ok=Object.values(collection.per_model||{}).filter(m=>m?.state==='ok').length;
       lines.push('🌦️ 3モデル予報：'+ok+'/3モデル取得 · '+Number(collection.forecast_rows_saved||0)+'件');
+      if(collection.selected_station_count){
+        lines.push('検証用の全国代表観測所：'+Number(collection.selected_station_count)+'か所（段階的に拡充中）');
+      }
       if(collection.state==='not_ready')lines.push('※ 公開観測データの準備待ち');
     }else lines.push('🌦️ 3モデル予報：収集結果の確認待ち');
     if(report){
@@ -1128,6 +1134,20 @@ async function showResearchStatus(){
       lines.push(common>=30?'検証用の暫定値を集計中。地域・季節ごとの精度は未確定。':
         'まだ十分な共通サンプルがなく、精度の優劣は判断できません。');
     }else lines.push('📊 予報と実測の照合：まだ準備中');
+    if(health){
+      lines.push(health.state==='healthy'?'🩺 データ収集：最新の自動点検は正常':
+        '🩺 データ収集：欠測や遅延の可能性あり（補正候補は停止）');
+    }
+    const holdout=shadow?.by_lead?.['6'];
+    if(holdout){
+      lines.push('🧪 自動補正の試験：'+(holdout.status==='insufficient_history'?
+        '季節をまたぐ学習データを蓄積中':'未使用期間での試験中（本番には未反映）'));
+    }
+    if(guard){
+      lines.push(guard.shadow_state==='shadow_only_candidate_for_review'?
+        '🛡️ 補正候補：独立した追加審査待ち':
+        '🛡️ 安全装置：元の3モデルを使う状態');
+    }
     lines.push('♡ 自動補正は未使用。現場の安全判断には使わないでね。');
     el.textContent=lines.join('\n');
     el.style.whiteSpace='pre-line';
