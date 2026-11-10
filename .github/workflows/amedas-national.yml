@@ -4,20 +4,6 @@ on:
     # UTC 00:12, 06:12, 12:12, 18:12 (JST 09:12, 15:12, 21:12, 03:12)
     - cron: '12 0,6,12,18 * * *'
   workflow_dispatch:
-  push:
-    # First live collection after enabling this workflow. Never trigger on stored data.
-    branches: [main]
-    paths:
-      - 'tools/amedas_snapshot.py'
-      - 'tools/three_model_collect.py'
-      - 'tools/score_amedas_models.py'
-      - 'tools/correction_readiness.py'
-      - 'tools/forecast_skill_audit.py'
-      - 'tools/shadow_correction.py'
-      - 'tools/correction_guard.py'
-      - 'tools/weather_collection_health.py'
-      - '.github/workflows/amedas-national.yml'
-
 permissions:
   contents: write
 
