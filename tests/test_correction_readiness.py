@@ -85,6 +85,15 @@ class CorrectionGateTests(unittest.TestCase):
         self.assertEqual(cr.observation_matches([obj],[dict(obs,quality="suspect")]),[])
         self.assertEqual(cr.observation_matches([obj],[dict(obs,station_id="99999")]),[])
 
+    def test_incomplete_rain_or_wind_does_not_count_as_three_model_coverage(self):
+        records=pair_rows(550,stations=5)
+        for row in records:
+            if row["model"]=="icon_seamless":
+                row["rain_forecast_mm"]=None
+        r=cr.report(records)["lead_groups"]["6"]
+        self.assertEqual(r["coverage"]["matched_common_hours"],0)
+        self.assertFalse(r["evidence_sufficient_for_candidate_testing"])
+
     def test_monthly_archive_is_idempotent_and_remains_for_seasons(self):
         d=dt.datetime(2026,11,10,10,tzinfo=UTC)
         row={"station_id":"11000","model":"jma_msm","valid_at":"2026-11-10T06:00:00Z",
