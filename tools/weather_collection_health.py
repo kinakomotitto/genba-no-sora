@@ -47,7 +47,8 @@ def assess(observation,collection,validation,now=None,previous=None):
     obs_hours=age_hours((observation or {}).get("observed_at"),now)
     metrics=(observation or {}).get("metrics") or {}
     if not isinstance(metrics,dict):metrics={}
-    station_count=int(metrics.get("stations",0))
+    count=metrics.get("stations",0)
+    station_count=count if isinstance(count,int) and not isinstance(count,bool) and count>=0 else 0
     previous=previous if isinstance(previous,dict) else {}
     prior_stations=previous.get("national_observation_station_count")
     if isinstance(prior_stations,int) and not isinstance(prior_stations,bool) and prior_stations>=200:
@@ -61,14 +62,23 @@ def assess(observation,collection,validation,now=None,previous=None):
         reasons.append("observation_missing_or_stale")
     if station_count<200:
         reasons.append("national_observation_coverage_incomplete")
+    if isinstance(observation,dict) and observation.get("source") not in (
+            None,"jma-amedas-public-homepage-json"):
+        reasons.append("unexpected_observation_source")
     forecast_hours=age_hours((collection or {}).get("fetched_at"),now)
     if forecast_hours is None or forecast_hours<-.1 or forecast_hours>MAX_FORECAST_HOURS:
         reasons.append("forecast_collection_missing_or_stale")
-    good=[k for k,v in (collection or {}).get("per_model",{}).items() if isinstance(v,dict) and v.get("state")=="ok"]
-    if len(good)<3 or (collection or {}).get("state")!="saved":
+    model_map=(collection or {}).get("per_model") or {}
+    if not isinstance(model_map,dict):model_map={}
+    required=("jma_msm","ecmwf_ifs","icon_seamless")
+    good=[model for model in required if isinstance(model_map.get(model),dict)
+          and model_map[model].get("state")=="ok"]
+    saved_rows=(collection or {}).get("forecast_rows_saved")
+    rows_missing=isinstance(saved_rows,int) and not isinstance(saved_rows,bool) and saved_rows<=0
+    if len(good)<3 or (collection or {}).get("state")!="saved" or rows_missing:
         reasons.append("model_coverage_degraded")
     verification_age=age_hours((validation or {}).get("updated_at_utc"),now)
-    if verification_age is None or verification_age>MAX_FORECAST_HOURS:
+    if verification_age is None or verification_age<-.1 or verification_age>MAX_FORECAST_HOURS:
         reasons.append("verification_status_not_updated")
     previous_count=previous.get("consecutive_degraded_checks",0)
     if not isinstance(previous_count,int) or isinstance(previous_count,bool) or previous_count<0:
