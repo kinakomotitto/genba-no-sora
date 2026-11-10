@@ -4,12 +4,20 @@ on:
     paths:
       - 'index.html'
       - 'sw.js'
+      - 'model-comparison.js'
+      - 'observation-verification.js'
+      - 'tests/test_observation_verification.cjs'
+      - 'tests/test_model_compare_snapshots.cjs'
       - 'tests/test_home_site_navigation.cjs'
       - '.github/workflows/home-site-navigation-check.yml'
   pull_request:
     paths:
       - 'index.html'
       - 'sw.js'
+      - 'model-comparison.js'
+      - 'observation-verification.js'
+      - 'tests/test_observation_verification.cjs'
+      - 'tests/test_model_compare_snapshots.cjs'
       - 'tests/test_home_site_navigation.cjs'
       - '.github/workflows/home-site-navigation-check.yml'
 permissions:
@@ -22,5 +30,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify Home GPS and Sites detail navigation without real GPS
         run: node tests/test_home_site_navigation.cjs
-      - name: Check PWA background script
-        run: node --check sw.js
+      - name: Check pre-record only visual weather observation matching
+        run: node tests/test_observation_verification.cjs
+      - name: Verify weather code snapshots and fallback without any network
+        run: node tests/test_model_compare_snapshots.cjs
+      - name: Check JavaScript syntax and PWA background script
+        run: |
+          node --check model-comparison.js
+          node --check observation-verification.js
+          node --check sw.js
