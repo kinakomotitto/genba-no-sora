@@ -94,18 +94,30 @@ class CorrectionGateTests(unittest.TestCase):
         self.assertEqual(r["coverage"]["matched_common_hours"],0)
         self.assertFalse(r["evidence_sufficient_for_candidate_testing"])
 
-    def test_monthly_archive_is_idempotent_and_remains_for_seasons(self):
-        d=dt.datetime(2026,11,10,10,tzinfo=UTC)
-        row={"station_id":"11000","model":"jma_msm","valid_at":"2026-11-10T06:00:00Z",
-             "fetched_at":"2026-11-10T00:10:00Z","lead_h":6,"wind_forecast_ms":4,
-             "wind_observed_ms":5,"rain_forecast_mm":0,"rain_observed_mm":0}
+    def test_daily_archive_compressed_after_two_day_lag_and_immutable(self):
+        now=dt.datetime(2026,11,10,10,tzinfo=UTC)
+        when=dt.datetime(2026,11,8,6,tzinfo=UTC)
+        rows=[]
+        for station in range(5):
+            for model in cr.MODELS:
+                rows.append({
+                    "station_id":str(11000+station),"model":model,
+                    "valid_at":when.isoformat().replace("+00:00","Z"),
+                    "fetched_at":(when-dt.timedelta(hours=6)).isoformat().replace("+00:00","Z"),
+                    "lead_h":6,"wind_forecast_ms":4,"wind_observed_ms":5,
+                    "rain_forecast_mm":0,"rain_observed_mm":0
+                })
         with tempfile.TemporaryDirectory() as path:
             archive=Path(path)
-            self.assertEqual(cr.archive_matches([row],archive,d),1)
-            self.assertEqual(cr.archive_matches([row],archive,d),0)
-            self.assertEqual(len(cr.read_archive(archive)),1)
-            self.assertEqual(len(list(archive.glob("*.jsonl"))),1)
-            self.assertEqual(cr.report(cr.read_archive(archive))["records_archived"],1)
+            self.assertEqual(cr.archive_matches(rows,archive,now),15)
+            self.assertEqual(cr.archive_matches(rows,archive,now),0)
+            self.assertEqual(len(cr.read_archive(archive)),15)
+            self.assertEqual(len(list(archive.glob("*.jsonl.gz"))),1)
+            self.assertEqual(cr.report(cr.read_archive(archive))["records_archived"],15)
+            # Do not freeze yesterday or today, to permit late observations.
+            yesterday=[dict(r,valid_at="2026-11-09T06:00:00Z") for r in rows]
+            self.assertEqual(cr.archive_matches(yesterday,archive,now),0)
+            self.assertEqual(len(cr.read_archive(archive)),15)
 
     def test_missing_one_model_does_not_claim_common_samples(self):
         groups=pair_rows(550,stations=5,models=("jma_msm","ecmwf_ifs"))
