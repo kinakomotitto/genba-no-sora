@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "fetched_at": "2026-11-10T12:43:04.440648Z",
+  "fetched_at": "2026-11-10T13:04:11.360930Z",
   "type": "research_pilot_public_stations_only",
   "not_nationwide_model_coverage": true,
   "models": [
@@ -21,22 +21,22 @@
   ],
   "per_model": {
     "jma_msm": {
-      "state": "ok",
-      "rows": 27
+      "state": "unavailable",
+      "reason": "ValueError"
     },
     "ecmwf_ifs": {
-      "state": "ok",
-      "rows": 27
+      "state": "unavailable",
+      "reason": "ValueError"
     },
     "icon_seamless": {
-      "state": "ok",
-      "rows": 27
+      "state": "unavailable",
+      "reason": "ValueError"
     }
   },
   "calls_attempted": 3,
-  "forecast_rows_saved": 81,
+  "forecast_rows_saved": 0,
   "automatic_correction_enabled": false,
   "data_source": "Open-Meteo (CC BY 4.0); free API only for non-commercial trials",
   "selected_station_count": 9,
-  "state": "saved"
+  "state": "no_forecasts_available"
 }
