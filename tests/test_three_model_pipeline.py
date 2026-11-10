@@ -82,6 +82,12 @@ class TestNationwidePilot(unittest.TestCase):
             root=Path(tmp)
             origin=root/"amedas.json"
             origin.write_text(json.dumps(snapshot),encoding="utf-8")
+            output=root/"output"
+            output.mkdir()
+            (output/"collection-status.json").write_text(json.dumps({
+                "selected_station_count":27,"state":"saved",
+                "per_model":{model:{"state":"ok"} for model in tc.MODELS}
+            }),encoding="utf-8")
             queries=[]
             def bounded(model,subset):
                 queries.append((model,len(subset)))
@@ -98,6 +104,20 @@ class TestNationwidePilot(unittest.TestCase):
             self.assertEqual(state["per_model"]["icon_seamless"]["stations_successful"],9)
             self.assertTrue(state["forecast_rows_saved"]>200)
             self.assertEqual(state["daily_site_model_units_estimate"],432)
+
+    def test_adaptive_recovery_restarts_with_9_sites_after_failing_at_36(self):
+        self.assertEqual(tc.adaptive_station_target(None),9)
+        previous={
+            "selected_station_count":36,
+            "state":"no_forecasts_available",
+            "per_model":{m:{"state":"unavailable"} for m in tc.MODELS}
+        }
+        self.assertEqual(tc.adaptive_station_target(previous),9)
+        previous["state"]="saved"
+        previous["per_model"]={m:{"state":"ok"} for m in tc.MODELS}
+        self.assertEqual(tc.adaptive_station_target(previous),36)
+        previous["selected_station_count"]=9
+        self.assertEqual(tc.adaptive_station_target(previous),18)
 
     def test_public_source_required(self):
         with self.assertRaises(ValueError):
