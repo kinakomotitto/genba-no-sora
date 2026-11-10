@@ -206,9 +206,9 @@
     "Quality-unverified observations, non-numeric and missing readings are excluded.",
     "Not an official warning or a substitute for onsite safety procedures."
   ],
-  "updated_at_utc": "2026-11-10T13:06:32.210905Z",
+  "updated_at_utc": "2026-11-10T13:11:22.531576Z",
   "forecast_snapshot_rows": 162,
-  "observation_rows": 1285,
+  "observation_rows": 2570,
   "observed_station_count": 1285,
   "source_forecast": "Open-Meteo model-specific snapshots, obtained before valid_at",
   "source_observation": "JMA AMeDAS public map data; values with quality flag 0 only",

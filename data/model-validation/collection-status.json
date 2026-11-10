@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "fetched_at": "2026-11-10T13:06:30.625165Z",
+  "fetched_at": "2026-11-10T13:11:20.470818Z",
   "type": "research_pilot_public_stations_only",
   "not_nationwide_model_coverage": true,
   "models": [
@@ -22,22 +22,41 @@
   "per_model": {
     "jma_msm": {
       "state": "unavailable",
-      "reason": "HTTPError"
+      "rows": 0,
+      "stations_successful": 0,
+      "failed_batches": 1,
+      "failure_types": [
+        "ValueError"
+      ]
     },
     "ecmwf_ifs": {
       "state": "unavailable",
-      "reason": "URLError"
+      "rows": 0,
+      "stations_successful": 0,
+      "failed_batches": 1,
+      "failure_types": [
+        "URLError"
+      ]
     },
     "icon_seamless": {
       "state": "unavailable",
-      "reason": "ValueError"
+      "rows": 0,
+      "stations_successful": 0,
+      "failed_batches": 1,
+      "failure_types": [
+        "ValueError"
+      ]
     }
   },
   "calls_attempted": 3,
   "forecast_rows_saved": 0,
+  "max_http_get_requests": 16,
+  "request_chunk_size": 9,
   "automatic_correction_enabled": false,
   "data_source": "Open-Meteo (CC BY 4.0); free API only for non-commercial trials",
-  "selected_station_count": 36,
+  "selected_station_target": 9,
+  "adaptive_backoff_used": true,
+  "selected_station_count": 9,
   "station_ids": [
     "14163",
     "31312",
@@ -47,36 +66,9 @@
     "62078",
     "67437",
     "82182",
-    "91197",
-    "44356",
-    "44301",
-    "94011",
-    "88736",
-    "92006",
-    "18281",
-    "44262",
-    "11001",
-    "56036",
-    "87492",
-    "93042",
-    "88931",
-    "68022",
-    "74372",
-    "17166",
-    "20751",
-    "24156",
-    "84537",
-    "36426",
-    "33472",
-    "83401",
-    "35002",
-    "84012",
-    "44207",
-    "48361",
-    "36846",
-    "66296"
+    "91197"
   ],
-  "daily_site_model_units_estimate": 432,
+  "daily_site_model_units_estimate": 108,
   "maximum_daily_site_model_units": 600,
   "selection_method": "9 anchor stations + deterministic farthest-point public stations with wind and rain observations",
   "state": "no_forecasts_available"
