@@ -206,12 +206,669 @@
     "Quality-unverified observations, non-numeric and missing readings are excluded.",
     "Not an official warning or a substitute for onsite safety procedures."
   ],
-  "updated_at_utc": "2026-11-10T12:15:42.914247Z",
-  "forecast_snapshot_rows": 81,
+  "updated_at_utc": "2026-11-10T12:43:06.483678Z",
+  "forecast_snapshot_rows": 162,
   "observation_rows": 1285,
   "observed_station_count": 1285,
   "source_forecast": "Open-Meteo model-specific snapshots, obtained before valid_at",
   "source_observation": "JMA AMeDAS public map data; values with quality flag 0 only",
   "model_comparison_ready": false,
-  "important_notice": "This report is NOT a locally optimised forecast, forecast correction, or site-level wind measurement."
+  "important_notice": "This report is NOT a locally optimised forecast, forecast correction, or site-level wind measurement.",
+  "correction_readiness": {
+    "schema": 1,
+    "status": "collecting_validation_evidence",
+    "research_thresholds": {
+      "history_span_days": 540,
+      "independent_days": 300,
+      "reference_stations": 5,
+      "calendar_months": 12,
+      "seasons": 4,
+      "days_per_season": 40,
+      "days_per_month": 10,
+      "training_days": 210,
+      "holdout_days": 90,
+      "matched_common_hours": 1000,
+      "wet_days": 45,
+      "strong_wind_days": 20,
+      "wet_holdout_days": 10,
+      "strong_holdout_days": 5
+    },
+    "automatic_correction_enabled": false,
+    "forecast_correction_release_authorized": false,
+    "safety_threshold_wind_ms": null,
+    "records_archived": 0,
+    "lead_groups": {
+      "3": {
+        "coverage": {
+          "independent_days": 0,
+          "reference_stations": 0,
+          "calendar_months": 0,
+          "seasons": 0,
+          "days_per_season": 0,
+          "days_per_month": 0,
+          "training_days": 0,
+          "holdout_days": 0,
+          "matched_common_hours": 0,
+          "wet_days": 0,
+          "strong_wind_days": 0,
+          "wet_holdout_days": 0,
+          "strong_holdout_days": 0,
+          "history_span_days": 0
+        },
+        "missing_requirements": [
+          {
+            "criterion": "history_span_days",
+            "actual": 0,
+            "required": 540
+          },
+          {
+            "criterion": "independent_days",
+            "actual": 0,
+            "required": 300
+          },
+          {
+            "criterion": "reference_stations",
+            "actual": 0,
+            "required": 5
+          },
+          {
+            "criterion": "calendar_months",
+            "actual": 0,
+            "required": 12
+          },
+          {
+            "criterion": "seasons",
+            "actual": 0,
+            "required": 4
+          },
+          {
+            "criterion": "days_per_season",
+            "actual": 0,
+            "required": 40
+          },
+          {
+            "criterion": "days_per_month",
+            "actual": 0,
+            "required": 10
+          },
+          {
+            "criterion": "training_days",
+            "actual": 0,
+            "required": 210
+          },
+          {
+            "criterion": "holdout_days",
+            "actual": 0,
+            "required": 90
+          },
+          {
+            "criterion": "matched_common_hours",
+            "actual": 0,
+            "required": 1000
+          },
+          {
+            "criterion": "wet_days",
+            "actual": 0,
+            "required": 45
+          },
+          {
+            "criterion": "strong_wind_days",
+            "actual": 0,
+            "required": 20
+          },
+          {
+            "criterion": "wet_holdout_days",
+            "actual": 0,
+            "required": 10
+          },
+          {
+            "criterion": "strong_holdout_days",
+            "actual": 0,
+            "required": 5
+          }
+        ],
+        "evidence_sufficient_for_candidate_testing": false,
+        "candidate_accepted": false,
+        "automatic_correction_enabled": false
+      },
+      "6": {
+        "coverage": {
+          "independent_days": 0,
+          "reference_stations": 0,
+          "calendar_months": 0,
+          "seasons": 0,
+          "days_per_season": 0,
+          "days_per_month": 0,
+          "training_days": 0,
+          "holdout_days": 0,
+          "matched_common_hours": 0,
+          "wet_days": 0,
+          "strong_wind_days": 0,
+          "wet_holdout_days": 0,
+          "strong_holdout_days": 0,
+          "history_span_days": 0
+        },
+        "missing_requirements": [
+          {
+            "criterion": "history_span_days",
+            "actual": 0,
+            "required": 540
+          },
+          {
+            "criterion": "independent_days",
+            "actual": 0,
+            "required": 300
+          },
+          {
+            "criterion": "reference_stations",
+            "actual": 0,
+            "required": 5
+          },
+          {
+            "criterion": "calendar_months",
+            "actual": 0,
+            "required": 12
+          },
+          {
+            "criterion": "seasons",
+            "actual": 0,
+            "required": 4
+          },
+          {
+            "criterion": "days_per_season",
+            "actual": 0,
+            "required": 40
+          },
+          {
+            "criterion": "days_per_month",
+            "actual": 0,
+            "required": 10
+          },
+          {
+            "criterion": "training_days",
+            "actual": 0,
+            "required": 210
+          },
+          {
+            "criterion": "holdout_days",
+            "actual": 0,
+            "required": 90
+          },
+          {
+            "criterion": "matched_common_hours",
+            "actual": 0,
+            "required": 1000
+          },
+          {
+            "criterion": "wet_days",
+            "actual": 0,
+            "required": 45
+          },
+          {
+            "criterion": "strong_wind_days",
+            "actual": 0,
+            "required": 20
+          },
+          {
+            "criterion": "wet_holdout_days",
+            "actual": 0,
+            "required": 10
+          },
+          {
+            "criterion": "strong_holdout_days",
+            "actual": 0,
+            "required": 5
+          }
+        ],
+        "evidence_sufficient_for_candidate_testing": false,
+        "candidate_accepted": false,
+        "automatic_correction_enabled": false
+      },
+      "12": {
+        "coverage": {
+          "independent_days": 0,
+          "reference_stations": 0,
+          "calendar_months": 0,
+          "seasons": 0,
+          "days_per_season": 0,
+          "days_per_month": 0,
+          "training_days": 0,
+          "holdout_days": 0,
+          "matched_common_hours": 0,
+          "wet_days": 0,
+          "strong_wind_days": 0,
+          "wet_holdout_days": 0,
+          "strong_holdout_days": 0,
+          "history_span_days": 0
+        },
+        "missing_requirements": [
+          {
+            "criterion": "history_span_days",
+            "actual": 0,
+            "required": 540
+          },
+          {
+            "criterion": "independent_days",
+            "actual": 0,
+            "required": 300
+          },
+          {
+            "criterion": "reference_stations",
+            "actual": 0,
+            "required": 5
+          },
+          {
+            "criterion": "calendar_months",
+            "actual": 0,
+            "required": 12
+          },
+          {
+            "criterion": "seasons",
+            "actual": 0,
+            "required": 4
+          },
+          {
+            "criterion": "days_per_season",
+            "actual": 0,
+            "required": 40
+          },
+          {
+            "criterion": "days_per_month",
+            "actual": 0,
+            "required": 10
+          },
+          {
+            "criterion": "training_days",
+            "actual": 0,
+            "required": 210
+          },
+          {
+            "criterion": "holdout_days",
+            "actual": 0,
+            "required": 90
+          },
+          {
+            "criterion": "matched_common_hours",
+            "actual": 0,
+            "required": 1000
+          },
+          {
+            "criterion": "wet_days",
+            "actual": 0,
+            "required": 45
+          },
+          {
+            "criterion": "strong_wind_days",
+            "actual": 0,
+            "required": 20
+          },
+          {
+            "criterion": "wet_holdout_days",
+            "actual": 0,
+            "required": 10
+          },
+          {
+            "criterion": "strong_holdout_days",
+            "actual": 0,
+            "required": 5
+          }
+        ],
+        "evidence_sufficient_for_candidate_testing": false,
+        "candidate_accepted": false,
+        "automatic_correction_enabled": false
+      },
+      "24": {
+        "coverage": {
+          "independent_days": 0,
+          "reference_stations": 0,
+          "calendar_months": 0,
+          "seasons": 0,
+          "days_per_season": 0,
+          "days_per_month": 0,
+          "training_days": 0,
+          "holdout_days": 0,
+          "matched_common_hours": 0,
+          "wet_days": 0,
+          "strong_wind_days": 0,
+          "wet_holdout_days": 0,
+          "strong_holdout_days": 0,
+          "history_span_days": 0
+        },
+        "missing_requirements": [
+          {
+            "criterion": "history_span_days",
+            "actual": 0,
+            "required": 540
+          },
+          {
+            "criterion": "independent_days",
+            "actual": 0,
+            "required": 300
+          },
+          {
+            "criterion": "reference_stations",
+            "actual": 0,
+            "required": 5
+          },
+          {
+            "criterion": "calendar_months",
+            "actual": 0,
+            "required": 12
+          },
+          {
+            "criterion": "seasons",
+            "actual": 0,
+            "required": 4
+          },
+          {
+            "criterion": "days_per_season",
+            "actual": 0,
+            "required": 40
+          },
+          {
+            "criterion": "days_per_month",
+            "actual": 0,
+            "required": 10
+          },
+          {
+            "criterion": "training_days",
+            "actual": 0,
+            "required": 210
+          },
+          {
+            "criterion": "holdout_days",
+            "actual": 0,
+            "required": 90
+          },
+          {
+            "criterion": "matched_common_hours",
+            "actual": 0,
+            "required": 1000
+          },
+          {
+            "criterion": "wet_days",
+            "actual": 0,
+            "required": 45
+          },
+          {
+            "criterion": "strong_wind_days",
+            "actual": 0,
+            "required": 20
+          },
+          {
+            "criterion": "wet_holdout_days",
+            "actual": 0,
+            "required": 10
+          },
+          {
+            "criterion": "strong_holdout_days",
+            "actual": 0,
+            "required": 5
+          }
+        ],
+        "evidence_sufficient_for_candidate_testing": false,
+        "candidate_accepted": false,
+        "automatic_correction_enabled": false
+      }
+    },
+    "monthly_and_seasonal_validity_required": true,
+    "notes": [
+      "Thresholds are conservative pilot design goals, not universal WMO pass marks.",
+      "Counts are unique independent calendar days, not multiplied by hourly observations.",
+      "All three models must have the same station/time/lead to count as a fair cohort.",
+      "Wind >=8 m/s is a diagnostic regime, NOT a forestry work-stop threshold.",
+      "Rain, snowfall, rapid gusts, terrain effects, model-version changes and holdout skill need separate validation.",
+      "No day-of-month memorization; calendar effects are season/month and pre-known conditions only.",
+      "No auto-weighting, bias correction or safety judgments, even if these gates pass.",
+      "Private GPS and field sites are never used for the public research archive."
+    ]
+  },
+  "skill_audit": {
+    "schema": 1,
+    "state": "shadow_verification_only",
+    "strong_wind_diagnostic_threshold_ms": 8.0,
+    "heavy_precip_diagnostic_threshold_mm_per_h": 5.0,
+    "ranked_winner": null,
+    "automatic_weights_enabled": false,
+    "wind_and_precipitation_scores": {
+      "by_lead": {
+        "3": [
+          {
+            "model": "jma_msm",
+            "matched_station_hours": 0,
+            "independent_calendar_days": 0,
+            "wet_event_days": 0,
+            "strong_wind_event_days": 0,
+            "heavy_precip_event_days": 0,
+            "status": "insufficient_independent_days",
+            "wind_mae_ms": null,
+            "wind_rmse_ms": null,
+            "wind_mean_bias_ms": null,
+            "wind_p90_absolute_error_ms": null,
+            "wind_direction_mae_deg": null,
+            "wind_8ms_event_skill": null,
+            "precipitation_mae_mm": null,
+            "precipitation_wet_skill": null,
+            "precipitation_5mm_skill": null
+          },
+          {
+            "model": "ecmwf_ifs",
+            "matched_station_hours": 0,
+            "independent_calendar_days": 0,
+            "wet_event_days": 0,
+            "strong_wind_event_days": 0,
+            "heavy_precip_event_days": 0,
+            "status": "insufficient_independent_days",
+            "wind_mae_ms": null,
+            "wind_rmse_ms": null,
+            "wind_mean_bias_ms": null,
+            "wind_p90_absolute_error_ms": null,
+            "wind_direction_mae_deg": null,
+            "wind_8ms_event_skill": null,
+            "precipitation_mae_mm": null,
+            "precipitation_wet_skill": null,
+            "precipitation_5mm_skill": null
+          },
+          {
+            "model": "icon_seamless",
+            "matched_station_hours": 0,
+            "independent_calendar_days": 0,
+            "wet_event_days": 0,
+            "strong_wind_event_days": 0,
+            "heavy_precip_event_days": 0,
+            "status": "insufficient_independent_days",
+            "wind_mae_ms": null,
+            "wind_rmse_ms": null,
+            "wind_mean_bias_ms": null,
+            "wind_p90_absolute_error_ms": null,
+            "wind_direction_mae_deg": null,
+            "wind_8ms_event_skill": null,
+            "precipitation_mae_mm": null,
+            "precipitation_wet_skill": null,
+            "precipitation_5mm_skill": null
+          }
+        ],
+        "6": [
+          {
+            "model": "jma_msm",
+            "matched_station_hours": 0,
+            "independent_calendar_days": 0,
+            "wet_event_days": 0,
+            "strong_wind_event_days": 0,
+            "heavy_precip_event_days": 0,
+            "status": "insufficient_independent_days",
+            "wind_mae_ms": null,
+            "wind_rmse_ms": null,
+            "wind_mean_bias_ms": null,
+            "wind_p90_absolute_error_ms": null,
+            "wind_direction_mae_deg": null,
+            "wind_8ms_event_skill": null,
+            "precipitation_mae_mm": null,
+            "precipitation_wet_skill": null,
+            "precipitation_5mm_skill": null
+          },
+          {
+            "model": "ecmwf_ifs",
+            "matched_station_hours": 0,
+            "independent_calendar_days": 0,
+            "wet_event_days": 0,
+            "strong_wind_event_days": 0,
+            "heavy_precip_event_days": 0,
+            "status": "insufficient_independent_days",
+            "wind_mae_ms": null,
+            "wind_rmse_ms": null,
+            "wind_mean_bias_ms": null,
+            "wind_p90_absolute_error_ms": null,
+            "wind_direction_mae_deg": null,
+            "wind_8ms_event_skill": null,
+            "precipitation_mae_mm": null,
+            "precipitation_wet_skill": null,
+            "precipitation_5mm_skill": null
+          },
+          {
+            "model": "icon_seamless",
+            "matched_station_hours": 0,
+            "independent_calendar_days": 0,
+            "wet_event_days": 0,
+            "strong_wind_event_days": 0,
+            "heavy_precip_event_days": 0,
+            "status": "insufficient_independent_days",
+            "wind_mae_ms": null,
+            "wind_rmse_ms": null,
+            "wind_mean_bias_ms": null,
+            "wind_p90_absolute_error_ms": null,
+            "wind_direction_mae_deg": null,
+            "wind_8ms_event_skill": null,
+            "precipitation_mae_mm": null,
+            "precipitation_wet_skill": null,
+            "precipitation_5mm_skill": null
+          }
+        ],
+        "12": [
+          {
+            "model": "jma_msm",
+            "matched_station_hours": 0,
+            "independent_calendar_days": 0,
+            "wet_event_days": 0,
+            "strong_wind_event_days": 0,
+            "heavy_precip_event_days": 0,
+            "status": "insufficient_independent_days",
+            "wind_mae_ms": null,
+            "wind_rmse_ms": null,
+            "wind_mean_bias_ms": null,
+            "wind_p90_absolute_error_ms": null,
+            "wind_direction_mae_deg": null,
+            "wind_8ms_event_skill": null,
+            "precipitation_mae_mm": null,
+            "precipitation_wet_skill": null,
+            "precipitation_5mm_skill": null
+          },
+          {
+            "model": "ecmwf_ifs",
+            "matched_station_hours": 0,
+            "independent_calendar_days": 0,
+            "wet_event_days": 0,
+            "strong_wind_event_days": 0,
+            "heavy_precip_event_days": 0,
+            "status": "insufficient_independent_days",
+            "wind_mae_ms": null,
+            "wind_rmse_ms": null,
+            "wind_mean_bias_ms": null,
+            "wind_p90_absolute_error_ms": null,
+            "wind_direction_mae_deg": null,
+            "wind_8ms_event_skill": null,
+            "precipitation_mae_mm": null,
+            "precipitation_wet_skill": null,
+            "precipitation_5mm_skill": null
+          },
+          {
+            "model": "icon_seamless",
+            "matched_station_hours": 0,
+            "independent_calendar_days": 0,
+            "wet_event_days": 0,
+            "strong_wind_event_days": 0,
+            "heavy_precip_event_days": 0,
+            "status": "insufficient_independent_days",
+            "wind_mae_ms": null,
+            "wind_rmse_ms": null,
+            "wind_mean_bias_ms": null,
+            "wind_p90_absolute_error_ms": null,
+            "wind_direction_mae_deg": null,
+            "wind_8ms_event_skill": null,
+            "precipitation_mae_mm": null,
+            "precipitation_wet_skill": null,
+            "precipitation_5mm_skill": null
+          }
+        ],
+        "24": [
+          {
+            "model": "jma_msm",
+            "matched_station_hours": 0,
+            "independent_calendar_days": 0,
+            "wet_event_days": 0,
+            "strong_wind_event_days": 0,
+            "heavy_precip_event_days": 0,
+            "status": "insufficient_independent_days",
+            "wind_mae_ms": null,
+            "wind_rmse_ms": null,
+            "wind_mean_bias_ms": null,
+            "wind_p90_absolute_error_ms": null,
+            "wind_direction_mae_deg": null,
+            "wind_8ms_event_skill": null,
+            "precipitation_mae_mm": null,
+            "precipitation_wet_skill": null,
+            "precipitation_5mm_skill": null
+          },
+          {
+            "model": "ecmwf_ifs",
+            "matched_station_hours": 0,
+            "independent_calendar_days": 0,
+            "wet_event_days": 0,
+            "strong_wind_event_days": 0,
+            "heavy_precip_event_days": 0,
+            "status": "insufficient_independent_days",
+            "wind_mae_ms": null,
+            "wind_rmse_ms": null,
+            "wind_mean_bias_ms": null,
+            "wind_p90_absolute_error_ms": null,
+            "wind_direction_mae_deg": null,
+            "wind_8ms_event_skill": null,
+            "precipitation_mae_mm": null,
+            "precipitation_wet_skill": null,
+            "precipitation_5mm_skill": null
+          },
+          {
+            "model": "icon_seamless",
+            "matched_station_hours": 0,
+            "independent_calendar_days": 0,
+            "wet_event_days": 0,
+            "strong_wind_event_days": 0,
+            "heavy_precip_event_days": 0,
+            "status": "insufficient_independent_days",
+            "wind_mae_ms": null,
+            "wind_rmse_ms": null,
+            "wind_mean_bias_ms": null,
+            "wind_p90_absolute_error_ms": null,
+            "wind_direction_mae_deg": null,
+            "wind_8ms_event_skill": null,
+            "precipitation_mae_mm": null,
+            "precipitation_wet_skill": null,
+            "precipitation_5mm_skill": null
+          }
+        ]
+      },
+      "by_season_6h": {},
+      "by_month_6h": {},
+      "by_region_6h": {},
+      "by_daynight_6h": {}
+    },
+    "notes": [
+      "No grade is released without >=30 independent days; event skill requires >=15 event days.",
+      "Only the same public station, target hour and forecast lead where all 3 models have wind and precipitation count.",
+      "No ranking before an independent chronological holdout, confidence intervals and checks that severe-weather misses do not rise.",
+      "Monthly, seasonal, regional and day/night breakdowns are descriptive; no automatic personalised onsite correction.",
+      "8 m/s and 5 mm/h are RESEARCH event categories, not official warnings or site work-stop thresholds."
+    ]
+  },
+  "new_long_horizon_matches": 0
 }
