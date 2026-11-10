@@ -6,6 +6,7 @@ audit data. The rollout switch is hard-disabled until an independent release
 with verified scope, shadow forecasts, weather-regime checks and safety review.
 """
 import datetime as dt
+import gzip
 import json
 import math
 import random
@@ -96,49 +97,74 @@ def observation_matches(forecasts,observations,names=None):
 def identity(row):
     return (str(row["station_id"]),str(row["valid_at"]),int(row["lead_h"]),str(row["model"]))
 
-def archive_matches(rows,archive=ARCHIVE,now=None):
-    """Month-partitioned 2-year history; never silently cut national coverage."""
+def archive_matches(rows,archive=ARCHIVE,now=None,finalization_lag_days=2):
+    """Write immutable, gzip-compressed DAILY public-station match partitions.
+
+    Avoid continually rewriting a giant 2-year/monthly Git blob at every 6-hour
+    run. Only days >=2 days old are frozen, to allow late JMA/model arrivals.
+    A daily partition must contain >=5 complete 3-model cohorts or it is not
+    called final. Strictly public station identifiers, no user GPS/site names.
+    """
     now=now or dt.datetime.now(UTC)
     if now.tzinfo is None:raise ValueError("timezone-aware now required")
+    if finalization_lag_days<1:raise ValueError("finalization lag too short")
     archive.mkdir(parents=True,exist_ok=True)
-    cutoff=now.astimezone(UTC)-dt.timedelta(days=KEEP_DAYS)
-    grouped=defaultdict(list)
+    today=now.astimezone(JST).date()
+    latest_day=today-dt.timedelta(days=finalization_lag_days)
+    cutoff=(now.astimezone(UTC)-dt.timedelta(days=KEEP_DAYS)).date()
+    grouped=defaultdict(dict)
     for row in rows:
-        when=timestamp(row["valid_at"])
-        if not cutoff<=when<=now:continue
-        grouped[when.astimezone(JST).strftime("%Y-%m")].append(row)
-    appended=0
-    for month,updates in grouped.items():
-        f=archive/(month+".jsonl")
-        records={}
-        if f.exists():
-            for line in f.read_text(encoding="utf-8").splitlines():
-                if line.strip():
-                    d=json.loads(line)
-                    if timestamp(d["valid_at"])>=cutoff:records[identity(d)]=d
-        for row in updates:
-            k=identity(row)
-            if k not in records:appended+=1
-            records[k]=row
-        if len(records)>25000:
-            raise ValueError("Per-month matched archive too large; storage migration required")
-        payload="".join(json.dumps(records[k],ensure_ascii=False,separators=(",",":"))+"\n"
-                        for k in sorted(records))
-        f.write_text(payload,encoding="utf-8")
-    for f in archive.glob("????-??.jsonl"):
         try:
-            month=dt.date.fromisoformat(f.stem+"-01")
-            if (month+dt.timedelta(days=35)).replace(day=1)<cutoff.date():f.unlink()
-        except ValueError:continue
+            when=timestamp(row["valid_at"])
+            day=when.astimezone(JST).date()
+            if day<cutoff or day>latest_day:continue
+            key=identity(row)
+            grouped[day.isoformat()][key]=row
+        except (KeyError,ValueError,TypeError):
+            continue
+    appended=0
+    for day,values in sorted(grouped.items()):
+        destination=archive/(day+".jsonl.gz")
+        if destination.exists():continue # immutable once a day is finalized
+        payload=list(values.values())
+        # Require enough matching *complete* three-model groups.
+        if sum(len(common_cohorts(payload,lead)) for lead in (3,6,12,24))<5:
+            continue
+        if len(payload)>6000:
+            raise ValueError("Daily matched archive exceeds guarded size; migrate storage")
+        data="".join(
+            json.dumps(values[k],ensure_ascii=False,separators=(",",":"))+"\n"
+            for k in sorted(values)
+        ).encode("utf-8")
+        compressed=gzip.compress(data,compresslevel=8,mtime=0)
+        if len(compressed)>500_000:
+            raise ValueError("Compressed daily archive exceeds 500kB cap")
+        destination.write_bytes(compressed)
+        appended+=len(payload)
+    for f in archive.glob("????-??-??.jsonl.gz"):
+        try:
+            day=dt.date.fromisoformat(f.name[:10])
+            if day<cutoff:f.unlink()
+        except ValueError:
+            continue
     return appended
 
 def read_archive(archive=ARCHIVE):
-    rows=[]
-    if not archive.exists():return rows
+    """Read the new small daily files and any legacy monthly JSONL (if present)."""
+    rows={}
+    if not archive.exists():return []
     for file in sorted(archive.glob("????-??.jsonl")):
         for line in file.read_text(encoding="utf-8").splitlines():
-            if line.strip():rows.append(json.loads(line))
-    return rows
+            if line.strip():
+                item=json.loads(line)
+                rows[identity(item)]=item
+    for file in sorted(archive.glob("????-??-??.jsonl.gz")):
+        raw=gzip.decompress(file.read_bytes()).decode("utf-8")
+        for line in raw.splitlines():
+            if line.strip():
+                item=json.loads(line)
+                rows[identity(item)]=item
+    return [rows[key] for key in sorted(rows)]
 
 def common_cohorts(rows,lead):
     """Only same station/time/lead with three independent model predictions."""

@@ -4,6 +4,7 @@
 Personal research prototype. Only exact PUBLIC station coordinates are sent to
 Open-Meteo; no user GPS, saved sites, contact details or job-site data.
 Three batched HTTP GET requests maximum per run, one per independent model.
+A coordinate in a batch still consumes provider API allocation; this is capped.
 No winner / correction claims. Failed models are recorded, not imputed as zero.
 """
 import datetime as dt
@@ -19,6 +20,10 @@ OUT=ROOT/"data"/"model-validation"
 API="https://api.open-meteo.com/v1/forecast"
 MODELS=("jma_msm","ecmwf_ifs","icon_seamless")
 SITES=("札幌","青森","仙台","東京","名古屋","大阪","広島","福岡","那覇")
+# Up to 36 public stations across Japan (not a claim of prefecture completeness).
+MAX_PUBLIC_REFERENCE_STATIONS=36
+MAX_DAILY_SITE_MODEL_UNITS=600  # 36 sites x 3 models x 4 UTC slots = 432.
+RUNS_PER_DAY=4
 TARGET_LEADS=(6,12,24)
 KEEP_DAYS=21
 MAX_BYTES=1_000_000
@@ -39,9 +44,39 @@ def select_public_stations(snapshot):
             lat,lon=numeric(row.get("lat")),numeric(row.get("lon"))
             if lat is not None and lon is not None and 20<=lat<=46.5 and 122<=lon<=154:
                 lookup[row["name"]]=row
-    found=[lookup[name] for name in SITES if name in lookup]
-    if len(found)<5:
+    anchors=[lookup[name] for name in SITES if name in lookup]
+    if len(anchors)<5:
         raise ValueError("Too few national representative stations in JMA snapshot")
+    candidates=[]
+    for row in snapshot.get("stations",[]):
+        sid=str(row.get("id",""))
+        lat,lon=numeric(row.get("lat")),numeric(row.get("lon"))
+        if not sid.isdigit() or lat is None or lon is None:
+            continue
+        if not 20<=lat<=46.5 or not 122<=lon<=154:
+            continue
+        if numeric(row.get("wind_ms")) is None or numeric(row.get("precipitation_1h_mm")) is None:
+            continue
+        candidates.append(row)
+    # Greedy farthest-point spacing avoids "more samples only near Tokyo".
+    # Always deterministic and capped; only publicly listed reference sites.
+    found=list(anchors)
+    chosen={str(x["id"]) for x in found}
+    candidates=sorted((row for row in candidates if str(row["id"]) not in chosen),
+                      key=lambda item:str(item["id"]))
+    def distance_km(a,b):
+        r=math.pi/180
+        a_lat,b_lat=a["lat"]*r,b["lat"]*r
+        dlat=b_lat-a_lat
+        dlon=(b["lon"]-a["lon"])*r
+        x=math.sin(dlat/2)**2+math.cos(a_lat)*math.cos(b_lat)*math.sin(dlon/2)**2
+        return 12742*math.asin(min(1,math.sqrt(x)))
+    while len(found)<MAX_PUBLIC_REFERENCE_STATIONS and candidates:
+        furthest=max(candidates,key=lambda c:min(distance_km(c,s) for s in found))
+        found.append(furthest)
+        candidates.remove(furthest)
+    if len(found)*len(MODELS)*RUNS_PER_DAY>MAX_DAILY_SITE_MODEL_UNITS:
+        raise ValueError("National model collection exceeds daily weighted site-model budget")
     return found
 
 def request_model(model,stations):
@@ -160,6 +195,10 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
         snapshot=json.loads(snapshot_path.read_text(encoding="utf-8"))
         stations=select_public_stations(snapshot)
         status["selected_station_count"]=len(stations)
+        status["station_ids"]=[str(s["id"]) for s in stations]
+        status["daily_site_model_units_estimate"]=len(stations)*len(MODELS)*RUNS_PER_DAY
+        status["maximum_daily_site_model_units"]=MAX_DAILY_SITE_MODEL_UNITS
+        status["selection_method"]="9 anchor stations + deterministic farthest-point public stations with wind and rain observations"
         found=[]
         for model in MODELS:
             status["calls_attempted"]+=1
