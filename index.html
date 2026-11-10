@@ -993,7 +993,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.34 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.35 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -1115,6 +1115,16 @@ async function showResearchStatus(){
       const common=Object.values(report.common_three_model_station_hours||{})
         .reduce((sum,value)=>sum+(Number(value)||0),0);
       lines.push('📊 3モデルが同じ条件でそろった検証：'+common+'件');
+      const readiness=report.correction_readiness;
+      if(readiness?.lead_groups){
+        const gate=readiness.lead_groups['6']?.coverage;
+        const requirement=readiness.research_thresholds;
+        if(gate&&requirement){
+          lines.push('🧠 長期学習：'+Number(gate.independent_days||0)+'/'+Number(requirement.independent_days||0)+'日');
+          lines.push('季節 '+Number(gate.seasons||0)+'/4 · 月 '+Number(gate.calendar_months||0)+'/12 · 観測所 '+Number(gate.reference_stations||0)+'か所');
+          lines.push('※ 月・季節・強風・降水・未使用期間の条件がすべて必要。');
+        }
+      }
       lines.push(common>=30?'検証用の暫定値を集計中。地域・季節ごとの精度は未確定。':
         'まだ十分な共通サンプルがなく、精度の優劣は判断できません。');
     }else lines.push('📊 予報と実測の照合：まだ準備中');
