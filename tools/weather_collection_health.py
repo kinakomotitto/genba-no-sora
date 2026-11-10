@@ -45,7 +45,18 @@ def assess(observation,collection,validation,now=None,previous=None):
     now=now.astimezone(UTC)
     reasons=[]
     obs_hours=age_hours((observation or {}).get("observed_at"),now)
-    station_count=int((observation or {}).get("metrics",{}).get("stations",0))
+    metrics=(observation or {}).get("metrics") or {}
+    if not isinstance(metrics,dict):metrics={}
+    station_count=int(metrics.get("stations",0))
+    previous=previous if isinstance(previous,dict) else {}
+    prior_stations=previous.get("national_observation_station_count")
+    if isinstance(prior_stations,int) and not isinstance(prior_stations,bool) and prior_stations>=200:
+        if station_count<prior_stations*.8:
+            reasons.append("national_observation_coverage_dropped")
+    for metric in ("valid_wind","valid_rain"):
+        value=metrics.get(metric)
+        if isinstance(value,int) and not isinstance(value,bool) and value<200:
+            reasons.append("national_observation_metric_missing")
     if obs_hours is None or obs_hours<-.1 or obs_hours>MAX_OBSERVATION_HOURS:
         reasons.append("observation_missing_or_stale")
     if station_count<200:
@@ -59,7 +70,6 @@ def assess(observation,collection,validation,now=None,previous=None):
     verification_age=age_hours((validation or {}).get("updated_at_utc"),now)
     if verification_age is None or verification_age>MAX_FORECAST_HOURS:
         reasons.append("verification_status_not_updated")
-    previous=previous if isinstance(previous,dict) else {}
     previous_count=previous.get("consecutive_degraded_checks",0)
     if not isinstance(previous_count,int) or isinstance(previous_count,bool) or previous_count<0:
         previous_count=0
