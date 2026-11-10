@@ -142,6 +142,7 @@ def score_predictions(held,model,metric,adjustments):
             "baseline_missed_strong_wind":0,"baseline_missed_heavy_rain":0,"baseline_missed_wet":0}
     improvement=defaultdict(list)
     scope_usage=defaultdict(int)
+    region_records=defaultdict(lambda:{"days":set(),"base_errors":[],"shadow_errors":[],"new_misses":0})
     event_days=set()
     strong_days=set()
     wet_days=set()
@@ -151,6 +152,11 @@ def score_predictions(held,model,metric,adjustments):
         base=value(g,model,metric)
         corrected,scope=predict_shadow(g,model,metric,adjustments)
         scope_usage[scope]+=1
+        region=str(g[MODELS[0]].get("region") or "その他")
+        regional=region_records[region]
+        regional["days"].add(day)
+        regional["base_errors"].append(abs(base-y))
+        regional["shadow_errors"].append(abs(corrected-y))
         med=median_model(g,metric)
         errors["shadow"].append(abs(corrected-y))
         errors["baseline_selected"].append(abs(base-y))
@@ -162,15 +168,21 @@ def score_predictions(held,model,metric,adjustments):
             strong_days.add(day)
             if corrected<EVENT_WIND_MS:safety["missed_strong_wind"]+=1
             if base<EVENT_WIND_MS:safety["baseline_missed_strong_wind"]+=1
+            if corrected<EVENT_WIND_MS and base>=EVENT_WIND_MS:
+                regional["new_misses"]+=1
         if metric=="rain":
             if y>=WET_RAIN_MM:
                 wet_days.add(day)
                 if corrected<WET_RAIN_MM:safety["missed_wet"]+=1
                 if base<WET_RAIN_MM:safety["baseline_missed_wet"]+=1
+                if corrected<WET_RAIN_MM and base>=WET_RAIN_MM:
+                    regional["new_misses"]+=1
             if y>=EVENT_RAIN_MM:
                 event_days.add(day)
                 if corrected<EVENT_RAIN_MM:safety["missed_heavy_rain"]+=1
                 if base<EVENT_RAIN_MM:safety["baseline_missed_heavy_rain"]+=1
+                if corrected<EVENT_RAIN_MM and base>=EVENT_RAIN_MM:
+                    regional["new_misses"]+=1
     n=len(held)
     def mae(a):return round(statistics.mean(a),4)
     best_model=min(raw,key=lambda m:statistics.mean(raw[m]))
@@ -181,9 +193,24 @@ def score_predictions(held,model,metric,adjustments):
                 and safety["missed_heavy_rain"]<=safety["baseline_missed_heavy_rain"]
                 and safety["missed_wet"]<=safety["baseline_missed_wet"])
     sufficient_event_days=len(strong_days if metric=="wind" else wet_days)>=MIN_HOLDOUT_EVENT_DAYS
-    # Precise promotion conditions are deliberately strict and are not a release authorization.
+    regional_issues={}
+    for region,details in sorted(region_records.items()):
+        enough_days=len(details["days"])>=30
+        raw_mae=statistics.mean(details["base_errors"])
+        adjusted_mae=statistics.mean(details["shadow_errors"])
+        passed=bool(enough_days and adjusted_mae<=raw_mae and details["new_misses"]==0)
+        regional_issues[region]={
+            "independent_days":len(details["days"]),
+            "raw_mae":round(raw_mae,4),"shadow_mae":round(adjusted_mae,4),
+            "new_severe_weather_misses":details["new_misses"],
+            "did_not_worsen":passed
+        }
+    regional_gate=bool(regional_issues) and all(r["did_not_worsen"] for r in regional_issues.values())
+    # No national aggregate result may hide meaningful worsening in one
+    # region, even if the nationwide mean error improves.
     gate=bool(lower is not None and lower>0 and improved_vs_all and
-              mae(errors["shadow"])<mae(errors["median"]) and pass_safety and sufficient_event_days)
+              mae(errors["shadow"])<mae(errors["median"]) and pass_safety and
+              sufficient_event_days and regional_gate)
     return {
         "independent_holdout_days":len(improvement),
         "matched_holdout_station_hours":n,"model_used":model,
@@ -196,6 +223,8 @@ def score_predictions(held,model,metric,adjustments):
         "day_block_bootstrap_95pct_lower_improvement":lower,
         "strong_event_days":len(strong_days),"wet_event_days":len(wet_days),
         "safety_counts":safety,"scope_usage":dict(scope_usage),
+        "regional_safety_and_accuracy":regional_issues,
+        "every_tested_region_not_worse":regional_gate,
         "shadow_candidate_passed_strict_holdout_tests":gate
     }
 
