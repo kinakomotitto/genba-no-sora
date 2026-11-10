@@ -17,6 +17,7 @@ ALLOWED_REASONS={
     "national_observation_coverage_incomplete":"全国実測地点が200未満",
     "national_observation_coverage_dropped":"全国の公開観測地点が直前の80%未満に減少",
     "national_observation_metric_missing":"全国の風・雨の有効観測地点が200未満",
+    "unexpected_observation_source":"全国実測のデータ提供元が想定と異なる",
     "forecast_collection_missing_or_stale":"3モデルの収集記録が9時間超未更新",
     "model_coverage_degraded":"3モデルがそろわない",
     "verification_status_not_updated":"精度検証の結果が9時間超未更新",
