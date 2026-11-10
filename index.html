@@ -244,6 +244,12 @@ body>.tabs .ko{white-space:nowrap}
 .reminder-test:disabled{opacity:.5;cursor:wait}
 .reminder-result{margin-top:7px}
 
+/* v0.25 · push diagnostics and clear distinction between local test and scheduled delivery */
+.push-diagnose-panel{margin:12px 0 14px;padding:14px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.78)}
+.push-diagnose-panel strong{font-size:13px;color:var(--pinkdark)}
+.push-diagnose-panel p,.push-schedule-note{font-size:11px;line-height:1.7;color:var(--muted);margin:8px 0 11px}
+#push-diagnose-result{white-space:pre-line;line-height:1.8;font-size:11px}
+.push-schedule-note{margin-bottom:0}
 /* v0.12 · backend-enabled-only push subscription controls */
 .push-setup-panel{margin-top:13px;padding:13px 15px;border:1px solid #e8d3e2;border-radius:17px;background:rgba(255,253,255,.88)}
 .push-setup-title{font-size:13px;color:#8a6880;font-weight:750}
@@ -791,7 +797,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <div class="skin-result" id="skin-result" role="status" aria-live="polite">いつでも元のピンクに戻せるよ。</div>
 </details>
   <div class="settings-section-label">🔔 通知・リマインダー <span lang="ko">알림</span></div>
-  <div class="reminder-panel"><strong>🔔 天気記録リマインダー</strong><p>通知の回数も時間も選べるよ。定時通知は下の「通知をオン」にした端末へお届けするよ♡</p><button type="button" id="reminder-test" class="reminder-test">テスト通知を表示する</button><div id="reminder-result" class="reminder-result" role="status" aria-live="polite">テストはまだ行っていません。</div>
+  <div class="reminder-panel"><strong>🔔 天気記録リマインダー</strong><p>通知の回数と時間を選べるよ。ただし時刻の保存だけでは通知は届かないよ。ホーム画面の「하늘」で通知登録し、サーバーからのテストも確認してね。</p><button type="button" id="reminder-test" class="reminder-test">① iPhone内のテスト通知を表示</button><div id="reminder-result" class="reminder-result" role="status" aria-live="polite">テストはまだ行っていません。</div>
 <details class="reminder-times" id="reminder-times">
   <summary>♡ 回数・時間を選ぶ <span id="reminder-times-summary">朝7:00＋昼12:00</span></summary>
   <div class="reminder-times-grid">
@@ -801,13 +807,21 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   </div>
   <button type="button" id="reminder-times-save" class="reminder-test">回数と時間を保存 ♡</button>
   <div id="reminder-times-result" class="reminder-result" aria-live="polite">15分刻み・最大3回。設定だけでは通知は開始されないよ。</div>
-</details></div><div id="push-setup-panel" class="push-setup-panel hidden" aria-label="選べる天気記録通知">
+</details></div>
+<div class="push-diagnose-panel">
+  <strong>♡ 通知が届かないとき</strong>
+  <p>端末内テストと、アプリを閉じていても届くサーバー通知は別の仕組みだよ。次のボタンで、今の端末の設定を確認しよう。</p>
+  <button type="button" id="push-diagnose" class="reminder-test">🔍 通知の状態を確認する</button>
+  <div id="push-diagnose-result" class="reminder-result" role="status" aria-live="polite">まだ確認していません。</div>
+</div>
+<div id="push-setup-panel" class="push-setup-panel hidden" aria-label="選べる天気記録通知">
   <div class="push-setup-title">♡ 選んだ時間にお知らせを受け取る</div>
   <p>端末の通知登録情報だけを専用サーバーに送信。現場名・GPS・天気記録は送信しないよ。</p>
   <button type="button" id="push-enable" class="reminder-test">選んだ時間の通知をオンにする</button>
   <button type="button" id="push-disable" class="reminder-test hidden">通知をすべてオフにする</button>
-  <button type="button" id="push-server-test" class="reminder-test hidden">サーバーからテスト通知を送る</button>
+  <button type="button" id="push-server-test" class="reminder-test hidden">② サーバーから実際にプッシュ通知をテストする</button>
   <div id="push-setup-status" class="reminder-result" role="status" aria-live="polite"></div>
+  <p class="push-schedule-note">※ サーバーテストが成功しても、指定時刻の定時配信は別途サーバー側のスケジュール設定が必要だよ。</p>
 </div>
   <div class="settings-section-label">🌱 天気データ・研究 <span lang="ko">기록</span></div>
   <details class="research-panel" id="research-panel"><summary>🌱 予報の蓄積状況 <small>確認する</small></summary><div class="research-data" id="research-data">公開観測所のデータを確認できるよ。</div><p class="research-note">公開観測所だけの研究データ。個人の現場情報は送信しません。作業の安全判断には使用しないでね。</p></details>
@@ -821,7 +835,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.24 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.25 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -976,6 +990,59 @@ async function showReminderTest(){
   }finally{btn.disabled=false;}
 }
 $('reminder-test').addEventListener('click',showReminderTest);
+
+// Read-only notification diagnostic: never asks for permission or sends push by itself.
+async function diagnosePushDelivery(){
+  const status=$('push-diagnose-result'),button=$('push-diagnose');
+  button.disabled=true;
+  status.textContent='iPhoneの通知設定を確認しているよ…';
+  const notes=[];
+  const installed=isInstalledPwa();
+  if(!installed){
+    notes.push('❌ ホーム画面の「하늘」アイコンからアプリを開いてね。ChatGPT内ブラウザやSafariのタブではiPhoneのWeb Pushを登録できないよ。');
+  }else{
+    notes.push('✅ ホーム画面のアプリとして起動できているよ。');
+  }
+  const supported=('Notification' in window)&&('serviceWorker' in navigator)&&('PushManager' in window);
+  if(!supported){
+    notes.push('❌ この画面ではWebプッシュ通知の機能が利用できないよ。');
+  }else{
+    const permission=Notification.permission;
+    if(permission==='granted')notes.push('✅ iPhoneの通知許可はオン。');
+    else if(permission==='denied')notes.push('❌ 通知が拒否されているよ。iPhoneの「設定」→「通知」→「하늘」を確認してね。');
+    else notes.push('⚠️ 通知がまだ許可されていないよ。上の「iPhone内のテスト通知」を試してね。');
+    if(installed){
+      try{
+        const worker=await Promise.race([
+          navigator.serviceWorker.ready,
+          new Promise((_,reject)=>setTimeout(()=>reject(Error('Service Worker timeout')),8000))
+        ]);
+        const sub=await worker.pushManager.getSubscription();
+        if(sub){
+          notes.push('✅ このiPhoneにはプッシュ購読があるよ。');
+          let hasToken=false;
+          try{hasToken=/^[A-Fa-f0-9]{64}$/.test(localStorage.getItem(pushOwnerKey)||'');}catch(_){}
+          if(!hasToken)notes.push('⚠️ サーバー登録用の端末キーが見つからないよ。「通知をオフ」→「通知をオン」で登録し直してね。');
+        }else{
+          notes.push('❌ 定時通知のプッシュ購読が未登録だよ。下に「通知をオン」が出ていたら登録してね。');
+        }
+      }catch(e){
+        notes.push('⚠️ 通知用のサービスワーカーを確認できなかったよ。通信とアプリの更新を確認してね。');
+      }
+    }
+  }
+  if(pushServiceOrigin){
+    notes.push('✅ サーバーの公開設定は取得できているよ。');
+    notes.push('⚠️ 配信の実績は別チェック。「② サーバーから実際にプッシュ通知をテストする」で受信を確認してね。');
+  }else{
+    notes.push('⚠️ 通知サーバーに接続できていないよ。サーバー未稼働・通信障害・設定不足の可能性があるよ。');
+  }
+  notes.push('※ 定時配信の稼働状況・スケジュール設定は端末だけでは確認できないよ。');
+  status.textContent=notes.join('\n');
+  button.disabled=false;
+}
+$('push-diagnose').addEventListener('click',diagnosePushDelivery);
+
 
 
 const reminderTimesKey='genbanosora.reminder.times.v1';
@@ -1157,7 +1224,7 @@ async function enableDailyPush(){
       times:selectedTimes
     });
     await showPushButtons();
-    pushStatus('♡ 選んだ時刻の通知を登録したよ！到着時刻は通信状況で前後することがあるよ。');
+    pushStatus('♡ iPhoneのプッシュ購読と選んだ時刻をサーバーに登録したよ！定時配信の有効化・実際の受信は別途テストが必要だよ。');
   }catch(e){
     pushStatus('登録を完了できませんでした。通信状態を確認して、もう一度試してね。');
   }finally{pushLoading(false);}
@@ -1188,7 +1255,7 @@ async function testDailyPushFromServer(){
     const token=localStorage.getItem(pushOwnerKey);
     if(!sub||!token)throw Error('No subscription');
     await pushPost('/api/test',{endpoint:sub.endpoint,token});
-    pushStatus('テスト通知を送信したよ。通知が届くか確かめてね ♡');
+    pushStatus('サーバーがテスト送信リクエストを受け付けたよ。実際にiPhoneへ届くか確認してね（定時配信とは別だよ）。');
   }catch(e){pushStatus('送信できませんでした。購読を登録し直すか通信を確認してね。');}
   finally{pushLoading(false);}
 }
