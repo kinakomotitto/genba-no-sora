@@ -12,6 +12,7 @@ on:
       - 'tools/three_model_collect.py'
       - 'tools/score_amedas_models.py'
       - 'tools/correction_readiness.py'
+      - 'tools/forecast_skill_audit.py'
       - '.github/workflows/amedas-national.yml'
 
 permissions:
@@ -33,6 +34,8 @@ jobs:
         run: python3 -m unittest discover -s tests -p test_three_model_pipeline.py -v
       - name: Verify high-standard seasonal/monthly correction gate offline
         run: python3 -m unittest discover -s tests -p test_correction_readiness.py -v
+      - name: Verify strong-wind and precipitation scoring by month and region offline
+        run: python3 -m unittest discover -s tests -p test_forecast_skill_audit.py -v
       - name: Collect public JMA nationwide map (at most 3 HTTP GET requests)
         id: amedas
         continue-on-error: true
