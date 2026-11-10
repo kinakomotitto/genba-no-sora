@@ -31,6 +31,12 @@ KEEP_DAYS=21
 MAX_BYTES=1_000_000
 UTC=dt.timezone.utc
 
+class ForecastResponseError(ValueError):
+    def __init__(self,reason_code):
+        # Only these static codes go into the public Git repository.
+        self.reason_code=str(reason_code)
+        super().__init__(self.reason_code)
+
 def now_utc():
     return dt.datetime.now(UTC)
 
@@ -108,19 +114,19 @@ def request_model(model,stations):
     with urllib.request.urlopen(request,timeout=25) as response:
         data=response.read(MAX_BYTES+1)
     if len(data)>MAX_BYTES:
-        raise ValueError("Forecast response larger than 1MB")
+        raise ForecastResponseError("response_too_large")
     parsed=json.loads(data.decode("utf-8"))
     if not isinstance(parsed,list):
-        raise ValueError("Expected a batch response list")
+        raise ForecastResponseError("invalid_batch_response_type")
     if len(parsed)!=len(stations):
-        raise ValueError("Incorrect number of model locations")
+        raise ForecastResponseError("missing_requested_locations")
     for item,station in zip(parsed,stations):
         if not isinstance(item,dict) or item.get("error") or not isinstance(item.get("hourly"),dict):
-            raise ValueError("Invalid hourly model output")
+            raise ForecastResponseError("model_missing_hourly_or_error")
         # Numerical model gridpoints may differ slightly from the requested coordinates.
         lat,lon=numeric(item.get("latitude")),numeric(item.get("longitude"))
         if lat is None or lon is None or abs(lat-station["lat"])>0.4 or abs(lon-station["lon"])>0.4:
-            raise ValueError("Model location does not match requested station")
+            raise ForecastResponseError("model_grid_location_mismatch")
     return parsed
 
 def forecast_targets(fetched):
@@ -256,12 +262,16 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
         status["maximum_daily_site_model_units"]=MAX_DAILY_SITE_MODEL_UNITS
         status["selection_method"]="9 anchor stations + deterministic farthest-point public stations with wind and rain observations"
         found=[]
+        api_throttled=False
         for model in MODELS:
             rows=[]
             failures=[]
             successes=0
             for start in range(0,len(stations),MAX_STATIONS_PER_REQUEST):
                 chunk=stations[start:start+MAX_STATIONS_PER_REQUEST]
+                if api_throttled:
+                    failures.append("upstream_rate_limited_stop")
+                    break
                 if status["calls_attempted"]>=MAX_HTTP_GETS_PER_RUN:
                     failures.append("request_budget_exhausted")
                     break
@@ -286,11 +296,18 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
                     # HTTP status is useful for diagnosing provider limits, but
                     # full URL/IP/token information is NEVER written to GitHub.
                     code=getattr(exc,"code",None)
-                    reason="HTTP_"+str(code) if isinstance(code,int) else type(exc).__name__
+                    reason=("HTTP_"+str(code) if isinstance(code,int)
+                            else getattr(exc,"reason_code",type(exc).__name__))
                     failures.append(reason)
+                    # Stop immediately on shared-IP rate limits or disabled
+                    # access; do not retry or query other models this run.
+                    if code in (401,403,429):
+                        api_throttled=True
+                        break
             found.extend(rows)
             status["per_model"][model]={
-                "state":"ok" if not failures else ("partial" if successes else "unavailable"),
+                "state":"ok" if not failures and successes==len(stations)
+                  else ("partial" if successes else "unavailable"),
                 "rows":len(rows),"stations_successful":successes,
                 "failed_batches":len(failures),
                 "failure_types":sorted(set(failures))
