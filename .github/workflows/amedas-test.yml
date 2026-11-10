@@ -1,0 +1,26 @@
+name: アメダス連携のオフライン検証
+on:
+  push:
+    paths:
+      - 'tools/amedas_snapshot.py'
+      - 'tests/test_amedas_snapshot.py'
+      - 'amedas-nearby.js'
+      - '.github/workflows/amedas-test.yml'
+  pull_request:
+    paths:
+      - 'tools/amedas_snapshot.py'
+      - 'tests/test_amedas_snapshot.py'
+      - 'amedas-nearby.js'
+      - '.github/workflows/amedas-test.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run synthetic AMeDAS test suite without weather API calls
+        run: python3 -m unittest discover -s tests -p test_amedas_snapshot.py -v
+      - name: Check browser module syntax
+        run: node --check amedas-nearby.js
