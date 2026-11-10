@@ -100,6 +100,21 @@ class Tests(unittest.TestCase):
         self.assertEqual(gap["consecutive_degraded_checks"],1)
         self.assertFalse(gap["sustained_outage_alert_eligible"])
 
+    def test_national_observation_coverage_drop_cannot_be_called_healthy(self):
+        now=dt.datetime(2026,11,10,12,tzinfo=UTC)
+        obs={"observed_at":"2026-11-10T11:00:00Z",
+             "metrics":{"stations":400,"valid_wind":120,"valid_rain":390}}
+        models={"state":"saved","fetched_at":"2026-11-10T11:30:00Z",
+                "per_model":{m:{"state":"ok"} for m in MODELS}}
+        verification={"updated_at_utc":"2026-11-10T11:30:00Z"}
+        previous={"assessed_at_utc":"2026-11-10T06:00:00Z",
+                  "national_observation_station_count":1285,
+                  "consecutive_degraded_checks":0}
+        result=health.assess(obs,models,verification,now,previous)
+        self.assertIn("national_observation_coverage_dropped",result["reasons"])
+        self.assertIn("national_observation_metric_missing",result["reasons"])
+        self.assertEqual(result["state"],"degraded")
+
     def test_chronological_shadow_uses_unseen_90_days_and_does_not_go_live(self):
         data=synthetic_matches()
         report=sc.trial(data)
