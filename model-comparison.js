@@ -54,12 +54,21 @@ function normalized(id,json){
     wind:get('wind_speed_10m',i),
     gust:get('wind_gusts_10m',i),
     rain:get('precipitation',i),
+    weatherCode:get('weather_code',i),
     direction:get('wind_direction_10m',i)
   }))};
 }
 async function requestModel(s,lat,lon){
-  const names=['wind_speed_10m','wind_direction_10m','precipitation'];
-  if(s.gust)names.push('wind_gusts_10m');
+  const core=['wind_speed_10m','wind_direction_10m','precipitation'];
+  // weather_code is instantaneous and can be compared to a visual sky record.
+  // Hourly precipitation is a prior-hour SUM, not a sighting of rain right now.
+  const withCode=[...core,'weather_code'];
+  const plans=s.gust?[
+    [...withCode,'wind_gusts_10m'],
+    withCode,
+    [...core,'wind_gusts_10m'],
+    core
+  ]:[withCode,core];
   async function request(fields){
     const query=new URLSearchParams({
       latitude:lat.toFixed(5),longitude:lon.toFixed(5),
@@ -70,17 +79,23 @@ async function requestModel(s,lat,lon){
     const timer=setTimeout(()=>controller.abort(),13000);
     try{
       const response=await fetch(ROOT+'?'+query.toString(),{signal:controller.signal,cache:'no-store'});
-      if(!response.ok)throw Error('Weather API '+response.status);
+      if(!response.ok){
+        const error=Error('Weather API unavailable');
+        error.status=response.status;
+        throw error;
+      }
       return normalized(s.id,await response.json());
     }finally{clearTimeout(timer)}
   }
-  // When a model doesn't publish gusts, retry once without that unsupported field.
-  try{return await request(names)}
-  catch(error){
-    if(!s.gust)return {...s,ok:false,hours:[]};
-    try{return await request(names.filter(n=>n!=='wind_gusts_10m'))}
-    catch(_){return {...s,ok:false,hours:[]}}
+  // Preserve existing rain/wind comparison if weather_code or gusts aren't
+  // available for a particular model. Respect explicit API access limits.
+  for(const fields of plans){
+    try{return await request(fields)}
+    catch(error){
+      if([401,403,429].includes(error?.status))break;
+    }
   }
+  return {...s,ok:false,hours:[]};
 }
 function labelJST(at){
   if(!at)return '日時不明';
