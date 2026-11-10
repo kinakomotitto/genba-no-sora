@@ -191,7 +191,9 @@ def adaptive_station_target(previous):
     old=previous.get("selected_station_count",len(SITES))
     if not isinstance(old,int) or not len(SITES)<=old<=MAX_PUBLIC_REFERENCE_STATIONS:
         return len(SITES)
-    ok=sum(1 for item in previous.get("per_model",{}).values()
+    models=previous.get("per_model",{})
+    if not isinstance(models,dict):return len(SITES)
+    ok=sum(1 for item in models.values()
            if isinstance(item,dict) and item.get("state")=="ok")
     if previous.get("state")=="saved" and ok==len(MODELS):
         return min(MAX_PUBLIC_REFERENCE_STATIONS,old+9)
@@ -222,7 +224,8 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
         target=adaptive_station_target(previous)
         stations=select_public_stations(snapshot,max_sites=target)
         status["selected_station_target"]=target
-        status["adaptive_backoff_used"]=bool(previous and target<previous.get("selected_station_count",0))
+        status["adaptive_backoff_used"]=bool(
+            isinstance(previous,dict) and target<previous.get("selected_station_count",0))
         status["selected_station_count"]=len(stations)
         status["station_ids"]=[str(s["id"]) for s in stations]
         status["daily_site_model_units_estimate"]=len(stations)*len(MODELS)*RUNS_PER_DAY
