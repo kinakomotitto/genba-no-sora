@@ -10,7 +10,7 @@ for(const id of ['weather-content','site-weather-detail','site-weather-host','si
   'site-detail-back','site-detail-name','radar-target-chip','selected-location']){
   assert.equal(count('id="'+id+'"'),1,'duplicate or missing '+id);
 }
-assert.match(html,/表示版 v0\.37/);
+assert.match(html,/表示版 v0\.37\.1/);
 assert.match(html,/>現場一覧へ ›<\/button>/);
 assert.match(html,/<header class="app-header">/);
 assert.match(html,/<span lang="ko">하늘<\/span>/);
@@ -27,6 +27,12 @@ assert.match(html,/consecutive_degraded_checks/);
 assert.match(html,/独立|長期学習/);
 assert.match(html,/\.\/data\/amedas\/latest\.json/);
 assert.match(html,/\.app-header\s*\{[\s\S]*?padding:12px 0;[\s\S]*?margin-bottom:12px;/);
+/* iPhone notification-tap toast must appear above the fixed bottom tabs. */
+assert.match(html,/#toast\{[^}]*bottom:calc\(138px \+ env\(safe-area-inset-bottom, 0px\)\)/);
+assert.match(html,/#toast\{[^}]*z-index:10001/);
+assert.match(html,/#toast\{[^}]*pointer-events:none/);
+assert.match(html,/body>\.tabs\{[^}]*z-index:9999/);
+
 
 assert.match(html,/id="site-detail-back"/);
 const homeStart=html.indexOf('<section id="home" class="page active">');
