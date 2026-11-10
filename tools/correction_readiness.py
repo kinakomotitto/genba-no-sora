@@ -152,7 +152,17 @@ def common_cohorts(rows,lead):
         except (KeyError,TypeError,ValueError,OverflowError):continue
         # All models must be matched to the same public observing station.
         grouped[(sid,ts.isoformat())][r["model"]]=r
-    return [g for g in grouped.values() if len(g)==len(MODELS)]
+    def complete(group):
+        if len(group)!=len(MODELS):return False
+        # Candidate readiness requires *both* wind and 1h precipitation,
+        # for all three models and the same quality-checked observation.
+        for row in group.values():
+            if any(safe_nonnegative(row.get(k)) is None for k in (
+                "wind_forecast_ms","wind_observed_ms",
+                "rain_forecast_mm","rain_observed_mm")):
+                return False
+        return True
+    return [g for g in grouped.values() if complete(g)]
 
 def daily_classification(groups):
     dates=set();months=set();seasons=set();seasons_days=defaultdict(set)
