@@ -4,6 +4,8 @@ on:
     paths:
       - 'index.html'
       - 'sw.js'
+      - 'location-label.js'
+      - 'tests/test_location_label.cjs'
       - 'model-comparison.js'
       - 'observation-verification.js'
       - 'tests/test_observation_verification.cjs'
@@ -15,6 +17,8 @@ on:
     paths:
       - 'index.html'
       - 'sw.js'
+      - 'location-label.js'
+      - 'tests/test_location_label.cjs'
       - 'model-comparison.js'
       - 'observation-verification.js'
       - 'tests/test_observation_verification.cjs'
@@ -32,6 +36,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify Home GPS and Sites detail navigation without real GPS
         run: node tests/test_home_site_navigation.cjs
+      - name: Verify current GPS short Japanese area label without external calls
+        run: node tests/test_location_label.cjs
       - name: Check pre-record only visual weather observation matching
         run: node tests/test_observation_verification.cjs
       - name: Verify weather code snapshots and fallback without any network
@@ -40,6 +46,7 @@ jobs:
         run: node tests/test_weather_record_integration.cjs
       - name: Check JavaScript syntax and PWA background script
         run: |
+          node --check location-label.js
           node --check model-comparison.js
           node --check observation-verification.js
           node --check sw.js
