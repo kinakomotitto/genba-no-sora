@@ -1,6 +1,6 @@
 # 現場の空 — 12時通知サーバー（Cloudflare Workers 試作）
 
-**状態（2026-11-10）：ユーザーのiPhoneで単発Pushと指定時刻17:45のPush受信が確認済み。本番Workerは一度は配信できた。一方、Git連携のWorkers Buildsが失敗する問題は別途調査中。**
+**状態（2026-11-10）：ユーザーのiPhoneで単発Pushと指定時刻17:45のPush受信が確認済み。本番Workerは一度は配信できた。以前のPull Request等でWorkers Buildsの失敗があったが、2026-11-10の最新main更新・全国データ保存時の本番Workers Buildsはどちらも成功済み。再発時だけ詳細ログを確認する。**
 
 運用・原因調査手順：[`../docs/operations-v034.md`](../docs/operations-v034.md)。
 
