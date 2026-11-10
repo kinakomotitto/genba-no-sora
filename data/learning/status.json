@@ -1,17 +1,39 @@
 {
   "state": "experimental_collection",
-  "last_successful_run_utc": "2026-11-09T19:06:07Z",
+  "last_successful_run_utc": "2026-11-10T01:13:57Z",
   "source_forecast": "met-norway-locationforecast-2.0",
   "source_observation": "tenkinow-unofficial-jma",
-  "forecast_rows": 27,
-  "observation_rows": 9,
+  "forecast_rows": 36,
+  "observation_rows": 12,
   "new_forecast_rows": 9,
   "new_observation_rows": 3,
   "errors": [],
   "metrics": [
     {
       "station_id": "31111",
+      "lead_group_h": 12,
+      "wind_samples": 1,
+      "wind_mae_ms": null,
+      "temperature_samples": 1,
+      "temperature_mae_c": null,
+      "wind_direction_samples": 1,
+      "wind_direction_mae_deg": null,
+      "state": "insufficient_data"
+    },
+    {
+      "station_id": "31111",
       "lead_group_h": 6,
+      "wind_samples": 2,
+      "wind_mae_ms": null,
+      "temperature_samples": 2,
+      "temperature_mae_c": null,
+      "wind_direction_samples": 2,
+      "wind_direction_mae_deg": null,
+      "state": "insufficient_data"
+    },
+    {
+      "station_id": "31312",
+      "lead_group_h": 12,
       "wind_samples": 1,
       "wind_mae_ms": null,
       "temperature_samples": 1,
@@ -23,6 +45,17 @@
     {
       "station_id": "31312",
       "lead_group_h": 6,
+      "wind_samples": 2,
+      "wind_mae_ms": null,
+      "temperature_samples": 2,
+      "temperature_mae_c": null,
+      "wind_direction_samples": 2,
+      "wind_direction_mae_deg": null,
+      "state": "insufficient_data"
+    },
+    {
+      "station_id": "31602",
+      "lead_group_h": 12,
       "wind_samples": 1,
       "wind_mae_ms": null,
       "temperature_samples": 1,
@@ -34,11 +67,11 @@
     {
       "station_id": "31602",
       "lead_group_h": 6,
-      "wind_samples": 1,
+      "wind_samples": 2,
       "wind_mae_ms": null,
-      "temperature_samples": 1,
+      "temperature_samples": 2,
       "temperature_mae_c": null,
-      "wind_direction_samples": 1,
+      "wind_direction_samples": 2,
       "wind_direction_mae_deg": null,
       "state": "insufficient_data"
     }
