@@ -8,6 +8,7 @@ on:
       - 'observation-verification.js'
       - 'tests/test_observation_verification.cjs'
       - 'tests/test_model_compare_snapshots.cjs'
+      - 'tests/test_weather_record_integration.cjs'
       - 'tests/test_home_site_navigation.cjs'
       - '.github/workflows/home-site-navigation-check.yml'
   pull_request:
@@ -18,6 +19,7 @@ on:
       - 'observation-verification.js'
       - 'tests/test_observation_verification.cjs'
       - 'tests/test_model_compare_snapshots.cjs'
+      - 'tests/test_weather_record_integration.cjs'
       - 'tests/test_home_site_navigation.cjs'
       - '.github/workflows/home-site-navigation-check.yml'
 permissions:
@@ -34,6 +36,8 @@ jobs:
         run: node tests/test_observation_verification.cjs
       - name: Verify weather code snapshots and fallback without any network
         run: node tests/test_model_compare_snapshots.cjs
+      - name: Test recording UI persists verification without harming manual observations
+        run: node tests/test_weather_record_integration.cjs
       - name: Check JavaScript syntax and PWA background script
         run: |
           node --check model-comparison.js
