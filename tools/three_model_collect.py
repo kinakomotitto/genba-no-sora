@@ -37,7 +37,9 @@ def now_utc():
 def numeric(v):
     return float(v) if isinstance(v,(int,float)) and not isinstance(v,bool) and math.isfinite(v) else None
 
-def select_public_stations(snapshot):
+def select_public_stations(snapshot,max_sites=MAX_PUBLIC_REFERENCE_STATIONS):
+    if not isinstance(max_sites,int) or not len(SITES)<=max_sites<=MAX_PUBLIC_REFERENCE_STATIONS:
+        raise ValueError("Invalid limit for public reference stations")
     if snapshot.get("source")!="jma-amedas-public-homepage-json":
         raise ValueError("Only validated public JMA AMeDAS snapshots are allowed")
     lookup={}
@@ -73,7 +75,7 @@ def select_public_stations(snapshot):
         dlon=(b["lon"]-a["lon"])*r
         x=math.sin(dlat/2)**2+math.cos(a_lat)*math.cos(b_lat)*math.sin(dlon/2)**2
         return 12742*math.asin(min(1,math.sqrt(x)))
-    while len(found)<MAX_PUBLIC_REFERENCE_STATIONS and candidates:
+    while len(found)<max_sites and candidates:
         furthest=max(candidates,key=lambda c:min(distance_km(c,s) for s in found))
         found.append(furthest)
         candidates.remove(furthest)
@@ -182,6 +184,21 @@ def save_daily(rows,when,output=OUT):
         except ValueError:
             continue
 
+def adaptive_station_target(previous):
+    """Never blindly repeat a national query size that just failed."""
+    if not isinstance(previous,dict):
+        return len(SITES)
+    old=previous.get("selected_station_count",len(SITES))
+    if not isinstance(old,int) or not len(SITES)<=old<=MAX_PUBLIC_REFERENCE_STATIONS:
+        return len(SITES)
+    ok=sum(1 for item in previous.get("per_model",{}).values()
+           if isinstance(item,dict) and item.get("state")=="ok")
+    if previous.get("state")=="saved" and ok==len(MODELS):
+        return min(MAX_PUBLIC_REFERENCE_STATIONS,old+9)
+    if previous.get("state")=="saved" and ok>0:
+        return max(len(SITES),old-9)
+    return len(SITES)
+
 def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
     stamp=clock()
     status={
@@ -197,7 +214,15 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
     }
     try:
         snapshot=json.loads(snapshot_path.read_text(encoding="utf-8"))
-        stations=select_public_stations(snapshot)
+        previous=None
+        old_status=output/"collection-status.json"
+        if old_status.exists():
+            try:previous=json.loads(old_status.read_text(encoding="utf-8"))
+            except (OSError,ValueError):pass
+        target=adaptive_station_target(previous)
+        stations=select_public_stations(snapshot,max_sites=target)
+        status["selected_station_target"]=target
+        status["adaptive_backoff_used"]=bool(previous and target<previous.get("selected_station_count",0))
         status["selected_station_count"]=len(stations)
         status["station_ids"]=[str(s["id"]) for s in stations]
         status["daily_site_model_units_estimate"]=len(stations)*len(MODELS)*RUNS_PER_DAY
