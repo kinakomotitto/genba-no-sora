@@ -11,6 +11,7 @@ from model_verification import evaluate
 from correction_readiness import (
     observation_matches, archive_matches, read_archive, report as readiness_report
 )
+from forecast_skill_audit import audit as skill_audit
 
 ROOT=Path(__file__).resolve().parents[1]
 AMEDAS=ROOT/"data"/"amedas"/"recent"
@@ -93,6 +94,7 @@ def run(obs_folder=AMEDAS,forecast_folder=FORECASTS,output=OUTPUT):
     new_records=archive_matches(matched)
     historical=read_archive()
     report["correction_readiness"]=readiness_report(historical)
+    report["skill_audit"]=skill_audit(historical)
     report["new_long_horizon_matches"]=new_records
     output.parent.mkdir(parents=True,exist_ok=True)
     output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
