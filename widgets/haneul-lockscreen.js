@@ -1,4 +1,4 @@
-// 하늘 ♡ · 現在地の空 — Scriptable ロック画面ウィジェット v1.3
+// 하늘 ♡ · 現在地の空 — Scriptable ロック画面ウィジェット v1.4
 // ロック画面の長方形を左右に2つ。左「今」、右「予報」を見やすく表示。
 // ホーム画面の小・中ウィジェットなら最大5時間分まで表示。
 // ※ ロック画面の色・背景・形はiOS側が調整するため、完全なガラス調
@@ -120,32 +120,45 @@ if(family==="accessoryInline"){
   const center=textLine(widget,temperature,21,true);center.centerAlignText();
   const foot=textLine(widget,desc.mark,10,false);foot.centerAlignText();
 }else if(family==="accessoryRectangular"){
-  // 長方形2つを時計の下へ配置：左が現在、右が毎時予報
-  widget.setPadding(1,2,1,2);
+  // Aデザイン：左右の長方形とも内側余白ゼロ、文字は水平・垂直中央揃え。
+  // addSpacer()を上下に置くことで、固定枠内の空間を均等に配分。
+  widget.setPadding(0,0,0,0);
   widget.spacing=0;
+  function centerLine(content,size,bold,minScale=0.85){
+    // テキストだけの中央寄せだと狭いサイズで偏ることがあるため、
+    // 左右に伸縮スペーサーを持つ横Stackで内容を中心に固定。
+    const line=widget.addStack();
+    line.layoutHorizontally();
+    line.centerAlignContent();
+    line.addSpacer();
+    const txt=textLine(line,content,size,bold);
+    txt.centerAlignText();
+    txt.minimumScaleFactor=minScale;
+    line.addSpacer();
+    return txt;
+  }
+  const shortKo=desc.ko==="구름 조금"?"구름":desc.ko;
+  widget.addSpacer();
   if(widgetMode==="forecast"){
-    const label=textLine(widget,"♡ 시간별 예보 · 1시간씩",10,true);
-    label.minimumScaleFactor=0.85;
+    centerLine("♡ 예보",11,true);
+    widget.addSpacer(2);
     const nextHours=hours.slice(0,3);
     if(nextHours.length){
       nextHours.forEach((f,i)=>{
-        const label=textLine(widget,f.hour+"시    "+f.mark+"    "+f.temp+"°",11,i===0);
-        label.minimumScaleFactor=0.9;
+        centerLine(f.hour+"시  "+f.mark+"  "+f.temp+"°",12,i===0,0.90);
+        if(i<nextHours.length-1)widget.addSpacer(1);
       });
     }else{
-      textLine(widget,"예보 없음 · 予報なし",10,false);
+      centerLine("시간별 예보 없음",10,false);
     }
   }else{
-    const heading=textLine(widget,"♡ 하늘  📍현재 위치",10,true);
-    heading.minimumScaleFactor=0.9;
+    centerLine("♡ 하늘",12,true);
     widget.addSpacer(2);
-    const currentLine=textLine(widget,desc.mark+"  "+temperature,29,true);
-    currentLine.minimumScaleFactor=0.93;
+    centerLine(desc.mark+" "+temperature,30,true,0.94);
     widget.addSpacer(2);
-    const ko=desc.ko==="구름 조금"?"구름":desc.ko;
-    const detail=textLine(widget,ko+"  ·  "+rainText+(fromCache?" · 前回":""),9.5,false);
-    detail.minimumScaleFactor=0.82;
+    centerLine("📍현재 위치 · "+(fromCache?"前回":shortKo),10,false,0.80);
   }
+  widget.addSpacer();
 }else{
   // ホーム画面用：透明感のある淡いピンク・ラベンダーのカード。
   const gradient=new LinearGradient();
