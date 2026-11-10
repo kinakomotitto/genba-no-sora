@@ -1,4 +1,4 @@
-// 하늘 ♡ · 現在地の空 — Scriptable ロック画面ウィジェット v1.1
+// 하늘 ♡ · 現在地の空 — Scriptable ロック画面ウィジェット v1.2
 // 「長方形」のロック画面ウィジェットで現在の天気とこの先3時間を表示。
 // ホーム画面の小・中ウィジェットなら最大5時間分まで表示。
 // ※ ロック画面の色・背景・形はiOS側が調整するため、完全なガラス調
@@ -117,27 +117,28 @@ if(family==="accessoryInline"){
   const center=textLine(widget,temperature,21,true);center.centerAlignText();
   const foot=textLine(widget,desc.mark,10,false);foot.centerAlignText();
 }else if(family==="accessoryRectangular"){
-  // ロック画面ではiOS標準の透明・壁紙連動の表示を使う。
-  // 自由なガラス背景画像は指定せず、文字の読みやすさを優先。
-  widget.setPadding(0,2,0,2);
+  // iOSの小さな長方形枠は3行だけ。気温を最大にして、3時間予報を優先。
+  // より大きいガラス調カードはホーム画面「中」ウィジェットで利用できます。
+  widget.setPadding(0,0,0,0);
   widget.spacing=0;
-  textLine(widget,"♡ 하늘  📍 현재 위치"+(fromCache?" · 前回":""),9,true);
-  textLine(widget,currentText,17,true);
-  widget.addSpacer(1);
-  const line=widget.addStack();
-  line.layoutHorizontally();
-  line.centerAlignContent();
-  const mini=hours.slice(0,3);
-  if(mini.length){
-    mini.forEach((f,i)=>{
-      const item=textLine(line,futureText(f),8.3,true);
-      if(i<mini.length-1)line.addSpacer(4);
+  const shortKorean=desc.ko==="구름 조금"?"구름":desc.ko;
+  const heading=textLine(widget,"♡ 하늘  📍현재 위치 · "+(fromCache?"前回":shortKorean),10,true);
+  heading.minimumScaleFactor=0.84;
+  const big=textLine(widget,desc.mark+"  "+temperature,25,true);
+  big.minimumScaleFactor=0.9;
+  const future=widget.addStack();
+  future.layoutHorizontally();
+  future.centerAlignContent();
+  const upcoming=hours.slice(0,3);
+  if(upcoming.length){
+    upcoming.forEach((f,i)=>{
+      const line=textLine(future,f.hour+"시"+f.mark+f.temp+"°",10,true);
+      line.minimumScaleFactor=0.84;
+      if(i<upcoming.length-1)future.addSpacer(3);
     });
   }else{
-    textLine(line,"다음 시간 예보 --",9,false);
+    textLine(future,"시간별 예보 없음",10,false);
   }
-  widget.addSpacer(1);
-  textLine(widget,rainText+" · "+updated,8.5,false);
 }else{
   // ホーム画面用：透明感のある淡いピンク・ラベンダーのカード。
   const gradient=new LinearGradient();
