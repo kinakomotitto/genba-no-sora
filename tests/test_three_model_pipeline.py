@@ -65,6 +65,40 @@ class TestNationwidePilot(unittest.TestCase):
             self.assertEqual(result2["state"],"saved")
             self.assertEqual(len((root/"model-validation"/"forecasts"/"2026-11-10.jsonl").read_text().splitlines()),54)
 
+    def test_split_nationwide_requests_and_preserve_partial_results(self):
+        initial=stations()
+        extras=[]
+        for i in range(65):
+            extras.append({
+                "id":str(20000+i),"name":"公開観測所"+str(i),
+                "lat":25+(i%12)*1.5,"lon":126+(i//12)*2.7,
+                "wind_ms":2.0,"precipitation_1h_mm":0.1
+            })
+        snapshot={"source":"jma-amedas-public-homepage-json",
+                  "stations":initial+extras}
+        chosen=tc.select_public_stations(snapshot)
+        self.assertEqual(len(chosen),36)
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            origin=root/"amedas.json"
+            origin.write_text(json.dumps(snapshot),encoding="utf-8")
+            queries=[]
+            def bounded(model,subset):
+                queries.append((model,len(subset)))
+                if model=="icon_seamless" and subset[0]["name"] not in tc.SITES:
+                    raise RuntimeError("one chunk of stations unavailable")
+                return fake_model(model,subset)
+            state=tc.collect(origin,root/"output",bounded,lambda:NOW)
+            self.assertEqual(state["selected_station_count"],36)
+            self.assertEqual(state["calls_attempted"],12)
+            self.assertTrue(all(n<=9 for _,n in queries))
+            self.assertEqual(state["per_model"]["jma_msm"]["state"],"ok")
+            self.assertEqual(state["per_model"]["ecmwf_ifs"]["state"],"ok")
+            self.assertEqual(state["per_model"]["icon_seamless"]["state"],"partial")
+            self.assertEqual(state["per_model"]["icon_seamless"]["stations_successful"],9)
+            self.assertTrue(state["forecast_rows_saved"]>200)
+            self.assertEqual(state["daily_site_model_units_estimate"],432)
+
     def test_public_source_required(self):
         with self.assertRaises(ValueError):
             tc.select_public_stations({"source":"private-field","stations":stations()})
