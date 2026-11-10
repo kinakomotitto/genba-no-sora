@@ -1,0 +1,38 @@
+name: 全国観測と3モデル予報・自動採点のオフライン検査
+on:
+  push:
+    paths:
+      - 'tools/amedas_snapshot.py'
+      - 'tools/model_verification.py'
+      - 'tools/three_model_collect.py'
+      - 'tools/score_amedas_models.py'
+      - 'tests/test_amedas_snapshot.py'
+      - 'tests/test_three_model_pipeline.py'
+      - '.github/workflows/three-model-pipeline-tests.yml'
+  pull_request:
+    paths:
+      - 'tools/amedas_snapshot.py'
+      - 'tools/model_verification.py'
+      - 'tools/three_model_collect.py'
+      - 'tools/score_amedas_models.py'
+      - 'tests/test_amedas_snapshot.py'
+      - 'tests/test_three_model_pipeline.py'
+      - '.github/workflows/three-model-pipeline-tests.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Public JMA data parser (synthetic)
+        run: python3 -m unittest discover -s tests -p test_amedas_snapshot.py -v
+      - name: Three model collection and scoring (synthetic)
+        run: python3 -m unittest discover -s tests -p test_three_model_pipeline.py -v
+      - name: Historical model evaluator (synthetic)
+        run: python3 -m unittest discover -s tests -p test_model_verification.py -v
+      - name: Browser weather modules syntax
+        run: |
+          node --check model-comparison.js
+          node --check amedas-nearby.js
