@@ -654,6 +654,11 @@ button.radar-hour-cell{font-family:inherit;cursor:pointer}
 .home-location .locrow{margin-bottom:0;gap:8px;align-items:center}
 .home-location .location-name{font-size:16px;line-height:1.3;letter-spacing:.01em}
 .home-location .home-location-change{font-size:11px;font-weight:650;padding:0 11px;min-height:37px;white-space:nowrap;background:rgba(255,255,255,.75)}
+.home-location .locrow>div:first-child{flex:1;min-width:0}
+.home-location .location-name{min-width:0;gap:7px;flex-wrap:nowrap}
+.home-location .location-name #selected-location{white-space:nowrap;flex-shrink:0}
+.home-location .home-area-chip{display:inline-block;min-width:0;max-width:min(34vw,150px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:5px 9px;border:1px solid rgba(222,176,198,.6);border-radius:999px;background:rgba(255,248,252,.88);color:#a26a86;font-size:11px;font-weight:650;line-height:1.3}
+@media(max-width:355px){.home-location .home-area-chip{max-width:90px;padding:4px 7px;font-size:10px}}
 .home-hero{padding:21px 19px 18px;border:1px solid rgba(255,255,255,.55);margin-bottom:12px;box-shadow:0 9px 28px rgba(136,90,128,.075)}
 .home-hero .section-kicker{font-size:13px;font-weight:750;letter-spacing:.015em}
 .home-hero .home-kicker-jp{font-size:10px;font-weight:550;color:var(--muted)}
@@ -726,7 +731,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <div class="home-location">
     <div class="locrow">
       <div>
-        <div class="location-name"><span class="pin">⌖</span><span id="selected-location">現在地</span></div>
+        <div class="location-name"><span class="pin">⌖</span><span id="selected-location">現在地</span><span id="current-area" class="home-area-chip hidden" aria-label="現在地付近の地名"></span></div>
         <div id="geo-status" class="sub" style="margin:4px 0 0 22px">位置情報の取得待ち</div>
       </div>
       <button class="btn home-location-change" id="choose-location" type="button">現場一覧へ ›</button>
@@ -993,10 +998,10 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
     <span class="settings-widget-copy"><strong>♡ 하늘 · ロック画面に追加</strong><small>今いる場所の天気＋1時間ごとの予報 · 作り方を見る</small></span>
     <span class="settings-widget-arrow" aria-hidden="true">›</span>
   </a>
-  <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
+  <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。ホームの短い地名表示だけは、GPS座標を小数3桁に丸めて国土地理院の住所検索へ送り、付近の町名を調べるよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.38 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.39 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -1023,6 +1028,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
 <button class="tab" data-tab="sites" type="button" aria-label="現場"><span class="tab-label">現場</span><span class="ko" lang="ko">현장</span></button>
 </footer>
 <div id="toast" role="status" aria-live="polite"></div>
+<script src="./location-label.js"></script>
 <script src="./model-comparison.js"></script>
 <script src="./observation-verification.js"></script>
 <script src="./amedas-nearby.js"></script>
@@ -1945,6 +1951,7 @@ function restoreHomeLocation(){
     fetchController=null; // a delayed site response must never repaint the Home screen
     selected={kind:'current',name:'現在地'};
     $('selected-location').textContent='現在地';
+    window.SoraArea?.clear();
     $('geo-status').textContent=lastGPS
       ?'前回のGPS · '+lastGPS.lat.toFixed(4)+', '+lastGPS.lon.toFixed(4)+'（位置を更新中）'
       :'GPSの位置情報を取得中…';
@@ -1989,7 +1996,7 @@ function showTab(id,options={}){
   if(id==='home')locate({fresh:true});
 }
 function gps(success,fail,options={}){if(!navigator.geolocation){fail&&fail('このブラウザではGPSが使えません');return}navigator.geolocation.getCurrentPosition(pos=>{lastGPS={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy,at:new Date().toISOString()};save();updateWindyLinks();success(lastGPS)},err=>{const msg=err.code===1?'位置情報の許可が必要です。ブラウザの設定で許可してください':err.code===3?'GPSの取得がタイムアウトしました':'GPSの位置を取得できませんでした';fail&&fail(msg)},{enableHighAccuracy:true,timeout:options.fresh?18000:12000,maximumAge:options.fresh?0:300000});}
-function locate(options={}){$('geo-status').textContent='GPSを取得中…';gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
+function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
 
 function renderWindTrend(hourly,stale){
   const status=$('wind-trend-status'),chart=$('wind-trend-chart'),hours=$('wind-trend-hours');
