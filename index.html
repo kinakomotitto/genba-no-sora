@@ -13,6 +13,7 @@
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="./icon.svg">
 <link rel="apple-touch-icon" href="./icon-180.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&display=swap">
 <style>
 :root{--bg:#fffdfc;--ink:#454047;--muted:#9b8d96;--line:#f0e5e9;--pink:#e7afbf;--pinkdark:#ac6c82;--pale:#fdf0f4;--rose:#fae6ed;--white:#fff;--shadow:0 8px 28px rgba(121,76,93,.045);font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;color-scheme:light}
 *{box-sizing:border-box}html{background:#f8f4f6}body{margin:0;background:var(--bg);color:var(--ink);min-height:100dvh;font-size:14px}button,input,textarea{font:inherit}button{cursor:pointer;-webkit-tap-highlight-color:transparent}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid #ddb3c5;outline-offset:3px}a{color:inherit;text-decoration:none}#app{width:min(100%,470px);min-height:100dvh;margin:0 auto;padding:25px 20px 18px;background:var(--bg);box-shadow:var(--shadow);position:relative;overflow:hidden}#app:before{content:'♡';position:absolute;top:14px;right:28px;font-size:42px;line-height:1;color:#f0cbd7;opacity:.55;transform:rotate(-12deg);pointer-events:none;z-index:0}.main-layer{position:relative;z-index:1}header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:25px}.brand{font-size:25px;font-weight:700;letter-spacing:-.07em}.cloud{color:#cda2b1}.ko{font-size:11px;color:#ab9aa1;letter-spacing:.02em;margin-top:4px}.status-pill{background:#f8f2f4;border-radius:999px;padding:8px 10px;font-size:11px;color:#ad8292;display:flex;align-items:center;gap:5px;white-space:nowrap}.dot{height:7px;width:7px;display:inline-block;background:#9fbdac;border-radius:50%}.status-pill.off .dot{background:#d4919c}.section{margin-bottom:15px}.locrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}.location-name{font-size:15px;font-weight:700;display:flex;gap:8px;align-items:center}.location-name .pin{color:var(--pinkdark)}.sub{color:var(--muted);font-size:11px}.btn{border:1px solid #ebdce2;background:#fff;border-radius:12px;min-height:42px;padding:10px 13px;color:#986d7c;font-weight:650}.btn.primary{background:#dcaabc;border-color:#dcaabc;color:white}.btn.soft{background:#fdf0f4;border-color:#fdf0f4}.btn.full{width:100%}.btn:disabled{opacity:.58;cursor:wait}.hero{background:linear-gradient(142deg,#fcebf1,#fcf2f5);border-radius:23px;padding:21px 19px;box-shadow:var(--shadow)}.section-kicker{font-size:12px;color:#a47d8c;font-weight:650}.hero-main{display:flex;align-items:center;justify-content:space-between;margin:16px 0 18px}.big-temp{font-size:56px;line-height:1;letter-spacing:-.065em;font-weight:300}.weather-name{font-size:15px;font-weight:600;margin-top:9px}.emoji{font-size:50px;line-height:1}.details{border-top:1px solid #ead9df;padding-top:17px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.metric{min-width:0}.metric-label{font-size:11px;color:#a1848f}.metric-value{font-size:16px;font-weight:700;margin-top:6px;white-space:nowrap}.card{background:#fff;border:1px solid var(--line);border-radius:17px;padding:16px;box-shadow:var(--shadow)}.card.warn{background:#fcf6f8;border-color:#fcf6f8}.card-title{font-size:14px;font-weight:700}.tagline{color:var(--muted);font-size:11px;line-height:1.6;margin-top:7px}.card-top{display:flex;justify-content:space-between;align-items:center;gap:10px}.tiny{font-size:11px;color:#aa8492}.radar-visual{height:148px;border-radius:13px;background:radial-gradient(circle at 35% 45%,#f5dce7 0 11%,transparent 27%),radial-gradient(circle at 70% 40%,#e8d7e4 0 9%,transparent 31%),linear-gradient(140deg,#f7f2f5,#f1f5f2);display:grid;place-items:center;margin:12px 0 10px;position:relative;overflow:hidden}.radar-visual:after{content:'';position:absolute;inset:0;background-image:linear-gradient(#ffffff88 1px,transparent 1px),linear-gradient(90deg,#ffffff88 1px,transparent 1px);background-size:27px 27px;opacity:.5}.radar-visual span{position:relative;z-index:1;background:#ffffffbd;border-radius:15px;padding:10px 14px;color:#a48c96;font-size:12px}.link-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.quicklink{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#f9f4f6;border-radius:14px;padding:14px 4px;min-height:77px;font-weight:700;font-size:12px}.quicklink small{font-size:10px;font-weight:400;color:#a7959c}.section-head{font-weight:700;font-size:13px;margin:18px 0 10px}.rain-outlook{background:#fff9fb;border:1px solid #f4e3e9;border-radius:17px;padding:15px 16px;margin:13px 0 16px}.rain-outlook .outlook-summary{font-size:12px;color:#936d7d;margin:9px 0 11px}.rain-hours{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.rain-hour{background:#fceff4;border-radius:12px;padding:10px 5px;text-align:center}.rain-hour .time{font-size:11px;color:#9f8490}.rain-hour .prob{font-size:16px;color:#795b69;font-weight:700;margin-top:4px}.rain-hour.high{background:#f7dfe8}.rain-note{font-size:10px;color:#a3929b;line-height:1.6;margin-top:9px}.notice{color:#a36e7e;background:#fdf2f5;border-radius:12px;padding:11px 13px;font-size:12px;line-height:1.7;margin:12px 0}.notice.off{background:#fff1e9;color:#976955}.forecast{display:flex;gap:8px;overflow-x:auto;padding:4px 0 9px;scrollbar-width:thin}.hour{min-width:78px;text-align:center;padding:13px 8px;border:1px solid var(--line);background:#fff;border-radius:14px}.hour strong{display:block;margin:6px 0;font-size:14px}.hour .rain{font-size:11px;color:#ac7a8d}.page{display:none}.page.active{display:block}.footnote{font-size:10px;color:#a8999f;line-height:1.8;margin:18px 2px}.footnote a{text-decoration:underline;text-underline-offset:2px}.tabs{position:sticky;bottom:0;margin:25px -9px 0;background:#fffdfcef;border:1px solid #f0e6ea;border-radius:19px;padding:6px;display:grid;grid-template-columns:repeat(3,1fr);backdrop-filter:blur(12px);box-shadow:0 4px 25px #65445609}.tab{border:0;background:transparent;color:#ac8494;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;border-radius:15px;padding:6px 2px 8px;min-height:76px;min-width:0;transition:background .15s ease,color .15s ease}
@@ -247,6 +248,35 @@ body>.tabs .ko{white-space:nowrap}
 
 
 
+
+
+/* v0.32 · tiny handwritten Korean sky logo, balanced spacing around the hairline */
+.app-header{
+  align-items:center;
+  border-bottom:1px solid rgba(132,151,171,.17);
+  padding:12px 0;
+  margin-bottom:12px;
+  min-height:0;
+}
+.app-header .brand{
+  color:var(--ink);
+  font-family:"Gaegu","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+  font-size:19px;
+  font-weight:700;
+  letter-spacing:.015em;
+  line-height:1.15;
+  display:flex;
+  align-items:center;
+  gap:3px;
+}
+.app-header .brand .cloud{
+  font-family:-apple-system,BlinkMacSystemFont,"Apple Color Emoji",sans-serif;
+  font-size:14px;
+  font-weight:400;
+  line-height:1;
+  color:#9fb6ca;
+}
+.app-header .status-pill{flex-shrink:0}
 
 /* v0.31: Current GPS is always Home, saved sites open in the Sites detail view */
 .site-detail-header{margin:2px 0 17px;padding:0 2px}
@@ -696,7 +726,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
 </head>
 <body>
 <div id="app"><div class="main-layer">
-<header><div><div class="brand">現場の空 <span class="cloud">☁</span></div><div class="ko">오늘의 날씨 · 今日のお天気</div></div><div id="connection" class="status-pill"><i class="dot"></i><span id="connection-text">通信確認中</span></div></header>
+<header class="app-header"><div class="brand" aria-label="現場の空・하늘"><span lang="ko">하늘</span> <span class="cloud" aria-hidden="true">☁</span></div><div id="connection" class="status-pill"><i class="dot"></i><span id="connection-text">通信確認中</span></div></header>
 
 <section id="home" class="page active">
   <div class="home-location">
@@ -971,7 +1001,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.31 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.32 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
