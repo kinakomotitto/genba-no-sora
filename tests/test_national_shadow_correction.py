@@ -115,6 +115,25 @@ class Tests(unittest.TestCase):
         self.assertIn("national_observation_metric_missing",result["reasons"])
         self.assertEqual(result["state"],"degraded")
 
+    def test_health_does_not_accept_wrong_model_ids_or_future_verification(self):
+        now=dt.datetime(2026,11,10,12,tzinfo=UTC)
+        obs={"source":"jma-amedas-public-homepage-json",
+             "observed_at":"2026-11-10T11:00:00Z",
+             "metrics":{"stations":1285,"valid_wind":913,"valid_rain":1282}}
+        collection={"state":"saved","fetched_at":"2026-11-10T11:30:00Z",
+                    "forecast_rows_saved":0,"per_model":{
+                        "made_up_1":{"state":"ok"},
+                        "made_up_2":{"state":"ok"},
+                        "made_up_3":{"state":"ok"}}}
+        verification={"updated_at_utc":"2026-11-10T13:30:00Z"}
+        result=health.assess(obs,collection,verification,now)
+        self.assertEqual(result["state"],"degraded")
+        self.assertIn("model_coverage_degraded",result["reasons"])
+        self.assertIn("verification_status_not_updated",result["reasons"])
+        wrong=dict(obs,source="unverified_private_forecast")
+        result2=health.assess(wrong,collection,verification,now)
+        self.assertIn("unexpected_observation_source",result2["reasons"])
+
     def test_chronological_shadow_uses_unseen_90_days_and_does_not_go_live(self):
         data=synthetic_matches()
         report=sc.trial(data)
