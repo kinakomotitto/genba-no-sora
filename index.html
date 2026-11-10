@@ -244,6 +244,34 @@ body>.tabs .ko{white-space:nowrap}
 .reminder-test:disabled{opacity:.5;cursor:wait}
 .reminder-result{margin-top:7px}
 
+
+/* v0.26 · compact six-hour wind outlook (forecast only) */
+.home-wind{margin:0 0 15px;padding:15px 14px 13px;border:1px solid var(--line);border-radius:21px;background:rgba(255,255,255,.83);box-shadow:var(--shadow)}
+.home-wind summary{list-style:none;cursor:pointer;display:flex;gap:9px;justify-content:space-between;align-items:center}
+.home-wind summary::-webkit-details-marker{display:none}
+.home-wind-title{font-weight:760;font-size:14px;color:var(--ink)}
+.home-wind-title .tiny{font-size:10px;color:var(--muted);font-weight:500}
+.home-wind-toggle{font-size:11px;color:var(--muted);white-space:nowrap}
+.home-wind[open] .home-wind-toggle{color:#b17e9d}
+.wind-trend-status{font-size:11px;color:var(--muted);line-height:1.6;margin:12px 0 8px}
+.wind-trend-chart{display:block;width:100%;max-height:152px;overflow:visible}
+.wind-grid-line{stroke:#e8e7ef;stroke-width:1;stroke-dasharray:4 5}
+.wind-grid-label{font-size:10px;fill:#9a91a3}
+.wind-line{fill:none;stroke:#7a9db3;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.wind-line.gust{stroke:#c38aa8}
+.wind-dot{fill:#fff;stroke:#7a9db3;stroke-width:2}
+.wind-dot.gust{stroke:#c38aa8}
+.wind-trend-legend{display:flex;gap:17px;margin:5px 0 11px;font-size:10px;color:var(--muted)}
+.wind-trend-legend span::before{content:"";display:inline-block;width:15px;height:3px;margin:0 6px 3px 0;border-radius:3px;background:#7a9db3}
+.wind-trend-legend .gust::before{background:#c38aa8}
+.wind-trend-hours{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}
+.wind-trend-hour{text-align:center;padding:6px 1px;background:rgba(242,246,251,.8);border-radius:9px;min-width:0}
+.wind-trend-hour .time{font-size:10px;color:#786e83;font-weight:700}
+.wind-trend-hour .speed{font-size:11px;color:#668da4;font-weight:750;margin-top:5px}
+.wind-trend-hour .gust{font-size:10px;color:#b17e9d;margin-top:2px}
+.wind-trend-hour .direction{font-size:9px;color:var(--muted);margin-top:3px}
+.wind-trend-note{font-size:10px;line-height:1.6;color:var(--muted);margin:11px 0 0}
+
 /* v0.25 · push diagnostics and clear distinction between local test and scheduled delivery */
 .push-diagnose-panel{margin:12px 0 14px;padding:14px;border:1px solid var(--line);border-radius:17px;background:rgba(255,255,255,.78)}
 .push-diagnose-panel strong{font-size:13px;color:var(--pinkdark)}
@@ -646,6 +674,19 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
     <p class="home-hero-note">風と雨の数値は予報値。現場の実測・警報とは違うよ。</p>
   </div>
 
+
+  <details class="section home-wind" id="wind-trend" aria-label="この先6時間の風の予報">
+    <summary>
+      <span class="home-wind-title">🌬️ この先6時間の風 <span lang="ko" class="tiny">바람 예보</span></span>
+      <span class="home-wind-toggle">グラフを見る ⌄</span>
+    </summary>
+    <div id="wind-trend-status" class="wind-trend-status" role="status">天気を取得すると風の変化を表示するよ。</div>
+    <svg id="wind-trend-chart" class="wind-trend-chart" viewBox="0 0 330 124" role="img" aria-label="6時間の風速と最大瞬間風速の予報グラフ"></svg>
+    <div class="wind-trend-legend"><span>風速（m/s）</span><span class="gust">最大瞬間風速（m/s）</span></div>
+    <div id="wind-trend-hours" class="wind-trend-hours" aria-label="時間ごとの風速と風向"></div>
+    <p class="wind-trend-note">地上10mの予報値。山林・樹上の実測や作業可否の判断には使わず、現地の状況と会社の安全基準を優先してね。</p>
+  </details>
+
   <div class="rain-outlook section home-rain" aria-label="この先3時間の降水確率">
     <div class="card-top">
       <span class="card-title">♡ この先3時間の雨 <span lang="ko" class="tiny">비 소식</span></span>
@@ -835,7 +876,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.25 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.26 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -1653,11 +1694,84 @@ function selectLoc(s){selected=s;updateWindyLinks();$('selected-location').textC
 function showTab(id){if(id==='radar'){renderRadar15h();}else{radarStop();}const isChanging=!$(id)?.classList.contains('active');document.querySelectorAll('.page').forEach(el=>el.classList.toggle('active',el.id===id));document.querySelectorAll('.tab').forEach(el=>el.classList.toggle('active',el.dataset.tab===(id==='settings'?'sites':id)));if(id==='sites')renderSites();if(id==='radar')requestAnimationFrame(()=>ensureRadarMap());if(isChanging)window.scrollTo(0,0);}
 function gps(success,fail,options={}){if(!navigator.geolocation){fail&&fail('このブラウザではGPSが使えません');return}navigator.geolocation.getCurrentPosition(pos=>{lastGPS={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy,at:new Date().toISOString()};save();updateWindyLinks();success(lastGPS)},err=>{const msg=err.code===1?'位置情報の許可が必要です。ブラウザの設定で許可してください':err.code===3?'GPSの取得がタイムアウトしました':'GPSの位置を取得できませんでした';fail&&fail(msg)},{enableHighAccuracy:true,timeout:options.fresh?18000:12000,maximumAge:options.fresh?0:300000});}
 function locate(){$('geo-status').textContent='GPSを取得中…';gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}})}
+
+function renderWindTrend(hourly,stale){
+  const status=$('wind-trend-status'),chart=$('wind-trend-chart'),hours=$('wind-trend-hours');
+  if(!status||!chart||!hours)return;
+  chart.replaceChildren();hours.replaceChildren();
+  const times=hourly?.time,speed=hourly?.wind_speed_10m,gust=hourly?.wind_gusts_10m,direction=hourly?.wind_direction_10m;
+  if(!Array.isArray(times)||!Array.isArray(speed)||!Array.isArray(gust)||!Array.isArray(direction)){
+    status.textContent='この地点の風の時間別データがないよ。「天気を更新」で最新の予報を取得してね。';
+    return;
+  }
+  const currentHour=new Date(Date.now()+9*3600000).toISOString().slice(0,13)+':00';
+  const first=times.findIndex(t=>typeof t==='string'&&t>=currentHour);
+  if(first<0){status.textContent='表示できる時間帯の予報がないよ。天気を更新してね。';return;}
+  const points=times.slice(first,first+6).map((time,j)=>{
+    const i=first+j;
+    const num=v=>typeof v==='number'&&Number.isFinite(v)&&v>=0?v:null;
+    const dir=typeof direction[i]==='number'&&Number.isFinite(direction[i])?direction[i]:null;
+    return {time,speed:num(speed[i]),gust:num(gust[i]),dir};
+  });
+  if(points.length<2){status.textContent='表示できる風の予報が足りないよ。';return;}
+  const peaks=points.map(p=>p.gust).filter(v=>v!==null);
+  const staleNote=stale?'（保存済みの予報・最新ではありません）':'';
+  status.textContent=peaks.length
+    ?'この先6時間の最大瞬間風速の予測：最大 '+Math.max(...peaks).toFixed(1)+' m/s '+staleNote
+    :'突風の予測値が一部取得できませんでした。 '+staleNote;
+  const all=points.flatMap(p=>[p.speed,p.gust]).filter(v=>v!==null);
+  const top=Math.max(2,Math.ceil(Math.max(0,...all)/2)*2);
+  const svgNS='http://www.w3.org/2000/svg';
+  const element=(name,attrs,content)=>{
+    const el=document.createElementNS(svgNS,name);
+    for(const [key,value] of Object.entries(attrs))el.setAttribute(key,String(value));
+    if(content!==undefined)el.textContent=content;
+    chart.append(el);return el;
+  };
+  const left=31,right=322,topY=14,bottom=105;
+  const x=i=>left+(right-left)*i/(points.length-1);
+  const y=value=>bottom-(bottom-topY)*value/top;
+  for(const value of [0,top/2,top]){
+    element('line',{x1:left,y1:y(value),x2:right,y2:y(value),class:'wind-grid-line'});
+    element('text',{x:2,y:y(value)+3,class:'wind-grid-label'},String(Number(value.toFixed(1))));
+  }
+  for(const [key,kind] of [['speed','wind'],['gust','gust']]){
+    let segment=[];
+    const flush=()=>{
+      if(segment.length>1)element('polyline',{points:segment.join(' '),class:'wind-line'+(kind==='gust'?' gust':'')});
+      segment=[];
+    };
+    for(const [i,p] of points.entries()){
+      if(p[key]===null){flush();continue;}
+      segment.push(x(i).toFixed(1)+','+y(p[key]).toFixed(1));
+    }
+    flush();
+    for(const [i,p] of points.entries()){
+      if(p[key]!==null)element('circle',{cx:x(i),cy:y(p[key]),r:3.1,class:'wind-dot'+(kind==='gust'?' gust':'')});
+    }
+  }
+  const dirs=['北','北東','東','南東','南','南西','西','北西'];
+  for(const p of points){
+    const cell=document.createElement('div');cell.className='wind-trend-hour';
+    const entries=[
+      ['time',String(p.time).slice(11,13)+'時'],
+      ['speed',p.speed!==null?p.speed.toFixed(1):'--'],
+      ['gust',p.gust!==null?p.gust.toFixed(1):'--'],
+      ['direction',p.dir!==null?dirs[Math.round(((p.dir%360)+360)%360/45)%8]+'風':'風向--']
+    ];
+    for(const [className,value] of entries){
+      const el=document.createElement('div');el.className=className;el.textContent=value;cell.append(el);
+    }
+    hours.append(cell);
+  }
+  chart.setAttribute('aria-label','この先6時間の風速と最大瞬間風速の予測。風速・突風の数値と風向は下の各時刻に表示。');
+}
+
 function renderWeather(data,fetched,stale){const c=data.current||{},h=data.hourly||{},desc=weatherDesc(c.weather_code);$('temperature').textContent=Number.isFinite(c.temperature_2m)?Math.round(c.temperature_2m)+'°':'--°';$('description').textContent=desc[0];$('weather-icon').textContent=desc[1];$('apparent').textContent=`体感温度 ${fmt(c.apparent_temperature)}°C · 湿度 ${fmt(c.relative_humidity_2m)}%`;$('wind').textContent=`${fmt(c.wind_speed_10m)} m/s`;$('gust').textContent=`${fmt(c.wind_gusts_10m)} m/s`;
 let first=-1;if(Array.isArray(h.time)){const thisHourJP=new Date(Date.now()+9*3600000).toISOString().slice(0,13)+':00';first=h.time.findIndex(t=>t>=thisHourJP);}$('rain-prob').textContent=first>=0&&Array.isArray(h.precipitation_probability)&&h.precipitation_probability[first]!=null?`${Math.round(h.precipitation_probability[first])}%`:'--%';
-renderRainOutlook(h,stale);if($('radar').classList.contains('active'))renderRadar15h();const hours=$('hours');hours.replaceChildren();if(Array.isArray(h.time)&&first>=0){h.time.slice(first,first+8).forEach((t,j)=>{const i=first+j;const el=document.createElement('div');el.className='hour';const time=document.createElement('div');time.className='sub';time.textContent=new Date(t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});const ic=document.createElement('div');ic.style.fontSize='19px';ic.style.marginTop='6px';ic.textContent=weatherDesc(h.weather_code?.[i])[1];const temp=document.createElement('strong');temp.textContent=h.temperature_2m?.[i]!=null?Math.round(h.temperature_2m[i])+'°':'--°';const p=document.createElement('div');p.className='rain';p.textContent=h.precipitation_probability?.[i]!=null?'☂ '+h.precipitation_probability[i]+'%':'—';el.append(time,ic,temp,p);hours.append(el)})}else{hours.textContent='この時間帯の予報はありません。最新データを取得してください。'}
+renderWindTrend(h,stale);renderRainOutlook(h,stale);if($('radar').classList.contains('active'))renderRadar15h();const hours=$('hours');hours.replaceChildren();if(Array.isArray(h.time)&&first>=0){h.time.slice(first,first+8).forEach((t,j)=>{const i=first+j;const el=document.createElement('div');el.className='hour';const time=document.createElement('div');time.className='sub';time.textContent=new Date(t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});const ic=document.createElement('div');ic.style.fontSize='19px';ic.style.marginTop='6px';ic.textContent=weatherDesc(h.weather_code?.[i])[1];const temp=document.createElement('strong');temp.textContent=h.temperature_2m?.[i]!=null?Math.round(h.temperature_2m[i])+'°':'--°';const p=document.createElement('div');p.className='rain';p.textContent=h.precipitation_probability?.[i]!=null?'☂ '+h.precipitation_probability[i]+'%':'—';el.append(time,ic,temp,p);hours.append(el)})}else{hours.textContent='この時間帯の予報はありません。最新データを取得してください。'}
 $('weather-state').textContent=(stale?'保存データ':'最新取得')+' · '+datefmt(fetched);$('saved-label').textContent=stale?'保存された予報です（最新ではありません）。最終取得：'+datefmt(fetched):'予報の取得時刻：'+datefmt(fetched)+' ／ 山間部の局地的な天気とは異なる場合があります。';if(stale){$('offline-notice').textContent='保存済みの予報を表示中。現在の状況とは異なる可能性があります。警報・雨雲接近情報は更新されません。';$('offline-notice').classList.remove('hidden')}else if(navigator.onLine)$('offline-notice').classList.add('hidden');}
-async function fetchWeather(lat,lon){const key=keyFor(lat,lon);if(!navigator.onLine){const old=cache[key];if(old)renderWeather(old.data,old.fetched,true);else toast('圏外で保存予報がありません');setConnection();return}fetchController?.abort();const controller=new AbortController();fetchController=controller;const timer=setTimeout(()=>controller.abort(),14000);$('weather-state').textContent='取得中…';const query=new URLSearchParams({latitude:lat.toFixed(5),longitude:lon.toFixed(5),current:'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m',hourly:'temperature_2m,precipitation_probability,weather_code',wind_speed_unit:'ms',timezone:'Asia/Tokyo',forecast_days:'2'});try{const r=await fetch('https://api.open-meteo.com/v1/forecast?'+query,{signal:controller.signal});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!data.current||!data.hourly)throw Error('予報データが不完全');if(controller!==fetchController)return;const fetched=new Date().toISOString();cache[key]={data,fetched};const keys=Object.keys(cache);if(keys.length>25){keys.sort((a,b)=>String(cache[a].fetched).localeCompare(String(cache[b].fetched)));for(const k of keys.slice(0,keys.length-25))delete cache[k]}save();renderWeather(data,fetched,false);}catch(e){if(controller!==fetchController)return;const old=cache[key];if(old){renderWeather(old.data,old.fetched,true);toast('更新できないため保存データを表示しています')}else{$('weather-state').textContent='取得失敗';$('description').textContent='天気を取得できませんでした';toast('通信環境を確認して「天気を更新」を押してね')}}finally{clearTimeout(timer);}}
+async function fetchWeather(lat,lon){const key=keyFor(lat,lon);if(!navigator.onLine){const old=cache[key];if(old)renderWeather(old.data,old.fetched,true);else toast('圏外で保存予報がありません');setConnection();return}fetchController?.abort();const controller=new AbortController();fetchController=controller;const timer=setTimeout(()=>controller.abort(),14000);$('weather-state').textContent='取得中…';const query=new URLSearchParams({latitude:lat.toFixed(5),longitude:lon.toFixed(5),current:'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m',hourly:'temperature_2m,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m',wind_speed_unit:'ms',timezone:'Asia/Tokyo',forecast_days:'2'});try{const r=await fetch('https://api.open-meteo.com/v1/forecast?'+query,{signal:controller.signal});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!data.current||!data.hourly)throw Error('予報データが不完全');if(controller!==fetchController)return;const fetched=new Date().toISOString();cache[key]={data,fetched};const keys=Object.keys(cache);if(keys.length>25){keys.sort((a,b)=>String(cache[a].fetched).localeCompare(String(cache[b].fetched)));for(const k of keys.slice(0,keys.length-25))delete cache[k]}save();renderWeather(data,fetched,false);}catch(e){if(controller!==fetchController)return;const old=cache[key];if(old){renderWeather(old.data,old.fetched,true);toast('更新できないため保存データを表示しています')}else{$('weather-state').textContent='取得失敗';$('description').textContent='天気を取得できませんでした';toast('通信環境を確認して「天気を更新」を押してね')}}finally{clearTimeout(timer);}}
 let savingGps=false;
 function quickSaveCurrent(){
   if(savingGps)return;
