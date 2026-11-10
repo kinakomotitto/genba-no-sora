@@ -108,7 +108,8 @@ function display(){
   if(!status||!choices||!rows||!headline)return;
   choices.replaceChildren();rows.replaceChildren();
   const successful=activeModels.filter(m=>m.ok).length;
-  const nowHour=new Date(Date.now()+9*3600000).toISOString().slice(0,13);
+  // Forecast precipitation is the total for the preceding hour, so start with the next hour ending.
+  const nowHour=new Date(Date.now()+10*3600000).toISOString().slice(0,13);
   const keys=[...new Set(activeModels.filter(m=>m.ok).flatMap(m=>m.hours.map(h=>h.time)))].filter(t=>t.slice(0,13)>=nowHour).sort().slice(0,6);
   status.textContent=successful+'/3モデル取得 · '+(isStale?'保存済み・最新ではありません · ':'取得 ')+labelJST(retrievedAt);
   headline.textContent=successful>1?'風と雨の予測差を比較':successful===1?'1モデルのみ取得':'比較データなし';
@@ -131,13 +132,13 @@ function display(){
   const rain=rangeFor(activeModels,'rain',activeTime);
   const gust=rangeFor(activeModels,'gust',activeTime);
   windBox.textContent=outputRange(wind,' m/s');
-  rainBox.textContent=outputRange(rain,' mm/h');
+  rainBox.textContent=outputRange(rain,' mm');
   gustBox.textContent=outputRange(gust,' m/s');
   const difference=wind&&wind.count>=2?wind.max-wind.min:null;
   const rainDifference=rain&&rain.count>=2?rain.max-rain.min:null;
   const phrases=[];
   if(difference!==null)phrases.push('風速の差 '+value(difference)+' m/s');
-  if(rainDifference!==null)phrases.push('降水量の差 '+value(rainDifference)+' mm/h');
+  if(rainDifference!==null)phrases.push('降水量の差 '+value(rainDifference)+' mm');
   note.textContent=(phrases.length?phrases.join(' ／ '):'比較に必要な数値がそろっていません。')+
     '。単純平均ではなく各モデルの範囲を表示。突風は対応モデルのみ、欠測は0扱いしません。';
   for(const station of STATIONS){
