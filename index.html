@@ -723,11 +723,11 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
       <div><small>🌧️ 降水量</small><strong id="model-compare-rain">—</strong></div>
     </div>
     <div class="model-compare-table" role="table" aria-label="気象モデルごとの予測">
-      <div class="model-compare-row heading" role="row"><div>予報モデル</div><div>風速</div><div>突風</div><div>雨量</div></div>
+      <div class="model-compare-row heading" role="row"><div>予報モデル</div><div>風速</div><div>突風</div><div>降水</div></div>
       <div id="model-compare-rows"></div>
     </div>
     <p class="model-compare-note" id="model-compare-note">同じ地点・同じ時刻の予報値を比較するよ。</p>
-    <p class="model-compare-note">データ配信：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>。3つは異なる予報モデルで、独立した3サイトではありません。取得時刻はモデルの発表時刻とは異なります。雨量はmm/h、風は地上10mの予測。現場実測・警報・安全基準の代わりにはしないでね。</p>
+    <p class="model-compare-note">雨や雪を含む1時間降水量（mm）は、選んだ時刻までの1時間の合計だよ。データ配信：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>。3つは異なる予報モデルで、独立した3サイトではありません。取得時刻はモデルの発表時刻とは異なります。雨量はmm/h、風は地上10mの予測。現場実測・警報・安全基準の代わりにはしないでね。</p>
   </details>
   <div class="rain-outlook section home-rain" aria-label="この先3時間の降水確率">
     <div class="card-top">
@@ -918,7 +918,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.27 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.27.1 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
