@@ -8,6 +8,10 @@ import json
 from pathlib import Path
 
 from model_verification import evaluate
+from correction_readiness import (
+    observation_matches, archive_matches, read_archive, report as readiness_report
+)
+from forecast_skill_audit import audit as skill_audit
 
 ROOT=Path(__file__).resolve().parents[1]
 AMEDAS=ROOT/"data"/"amedas"/"recent"
@@ -77,6 +81,21 @@ def run(obs_folder=AMEDAS,forecast_folder=FORECASTS,output=OUTPUT):
     forecasts=read_forecasts(forecast_folder)
     observations=read_observations(obs_folder)
     report=score(forecasts,observations)
+    # Match only actual public station observations to forecasts issued beforehand.
+    # Persist compact matched pairs long enough to evaluate months and seasons
+    # without retaining nationwide raw data for two years in GitHub.
+    names={}
+    catalog=ROOT/"data"/"amedas"/"latest.json"
+    if catalog.exists():
+        latest=json.loads(catalog.read_text(encoding="utf-8"))
+        names={str(row["id"]):str(row.get("name","")) for row in latest.get("stations",[])
+               if isinstance(row,dict) and row.get("id")}
+    matched=observation_matches(forecasts,observations,names)
+    new_records=archive_matches(matched)
+    historical=read_archive()
+    report["correction_readiness"]=readiness_report(historical)
+    report["skill_audit"]=skill_audit(historical)
+    report["new_long_horizon_matches"]=new_records
     output.parent.mkdir(parents=True,exist_ok=True)
     output.write_text(json.dumps(report,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
     print(json.dumps({
@@ -85,6 +104,8 @@ def run(obs_folder=AMEDAS,forecast_folder=FORECASTS,output=OUTPUT):
         "public_station_observations":report["observation_rows"],
         "common_three_model_samples":report["common_three_model_station_hours"],
         "automatic_correction_enabled":False,
+        "archived_history_rows":report["correction_readiness"]["records_archived"],
+        "six_hour_evidence":report["correction_readiness"]["lead_groups"]["6"]["coverage"],
     },ensure_ascii=False))
     return report
 

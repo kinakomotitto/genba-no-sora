@@ -1,5 +1,5 @@
 /* 現場の空 v0.8: ホーム画面用のアプリ本体をオフライン保存 */
-const CACHE = 'genba-no-sora-shell-v0.34';
+const CACHE = 'genba-no-sora-shell-v0.35';
 const PREFIX = 'genba-no-sora-shell-';
 const SHELL = [
   './', './index.html', './model-comparison.js', './amedas-nearby.js', './manifest.webmanifest', './icon.svg',
