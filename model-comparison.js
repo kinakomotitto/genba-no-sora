@@ -204,6 +204,10 @@ function prepare(lat,lon){
 function clear(){
   ++requestID;point=null;activeModels=[];activeTime='';retrievedAt='';isStale=false;
   display();
+  const status=one('model-compare-status');
+  if(status)status.textContent='現在地を確認すると予報を比較できるよ。';
+  const headline=one('model-compare-headline');
+  if(headline)headline.textContent='比較する ⌄';
 }
 window.SoraCompare={update,restore,prepare,clear};
 })();
