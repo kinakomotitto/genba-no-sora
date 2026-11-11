@@ -1415,6 +1415,7 @@ initializeReminderTimes();
 $('reminder-times-save').addEventListener('click',saveReminderChoices);
 const pushOwnerKey='genbanosora.pushowner.v1';
 let watchLastForegroundAt=0;
+let watchFreshPoint=null; // captured ONLY from new geolocation callbacks, never loaded cache
 let pushServiceOrigin=null,pushPublicKey=null;
 const encodePushKey=(value)=>{
   const text=String(value).replace(/-/g,'+').replace(/_/g,'/');
@@ -1727,8 +1728,8 @@ async function initializePushBackend(){
       await refreshWeatherWatchStatus();
       // The initial GPS callback might have completed before this config.
       // The consent module independently rejects stale cached GPS points.
-      if(window.SoraWatchAuto?.isEnabled()&&lastGPS){
-        void maybeAutoRefreshWeatherWatch(lastGPS);
+      if(window.SoraWatchAuto?.isEnabled()&&watchFreshPoint){
+        void maybeAutoRefreshWeatherWatch(watchFreshPoint);
       }
     }
   }catch(e){
@@ -2188,7 +2189,7 @@ function showTab(id,options={}){
   if(id==='home')locate({fresh:true});
 }
 function gps(success,fail,options={}){if(!navigator.geolocation){fail&&fail('このブラウザではGPSが使えません');return}navigator.geolocation.getCurrentPosition(pos=>{lastGPS={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy,at:new Date().toISOString()};save();updateWindyLinks();success(lastGPS)},err=>{const msg=err.code===1?'位置情報の許可が必要です。ブラウザの設定で許可してください':err.code===3?'GPSの取得がタイムアウトしました':'GPSの位置を取得できませんでした';fail&&fail(msg)},{enableHighAccuracy:true,timeout:options.fresh?18000:12000,maximumAge:options.fresh?0:300000});}
-function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }void maybeAutoRefreshWeatherWatch(p);},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
+function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }watchFreshPoint=p;void maybeAutoRefreshWeatherWatch(p);},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
 
 function renderWindTrend(hourly,stale){
   const status=$('wind-trend-status'),chart=$('wind-trend-chart'),hours=$('wind-trend-hours');
@@ -2597,7 +2598,7 @@ document.addEventListener('visibilitychange',()=>{
   // A new GPS reading is requested only while the installed app is visible.
   // When showing a saved worksite, do not overwrite the chosen weather card.
   if($('home').classList.contains('active'))locate({fresh:true});
-  else gps(p=>{void maybeAutoRefreshWeatherWatch(p);},
+  else gps(p=>{watchFreshPoint=p;void maybeAutoRefreshWeatherWatch(p);},
     ()=>{watchStatus('現在地を更新できなかったよ。前の監視地点は最終更新から4時間で期限切れになるよ。');},
     {fresh:true});
 });
