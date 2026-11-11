@@ -5,6 +5,8 @@ on:
       - 'index.html'
       - 'sw.js'
       - 'tests/test_weather_watch_sw.cjs'
+      - 'weather-watch-auto.js'
+      - 'tests/test_weather_watch_auto.cjs'
       - 'location-label.js'
       - 'tests/test_location_label.cjs'
       - 'model-comparison.js'
@@ -19,6 +21,8 @@ on:
       - 'index.html'
       - 'sw.js'
       - 'tests/test_weather_watch_sw.cjs'
+      - 'weather-watch-auto.js'
+      - 'tests/test_weather_watch_auto.cjs'
       - 'location-label.js'
       - 'tests/test_location_label.cjs'
       - 'model-comparison.js'
@@ -48,9 +52,12 @@ jobs:
         run: node tests/test_weather_record_integration.cjs
       - name: Check closed-iPhone real push and legacy daily reminder rendering
         run: node tests/test_weather_watch_sw.cjs
+      - name: Verify one-time opt-in GPS renewal on app open and safe opt-out
+        run: node tests/test_weather_watch_auto.cjs
       - name: Check JavaScript syntax and PWA background script
         run: |
           node --check location-label.js
+          node --check weather-watch-auto.js
           node --check model-comparison.js
           node --check observation-verification.js
           node --check sw.js
