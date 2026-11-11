@@ -73,7 +73,12 @@ async function settle(env){
   assert.equal(sharedStore.get('genbanosora.weatherwatch.auto.v1'),'on');
   run(env,'rememberFreshGpsForWatch(point)',point);
   await settle(env);
-  assert.equal(env.state.posts.length,1,'post only after consent');
+  assert.equal(env.state.posts.length,1,'post only after consent; state='+JSON.stringify({
+    enabled:vm.runInContext('watchAutoEnabled()',env.ctx),
+    valid:run(env,'watchValidFreshGps(point)',point),
+    recent:vm.runInContext('watchRecentFreshGps?.lat',env.ctx),
+    notice:env.state.notice,hidden:env.state.hidden
+  }));
   assert.equal(env.state.posts[0].path,'/api/weather-watch-enable');
   assert.equal(env.state.posts[0].data.consent,true);
   assert.equal(env.state.posts[0].data.gps.lat,40.512);
