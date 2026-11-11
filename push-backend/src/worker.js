@@ -1,8 +1,13 @@
 import webpush from 'web-push';
+import {
+  WATCH_HOURS,WATCH_LIMIT,WATCH_COOLDOWN_MS,WATCH_TABLE_SQL,
+  validCurrentGps,evaluateForecast,fetchForecast
+} from './weather-watch.js';
 
-// Trial backend for the personal daily weather-note reminder, NOT for safety alerts.
-// Data stored on Cloudflare D1: browser push endpoint and cryptographic keys only.
-// Private field coordinates, job names, observations and notes never enter this API.
+// Existing opt-in daily reminder plus explicitly requested weather forecast change
+// watches. D1 stores short-lived rounded GPS only after the user's button tap.
+// NOT official severe-weather warnings or a safety-critical alert system.
+// Saved worksite names, notes, precise GPS or manual observations never enter this API.
 const SITE_ORIGIN = 'https://kinakomotitto.github.io';
 const DAILY_TITLE = '하늘';
 const DAILY_BODY = '今日の現場のお天気はどう？☁️ タップして記録してね ♡';
@@ -82,15 +87,17 @@ function setupVapid(env) {
 function subscription(row) {
   return { endpoint: row.endpoint, keys: {p256dh: row.p256dh, auth:row.auth} };
 }
-async function sendWeatherNote(row, env, tag) {
+async function sendWeatherNote(row, env, tag,notice=null) {
   setupVapid(env);
-  return webpush.sendNotification(subscription(row),
-    JSON.stringify({
-      title: DAILY_TITLE, body: DAILY_BODY, tag,
-      data: { kind: 'daily-weather-record' },
-    }),
-    {TTL: 3600, urgency:'normal'}
-  );
+  const payload=notice?{
+    title:'하늘 · 天気の変化（参考予報）',body:notice,
+    tag,data:{kind:'weather-watch'}
+  }:{
+    title:DAILY_TITLE,body:DAILY_BODY,tag,
+    data:{kind:'daily-weather-record'}
+  };
+  return webpush.sendNotification(subscription(row),JSON.stringify(payload),
+    {TTL:notice?300:3600,urgency:notice?'high':'normal'});
 }
 
 async function subscribe(request, env) {
@@ -154,9 +161,16 @@ async function unsubscribe(request, env) {
   if(!isValidPushEndpoint(data?.endpoint)||!isBase64url(data?.token,40,128)) {
     return reply({error:'Invalid request'},400);
   }
-  await env.DB.prepare(
-    'DELETE FROM push_subscriptions WHERE id=? AND token_hash=?'
-  ).bind(await hash(data.endpoint),await hash(data.token)).run();
+  const id=await hash(data.endpoint),tokenHash=await hash(data.token);
+  const row=await env.DB.prepare(
+    'SELECT id FROM push_subscriptions WHERE id=? AND token_hash=?'
+  ).bind(id,tokenHash).first();
+  if(row){
+    await ensureWeatherWatchTable(env);
+    await env.DB.prepare('DELETE FROM weather_watch WHERE subscription_id=?').bind(id).run();
+    await env.DB.prepare('DELETE FROM push_subscriptions WHERE id=? AND token_hash=?')
+      .bind(id,tokenHash).run();
+  }
   return reply({ok:true});
 }
 
@@ -191,6 +205,114 @@ async function sendTest(request, env) {
     }
     return reply({error:'Push service unavailable'},502);
   }
+}
+
+// An explicit temporary forecast watch for the last confirmed GPS position.
+// No background GPS and no silent upload from the current-site weather screen.
+async function ensureWeatherWatchTable(env) {
+  await env.DB.prepare(WATCH_TABLE_SQL).run();
+}
+async function ownedWatchSubscription(env,data) {
+  if(!isValidPushEndpoint(data?.endpoint)||!isBase64url(data?.token,40,128))return null;
+  const id=await hash(data.endpoint), tokenHash=await hash(data.token);
+  const row=await env.DB.prepare(
+    'SELECT id FROM push_subscriptions WHERE id=? AND token_hash=? AND active=1'
+  ).bind(id,tokenHash).first();
+  return row?row.id:null;
+}
+async function weatherWatchAction(request,env,action){
+  let data;
+  try{data=await parseSmallBody(request)}
+  catch(_){return reply({error:'Invalid request'},400)}
+  const id=await ownedWatchSubscription(env,data);
+  if(!id)return reply({error:'Enable this iPhone push subscription first'},403);
+  await ensureWeatherWatchTable(env);
+  if(action==='enable'){
+    if(data.consent!==true)return reply({error:'Explicit location-sharing consent required'},400);
+    const coords=validCurrentGps(data.gps);
+    if(!coords)return reply({error:'Fresh accurate current GPS required'},400);
+    const now=new Date();
+    const expiresAt=new Date(now.getTime()+WATCH_HOURS*3600000).toISOString();
+    await env.DB.prepare(
+      `INSERT INTO weather_watch
+        (subscription_id,latitude,longitude,updated_at,expires_at,last_alert_at)
+        VALUES(?,?,?,?,?,NULL)
+        ON CONFLICT(subscription_id) DO UPDATE SET
+        last_alert_at=CASE WHEN
+          abs(weather_watch.latitude-excluded.latitude)>.01 OR
+          abs(weather_watch.longitude-excluded.longitude)>.01
+          THEN NULL ELSE weather_watch.last_alert_at END,
+        latitude=excluded.latitude,longitude=excluded.longitude,
+        updated_at=excluded.updated_at,expires_at=excluded.expires_at`
+    ).bind(id,coords.lat,coords.lon,now.toISOString(),expiresAt).run();
+    return reply({ok:true,expiresAt,hours:WATCH_HOURS});
+  }
+  if(action==='stop'){
+    await env.DB.prepare('DELETE FROM weather_watch WHERE subscription_id=?')
+      .bind(id).run();
+    return reply({ok:true,active:false});
+  }
+  const row=await env.DB.prepare(
+    'SELECT updated_at,expires_at FROM weather_watch WHERE subscription_id=?'
+  ).bind(id).first();
+  const active=Boolean(row&&Date.parse(row.expires_at)>Date.now());
+  return reply({ok:true,active,expiresAt:active?row.expires_at:null,
+    updatedAt:active?row.updated_at:null});
+}
+async function sendWeatherWatch(env,scheduledTime){
+  if(!ready(env))return;
+  await ensureWeatherWatchTable(env);
+  const now=Number.isFinite(scheduledTime)&&Date.now()-scheduledTime<20*60000?
+    Date.now():Date.now();
+  const isoNow=new Date(now).toISOString();
+  // Clear precise-ish positions promptly; do not keep expired worksite coordinates.
+  await env.DB.prepare('DELETE FROM weather_watch WHERE expires_at<=?')
+    .bind(isoNow).run();
+  const rows=await env.DB.prepare(
+    `SELECT w.subscription_id,w.latitude,w.longitude,w.expires_at,w.last_alert_at,
+       s.endpoint,s.p256dh,s.auth
+       FROM weather_watch w JOIN push_subscriptions s ON s.id=w.subscription_id
+       WHERE s.active=1 AND w.expires_at>?
+       ORDER BY w.updated_at ASC LIMIT ?`
+  ).bind(isoNow,WATCH_LIMIT).all();
+  let notified=0,unavailable=0,skipped=0;
+  for(const row of rows.results||[]){
+    // Never print coordinates or push subscriptions in logs.
+    const last=Date.parse(row.last_alert_at);
+    if(Number.isFinite(last)&&now-last<WATCH_COOLDOWN_MS){skipped++;continue;}
+    try{
+      const forecast=await fetchForecast(row.latitude,row.longitude);
+      const events=evaluateForecast(forecast,Date.now());
+      if(!events.length)continue;
+      const claimed=await env.DB.prepare(
+        `UPDATE weather_watch SET last_alert_at=?
+         WHERE subscription_id=? AND expires_at>?
+         AND (last_alert_at IS NULL OR last_alert_at<=?)`
+      ).bind(isoNow,row.subscription_id,isoNow,
+        new Date(now-WATCH_COOLDOWN_MS).toISOString()).run();
+      if(!claimed.meta?.changes){skipped++;continue;}
+      const detail=events.slice(0,3).map(x=>x.text).join(' ');
+      const text='最後に登録した地点の参考予報：'+detail+
+        ' 気象庁の最新の警報・雷情報を確認してね。';
+      try{
+        await sendWeatherNote(row,env,
+          'weather-watch-'+Math.floor(now/WATCH_COOLDOWN_MS),text);
+        notified++;
+      }catch(pushError){
+        await env.DB.prepare(
+          'UPDATE weather_watch SET last_alert_at=NULL WHERE subscription_id=? AND last_alert_at=?'
+        ).bind(row.subscription_id,isoNow).run();
+        if([404,410].includes(pushError?.statusCode)){
+          await env.DB.prepare('DELETE FROM weather_watch WHERE subscription_id=?')
+            .bind(row.subscription_id).run();
+          await env.DB.prepare('DELETE FROM push_subscriptions WHERE id=?')
+            .bind(row.subscription_id).run();
+        }
+        unavailable++;
+      }
+    }catch(_){unavailable++}
+  }
+  console.log(JSON.stringify({task:'optional_weather_watch',notified,unavailable,skipped}));
 }
 
 async function sendDaily(env, scheduledTime) {
@@ -254,12 +376,14 @@ export default {
     }
     if(path==='/api/config' && request.method==='GET') {
       return reply({available:ready(env),publicKey:ready(env)?env.VAPID_PUBLIC_KEY:null,
-        schedule:'user_selected',timeZone:'Asia/Tokyo',maxTimes:3,intervalMinutes:15});
+        schedule:'user_selected',timeZone:'Asia/Tokyo',maxTimes:3,intervalMinutes:15,
+        weatherWatchAvailable:ready(env),weatherWatchHours:WATCH_HOURS});
     }
     if(path==='/health' && request.method==='GET') {
       return reply({status:ready(env)?'ready':'not_configured'});
     }
-    if(request.method!=='POST' || !['/api/subscribe','/api/unsubscribe','/api/test','/api/preferences'].includes(path)) {
+    if(request.method!=='POST' || !['/api/subscribe','/api/unsubscribe','/api/test','/api/preferences',
+       '/api/weather-watch-enable','/api/weather-watch-stop','/api/weather-watch-status'].includes(path)) {
       return reply({error:'Not found'},404);
     }
     if(origin!==SITE_ORIGIN) return reply({error:'Origin required'},403);
@@ -268,6 +392,9 @@ export default {
       if(path==='/api/subscribe') return await subscribe(request,env);
       if(path==='/api/unsubscribe') return await unsubscribe(request,env);
       if(path==='/api/preferences') return await setPreferences(request,env);
+      if(path==='/api/weather-watch-enable') return await weatherWatchAction(request,env,'enable');
+      if(path==='/api/weather-watch-stop') return await weatherWatchAction(request,env,'stop');
+      if(path==='/api/weather-watch-status') return await weatherWatchAction(request,env,'status');
       return await sendTest(request,env);
     } catch(e) {
       // Do not print endpoint/key/token or raw exceptions.
@@ -275,6 +402,13 @@ export default {
     }
   },
   async scheduled(event,env,ctx) {
-    ctx.waitUntil(sendDaily(env,event.scheduledTime));
+    ctx.waitUntil(Promise.allSettled([
+      sendDaily(env,event.scheduledTime),
+      sendWeatherWatch(env,event.scheduledTime)
+    ]).then(results=>{
+      if(results.some(r=>r.status==='rejected')){
+        throw new Error('One or more scheduled tasks failed');
+      }
+    }));
   }
 };
