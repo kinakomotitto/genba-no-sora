@@ -1563,23 +1563,33 @@ async function weatherWatchIdentity(){
 async function refreshWeatherWatchStatus(){
   const panel=$('weather-watch-panel');
   if(panel.classList.contains('hidden')||!pushServiceOrigin)return;
+  const optedIn=window.SoraWatchAuto?.isEnabled()===true;
+  $('weather-watch-enable').classList.toggle('hidden',optedIn);
+  $('weather-watch-stop').classList.toggle('hidden',!optedIn);
   try{
     const identity=await weatherWatchIdentity();
     if(!identity){
-      $('weather-watch-stop').classList.add('hidden');
-      watchStatus('未登録。通知監視を始めるときに現在地を取得するよ。');
+      watchStatus(optedIn?
+        '自動監視はオンだけど、プッシュ購読が見つからないよ。停止して初回登録し直してね。':
+        '未登録。初回だけ開始するとアプリを開くたびGPSを自動更新するよ。');
       return;
     }
     const result=await pushPost('/api/weather-watch-status',identity);
     const active=result.active===true;
-    $('weather-watch-stop').classList.toggle('hidden',!active);
+    $('weather-watch-stop').classList.toggle('hidden',!active&&!optedIn);
     if(active){
       const until=new Date(result.expiresAt).toLocaleString('ja-JP',
         {hour:'2-digit',minute:'2-digit'});
-      watchStatus('☁️ 最後に登録した現在地の予報を監視中。終了予定：'+until+
-        '（移動しても自動で地点は変わらないよ）');
-    }else watchStatus('現在は監視していません。アプリを開いても位置は送信しないよ。');
-  }catch(_){watchStatus('監視状態を確認できません。通信環境を確認してね。');}
+      watchStatus('☁️ 最後に登録した現在地を監視中。終了予定：'+until+
+        (optedIn?'。アプリを開くたび現在地を自動更新するよ♡':
+          '。今後も自動更新するなら初回ボタンを押してね。'));
+    }else watchStatus(optedIn?
+      '自動更新はオン。最新GPS取得とサーバー登録が成功すると4時間の監視が再開するよ。':
+      '現在は監視していないよ。開始ボタンを押すまではGPSを通知サーバーに送らないよ。');
+  }catch(_){
+    watchStatus(optedIn?'自動更新はオンだけど、サーバーの監視状態を確認できないよ。通信を確認してね。':
+      '監視状態を確認できないよ。まだ自動更新の同意はしていないよ。');
+  }
 }
 async function enableWeatherWatch(){
   if(!isInstalledPwa()){
@@ -1631,25 +1641,31 @@ async function enableWeatherWatch(){
     await pushPost('/api/weather-watch-enable',{
       endpoint:detail.endpoint,token,gps,consent:true
     });
+    // Persist consent only after a successful, explicitly tapped registration.
+    if(!window.SoraWatchAuto?.setEnabled(true))throw Error('Cannot store device consent');
     await showPushButtons();
     await refreshWeatherWatchStatus();
     watchStatus($('weather-watch-status').textContent+
-      '\n♡ アプリを閉じても通知を試みるよ。届くことや予報の正確さは保証できないため、公式の気象情報も確認してね。');
+      '\n♡ 以後はアプリを開くたびに地点を自動更新するよ。閉じたままの移動には追従できないから気をつけてね。');
   }catch(e){
     watchStatus('監視を開始できなかったよ。通知・GPSの許可や通信を確認してね。');
   }finally{watchLoading(false);}
 }
 async function stopWeatherWatch(){
   watchLoading(true);
+  // Stop future automatic GPS uploads first, before any network I/O.
+  window.SoraWatchAuto?.setEnabled(false);
   try{
+    await window.SoraWatchAuto?.drain();
     const identity=await weatherWatchIdentity();
-    if(identity){
-      await pushPost('/api/weather-watch-stop',identity);
-    }
+    if(identity)await pushPost('/api/weather-watch-stop',identity);
+    $('weather-watch-enable').classList.remove('hidden');
     $('weather-watch-stop').classList.add('hidden');
-    watchStatus('停止したよ ♡ サーバーの監視用GPSも削除したよ。');
-  }catch(_){watchStatus('停止を確認できません。通信を確認して再度押してね。');}
-  finally{watchLoading(false);}
+    watchStatus('自動更新をオフにしたよ ♡ サーバーの監視地点も停止・削除したよ。');
+  }catch(_){
+    watchStatus('このiPhoneの自動更新は停止したよ。ただしサーバー側の停止は未確認。通信を確認してもう一度「停止」を押してね（古い地点は最終更新から4時間で期限切れ）。');
+    $('weather-watch-stop').classList.remove('hidden');
+  }finally{watchLoading(false);}
 }
 $('weather-watch-enable').addEventListener('click',enableWeatherWatch);
 $('weather-watch-stop').addEventListener('click',stopWeatherWatch);
