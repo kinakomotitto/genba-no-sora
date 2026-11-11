@@ -1460,7 +1460,10 @@ async function showPushButtons(){
     const reg=await navigator.serviceWorker.ready;
     const subscription=await reg.pushManager.getSubscription();
     const active=!!subscription;
-    $('push-enable').classList.toggle('hidden',active);
+    // A weather-only subscriber must still be able to turn on the optional
+    // timed reminder later without revoking the weather watch.
+    $('push-enable').classList.remove('hidden');
+    $('push-enable').textContent=active?'選んだ時間の定時通知を登録・更新する':'選んだ時間の通知をオンにする';
     $('push-disable').classList.toggle('hidden',!active);
     $('push-server-test').classList.toggle('hidden',!active);
     pushStatus(active?'このiPhoneはプッシュ購読済み。定時リマインダーと天気変化通知は別の設定だよ。':
