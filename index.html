@@ -266,13 +266,15 @@ body>.tabs .ko{white-space:nowrap}
 }
 .app-header .brand{
   color:var(--ink);
-  font-family:"Dongle","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
-  font-size:31px; /* Dongle's Hangul glyphs are smaller than standard fonts */
+  font-family:"Apple SD Gothic Neo","Noto Sans KR",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:25px;
   font-weight:700;
-  letter-spacing:0;
-  line-height:1;
+  letter-spacing:-.02em;
+  line-height:1.2;
   display:flex;
   align-items:center;
+  white-space:nowrap;
+  word-break:keep-all;
 }
 .app-header .status-pill{flex-shrink:0}
 
