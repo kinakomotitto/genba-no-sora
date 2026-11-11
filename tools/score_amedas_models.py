@@ -9,7 +9,7 @@ from pathlib import Path
 
 from model_verification import evaluate
 from correction_readiness import (
-    observation_matches, archive_matches, read_archive, report as readiness_report
+    observation_matches, archive_matches, archive_progress, read_archive, report as readiness_report
 )
 from forecast_skill_audit import audit as skill_audit
 from shadow_correction import save_trial
@@ -97,6 +97,7 @@ def run(obs_folder=AMEDAS,forecast_folder=FORECASTS,output=OUTPUT):
     matched=observation_matches(forecasts,observations,names)
     new_records=archive_matches(matched)
     historical=read_archive()
+    report["match_archive_progress"]=archive_progress(matched)
     report["correction_readiness"]=readiness_report(historical)
     report["skill_audit"]=skill_audit(historical)
     shadow=save_trial(historical,report["correction_readiness"],
@@ -110,6 +111,8 @@ def run(obs_folder=AMEDAS,forecast_folder=FORECASTS,output=OUTPUT):
         "captured_forecasts":report["forecast_snapshot_rows"],
         "public_station_observations":report["observation_rows"],
         "common_three_model_samples":report["common_three_model_station_hours"],
+        "pending_archive_cohorts":report["match_archive_progress"]["pending_finalization_complete_cohorts"],
+        "eligible_unarchived_days":report["match_archive_progress"]["eligible_unarchived_days"],
         "automatic_correction_enabled":False,
         "archived_history_rows":report["correction_readiness"]["records_archived"],
         "six_hour_evidence":report["correction_readiness"]["lead_groups"]["6"]["coverage"],
