@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "fetched_at": "2026-11-11T13:11:41.643930Z",
+  "fetched_at": "2026-11-11T18:59:26.742301Z",
   "type": "research_pilot_public_stations_only",
   "not_nationwide_model_coverage": true,
   "models": [
@@ -21,36 +21,38 @@
   ],
   "per_model": {
     "jma_msm": {
-      "state": "ok",
+      "state": "partial",
       "rows": 27,
       "stations_successful": 9,
-      "failed_batches": 0,
-      "failure_types": []
+      "failed_batches": 1,
+      "failure_types": [
+        "HTTP_400"
+      ]
     },
     "ecmwf_ifs": {
       "state": "ok",
-      "rows": 27,
-      "stations_successful": 9,
+      "rows": 54,
+      "stations_successful": 18,
       "failed_batches": 0,
       "failure_types": []
     },
     "icon_seamless": {
       "state": "ok",
-      "rows": 27,
-      "stations_successful": 9,
+      "rows": 54,
+      "stations_successful": 18,
       "failed_batches": 0,
       "failure_types": []
     }
   },
-  "calls_attempted": 3,
-  "forecast_rows_saved": 81,
+  "calls_attempted": 6,
+  "forecast_rows_saved": 135,
   "max_http_get_requests": 16,
   "request_chunk_size": 9,
   "automatic_correction_enabled": false,
   "data_source": "Open-Meteo (CC BY 4.0); free API only for non-commercial trials",
-  "selected_station_target": 9,
+  "selected_station_target": 18,
   "adaptive_backoff_used": false,
-  "selected_station_count": 9,
+  "selected_station_count": 18,
   "station_ids": [
     "14163",
     "31312",
@@ -60,12 +62,21 @@
     "62078",
     "67437",
     "82182",
-    "91197"
+    "91197",
+    "44356",
+    "44301",
+    "94011",
+    "88736",
+    "92006",
+    "18281",
+    "44262",
+    "11001",
+    "56036"
   ],
-  "daily_site_model_units_estimate": 108,
+  "daily_site_model_units_estimate": 216,
   "maximum_daily_site_model_units": 600,
   "selection_method": "9 anchor stations + deterministic farthest-point public stations with wind and rain observations",
   "state": "saved",
-  "consecutive_model_failures": 0,
-  "all_three_models_collected": true
+  "consecutive_model_failures": 1,
+  "all_three_models_collected": false
 }

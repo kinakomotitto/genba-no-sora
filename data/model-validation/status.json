@@ -12,7 +12,7 @@
     "3": 0,
     "6": 9,
     "12": 0,
-    "24": 0
+    "24": 9
   },
   "rows": [
     {
@@ -63,10 +63,10 @@
     {
       "model": "jma_msm",
       "lead_h": 24,
-      "station_time_matches": 0,
-      "wind_samples": 0,
-      "rain_samples": 0,
-      "direction_samples": 0,
+      "station_time_matches": 9,
+      "wind_samples": 9,
+      "rain_samples": 9,
+      "direction_samples": 5,
       "wind_mae_ms": null,
       "wind_bias_ms": null,
       "rain_mae_mm": null,
@@ -123,10 +123,10 @@
     {
       "model": "ecmwf_ifs",
       "lead_h": 24,
-      "station_time_matches": 0,
-      "wind_samples": 0,
-      "rain_samples": 0,
-      "direction_samples": 0,
+      "station_time_matches": 9,
+      "wind_samples": 9,
+      "rain_samples": 9,
+      "direction_samples": 7,
       "wind_mae_ms": null,
       "wind_bias_ms": null,
       "rain_mae_mm": null,
@@ -183,10 +183,10 @@
     {
       "model": "icon_seamless",
       "lead_h": 24,
-      "station_time_matches": 0,
-      "wind_samples": 0,
-      "rain_samples": 0,
-      "direction_samples": 0,
+      "station_time_matches": 9,
+      "wind_samples": 9,
+      "rain_samples": 9,
+      "direction_samples": 7,
       "wind_mae_ms": null,
       "wind_bias_ms": null,
       "rain_mae_mm": null,
@@ -206,14 +206,51 @@
     "Quality-unverified observations, non-numeric and missing readings are excluded.",
     "Not an official warning or a substitute for onsite safety procedures."
   ],
-  "updated_at_utc": "2026-11-11T13:11:43.341997Z",
-  "forecast_snapshot_rows": 324,
-  "observation_rows": 6424,
+  "updated_at_utc": "2026-11-11T18:59:28.510407Z",
+  "forecast_snapshot_rows": 459,
+  "observation_rows": 7708,
   "observed_station_count": 1285,
   "source_forecast": "Open-Meteo model-specific snapshots, obtained before valid_at",
   "source_observation": "JMA AMeDAS public map data; values with quality flag 0 only",
   "model_comparison_ready": false,
   "important_notice": "This report is NOT a locally optimised forecast, forecast correction, or site-level wind measurement.",
+  "match_archive_progress": {
+    "schema": 1,
+    "matched_rows_current_window": 54,
+    "complete_three_model_cohorts_current_window": 18,
+    "pending_finalization_rows": 54,
+    "pending_finalization_complete_cohorts": 18,
+    "eligible_unarchived_days": 0,
+    "daily": [
+      {
+        "local_day_jst": "2026-11-11",
+        "eligible_from_jst": "2026-11-13",
+        "state": "pending_two_day_lag",
+        "matched_rows": 27,
+        "complete_three_model_cohorts": 9,
+        "cohorts_by_lead": {
+          "3": 0,
+          "6": 9,
+          "12": 0,
+          "24": 0
+        }
+      },
+      {
+        "local_day_jst": "2026-11-12",
+        "eligible_from_jst": "2026-11-14",
+        "state": "pending_two_day_lag",
+        "matched_rows": 27,
+        "complete_three_model_cohorts": 9,
+        "cohorts_by_lead": {
+          "3": 0,
+          "6": 0,
+          "12": 0,
+          "24": 9
+        }
+      }
+    ],
+    "note": "Pending matches are not yet in the immutable archive or sufficient for model correction."
+  },
   "correction_readiness": {
     "schema": 1,
     "status": "collecting_validation_evidence",
