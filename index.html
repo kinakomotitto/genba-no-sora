@@ -2349,6 +2349,28 @@ function renderPersonalSearchResults(items){
   }
   return list.children.length;
 }
+// Open-Meteo treats 2-character search terms as EXACT names, not prefixes.
+// Local official municipality aliases allow users to search 弘前→弘前市,
+// 函館→函館市 and 仙台→仙台市 without typing administrative suffixes.
+// This is public GSI municipality name data bundled with the app, never GPS.
+function personalSearchVariants(query){
+  const result=[query];
+  if(Array.from(query).length!==2||!/^[\u3400-\u9FFF々ヶヵ]+$/u.test(query))return result;
+  const table=window.SoraMunicipalities||{};
+  const aliases=Object.values(table).filter(x=>Array.isArray(x)&&typeof x[1]==='string')
+    .map(x=>x[1]).filter(name=>name.startsWith(query)&&name!==query);
+  aliases.sort((a,b)=>a.length-b.length||a.localeCompare(b,'ja'));
+  for(const name of aliases){
+    if(!result.includes(name))result.push(name);
+    if(result.length===4)break;
+  }
+  for(const suffix of ['市','町','村','区','都','県']){
+    if(result.length===4)break;
+    const name=query+suffix;
+    if(!result.includes(name))result.push(name);
+  }
+  return result;
+}
 $('private-place-form').addEventListener('submit',async e=>{
   e.preventDefault();
   const query=$('private-place-query').value.trim();
@@ -2361,13 +2383,21 @@ $('private-place-form').addEventListener('submit',async e=>{
   $('private-place-status').textContent='「'+query+'」を検索中…';
   const timeout=setTimeout(()=>controller.abort(),10000);
   try{
-    const params=new URLSearchParams({name:query,count:'8',language:'ja',format:'json'});
-    const response=await fetch('https://geocoding-api.open-meteo.com/v1/search?'+params,{signal:controller.signal});
-    if(!response.ok)throw Error('地名検索HTTP '+response.status);
-    const data=await response.json();
-    if(controller!==personalSearchController)return;
-    const n=renderPersonalSearchResults(Array.isArray(data.results)?data.results:[]);
-    $('private-place-status').textContent=n?'検索結果 '+n+'件 · 見たい場所をタップしてね ♡':'見つからなかったよ。市区町村名やローマ字でも試してみてね。';
+    let found=[],matchedName=query;
+    for(const name of personalSearchVariants(query)){
+      if(controller!==personalSearchController||controller.signal.aborted)return;
+      const params=new URLSearchParams({name,count:'8',language:'ja',format:'json'});
+      const response=await fetch('https://geocoding-api.open-meteo.com/v1/search?'+params,{signal:controller.signal});
+      if(!response.ok)throw Error('地名検索HTTP '+response.status);
+      const data=await response.json();
+      if(controller!==personalSearchController)return;
+      found=Array.isArray(data.results)?data.results:[];
+      if(found.length){matchedName=name;break;}
+    }
+    const n=renderPersonalSearchResults(found);
+    $('private-place-status').textContent=n
+      ?(matchedName===query?'検索結果 '+n+'件':'「'+matchedName+'」でも検索して、'+n+'件見つけたよ ♡')+' · 見たい場所をタップしてね'
+      :'見つからなかったよ。市区町村名やローマ字で試してみてね。';
   }catch(err){
     if(controller!==personalSearchController)return;
     $('private-place-status').textContent='地名を検索できなかったよ。通信を確認して、もう一度試してね。';
