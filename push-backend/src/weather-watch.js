@@ -13,7 +13,9 @@ export const WATCH_TABLE_SQL=String.raw`CREATE TABLE IF NOT EXISTS weather_watch
   longitude REAL NOT NULL,
   updated_at TEXT NOT NULL,
   expires_at TEXT NOT NULL,
-  last_alert_at TEXT,
+  last_rain_at TEXT,
+  last_wind_at TEXT,
+  last_thunder_at TEXT,
   FOREIGN KEY(subscription_id) REFERENCES push_subscriptions(id) ON DELETE CASCADE
 )`;
 export function validCurrentGps(data,now=Date.now()){
