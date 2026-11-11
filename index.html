@@ -996,10 +996,10 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="push-schedule-note">※ 通知の配信時刻は通信環境によって遅れることがあります。</p>
   <div class="weather-watch-panel hidden" id="weather-watch-panel">
     <strong>☔🌬️⚡ ポケットに届く天気変化通知 ♡</strong>
-    <p>このボタンを押したときの現在地だけを、最大4時間サーバーが確認する試験版だよ。アプリを閉じても予報の変化が見つかれば通知を試みます。</p>
+    <p><strong>最初の1回だけオンにすればOK♡</strong> その後は「現場の空」を開くたびに現在地を取り直して、天気の監視地点を自動更新するよ。アプリを閉じても、最後に登録した地点の予報をサーバーが確認します。</p>
     <p>雨・最大瞬間風速15m/s以上・雷雨の<strong>予報</strong>を約15分間隔で確認します。日本の15分値は1時間予報の補間であり「あと何分で雨」とは正確に判断できません。落雷接近の実況や気象庁の警報ではありません。</p>
-    <p>【位置情報の送信に同意】開始を押すと、新たに取得したGPS座標を小数3桁に丸め、通知サーバー（Cloudflare）に保存します。監視は4時間で期限切れとなり、座標は停止時または期限後の次回定期処理で削除します。予報確認にはその座標をOpen-Meteoへ送ります。現場名・メモ・天気記録は送りません。アプリを閉じた後に移動しても自動追跡できず、期限後は監視終了します。</p>
-    <button id="weather-watch-enable" type="button" class="reminder-test">📍 今の地点で4時間の天気通知をオンにする</button>
+    <p>【初回の位置情報共有に同意】オンにすると、以後はアプリを開く／戻るたびにGPSを自動取得し、小数3桁に丸めた座標を通知サーバー（Cloudflare）に送って監視を更新します。同意は「停止」を押すまでこの端末に保持します。各地点の監視は最後の更新から4時間で終了。位置情報は停止時または期限後の次回定期処理で削除します。予報確認にはOpen-Meteoへ座標を送信します。現場名・メモ・天気記録は送りません。閉じたまま移動先への追跡はできず、4時間たってもアプリを開かなければ監視は終了します。</p>
+    <button id="weather-watch-enable" type="button" class="reminder-test">📍 初回設定：開くたび自動監視をオンにする</button>
     <button id="weather-watch-stop" type="button" class="reminder-test hidden">通知監視を終了・位置情報を削除する</button>
     <div id="weather-watch-status" class="reminder-result" role="status" aria-live="polite">まだ通知監視は開始していません。</div>
     <p>⚠️ 通知は届かない・遅れる・予測が外れることがあるため、伐採の作業可否や避難判断は公式警報と現場の安全ルールを優先してね。</p>
@@ -1014,10 +1014,10 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
     <span class="settings-widget-copy"><strong>♡ 하늘 · ロック画面に追加</strong><small>今いる場所の天気＋1時間ごとの予報 · 作り方を見る</small></span>
     <span class="settings-widget-arrow" aria-hidden="true">›</span>
   </a>
-  <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。ただし「ポケットに届く天気変化通知」を本人が開始した場合だけ、丸めた現在地の座標を通知サーバーに保存し、予報確認のためOpen-Meteoに送信します。監視は4時間で終了し、停止時または期限後の定期処理で位置情報を削除します。ホームの現在地の地名表示では、丸めた座標を国土地理院へ送信します。</p>
+  <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。「ポケットに届く天気変化通知」に最初の1回同意した場合は、停止するまでアプリを開く／戻るたびGPSを自動取得し、丸めた座標を通知サーバーに送信して監視を4時間更新します。予報確認時はOpen-Meteoに座標を送信。停止時または期限後の定期処理で監視地点を削除します。閉じたまま移動先の追跡はできません。ホームの地名表示にも丸めた座標を国土地理院へ送信します。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.41 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.42 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
