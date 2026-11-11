@@ -4,6 +4,8 @@ on:
     paths:
       - 'index.html'
       - 'sw.js'
+      - 'weather-watch-auto.js'
+      - 'tests/test_weather_watch_auto.cjs'
       - 'tests/test_weather_watch_sw.cjs'
       - 'location-label.js'
       - 'tests/test_location_label.cjs'
@@ -18,6 +20,8 @@ on:
     paths:
       - 'index.html'
       - 'sw.js'
+      - 'weather-watch-auto.js'
+      - 'tests/test_weather_watch_auto.cjs'
       - 'tests/test_weather_watch_sw.cjs'
       - 'location-label.js'
       - 'tests/test_location_label.cjs'
@@ -46,11 +50,14 @@ jobs:
         run: node tests/test_model_compare_snapshots.cjs
       - name: Test recording UI persists verification without harming manual observations
         run: node tests/test_weather_record_integration.cjs
+      - name: Check persistent first-tap consent and automatic foreground weather-watch renewal
+        run: node tests/test_weather_watch_auto.cjs
       - name: Check closed-iPhone real push and legacy daily reminder rendering
         run: node tests/test_weather_watch_sw.cjs
       - name: Check JavaScript syntax and PWA background script
         run: |
           node --check location-label.js
+          node --check weather-watch-auto.js
           node --check model-comparison.js
           node --check observation-verification.js
           node --check sw.js
