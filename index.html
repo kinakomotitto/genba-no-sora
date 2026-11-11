@@ -1516,6 +1516,10 @@ async function enableDailyPush(){
 async function disableDailyPush(){
   pushLoading(true);
   pushStatus('通知の登録を解除しています…');
+  // Turning off all notifications must also disable foreground GPS sync.
+  // Keep the device opt-out even if offline server unsubscription fails.
+  window.SoraWatchAuto?.setEnabled(false);
+  await window.SoraWatchAuto?.drain();
   try{
     const reg=await navigator.serviceWorker.ready;
     const sub=await reg.pushManager.getSubscription();
@@ -1524,15 +1528,13 @@ async function disableDailyPush(){
     if(token){
       await pushPost('/api/unsubscribe',{endpoint:sub.endpoint,token});
     }
-    window.SoraWatchAuto?.setEnabled(false);
-    await window.SoraWatchAuto?.drain();
     await sub.unsubscribe();
     await showPushButtons();
     $('weather-watch-stop').classList.add('hidden');
     watchStatus('通知購読を解除しました。気象監視も終了しました。');
     pushStatus('通知をオフにしたよ ♡');
   }catch(e){
-    pushStatus('解除できませんでした。通信環境を確認して再度試してね。');
+    pushStatus('iPhoneのGPS自動送信はオフになったよ。ただし通知サーバーの登録解除は未確認だから、通信を確認してもう一度試してね。');
   }finally{pushLoading(false);}
 }
 async function testDailyPushFromServer(){
