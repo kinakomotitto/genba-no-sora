@@ -155,7 +155,7 @@ function environment(){
   // Municipality suggestions are rendered from bundled GSI data, without
   // calling a weather/geocoding API for every input keystroke.
   const auto=environment();
-  assert.equal(auto.ctx.personalMunicipalities.length,5);
+  assert.equal(auto.ctx.personalMunicipalitySuggestions('弘').length,1);
   auto.$('private-place-query').value='弘';
   auto.$('private-place-query').handlers.input();
   assert.equal(auto.$('private-place-suggestions').children.length,1);
