@@ -262,8 +262,7 @@ async function weatherWatchAction(request,env,action){
 async function sendWeatherWatch(env,scheduledTime){
   if(!ready(env))return;
   await ensureWeatherWatchTable(env);
-  const now=Number.isFinite(scheduledTime)&&Date.now()-scheduledTime<20*60000?
-    Date.now():Date.now();
+  const now=Date.now();
   const isoNow=new Date(now).toISOString();
   // Clear precise-ish positions promptly; do not keep expired worksite coordinates.
   await env.DB.prepare('DELETE FROM weather_watch WHERE expires_at<=?')
