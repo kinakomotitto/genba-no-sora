@@ -171,8 +171,12 @@ async function unsubscribe(request, env) {
     'SELECT id FROM push_subscriptions WHERE id=? AND token_hash=?'
   ).bind(id,tokenHash).first();
   if(row){
-    await ensureWeatherWatchTable(env);
-    await env.DB.prepare('DELETE FROM weather_watch WHERE subscription_id=?').bind(id).run();
+    // The optional watch feature must never prevent existing unsubscription.
+    try{
+      await ensureWeatherWatchTable(env);
+      await env.DB.prepare('DELETE FROM weather_watch WHERE subscription_id=?')
+        .bind(id).run();
+    }catch(_){}
     await env.DB.prepare('DELETE FROM push_subscriptions WHERE id=? AND token_hash=?')
       .bind(id,tokenHash).run();
   }
