@@ -657,8 +657,9 @@ button.radar-hour-cell{font-family:inherit;cursor:pointer}
 .home-location .locrow>div:first-child{flex:1;min-width:0}
 .home-location .location-name{min-width:0;gap:7px;flex-wrap:nowrap}
 .home-location .location-name #selected-location{white-space:nowrap;flex-shrink:0}
-.home-location .home-area-chip{display:inline-block;min-width:0;max-width:min(34vw,150px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:5px 9px;border:1px solid rgba(222,176,198,.6);border-radius:999px;background:rgba(255,248,252,.88);color:#a26a86;font-size:11px;font-weight:650;line-height:1.3}
-@media(max-width:355px){.home-location .home-area-chip{max-width:90px;padding:4px 7px;font-size:10px}}
+.home-location .home-area-chip{display:inline-block;min-width:0;max-width:min(41vw,175px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:5px 9px;border:1px solid rgba(222,176,198,.6);border-radius:999px;background:rgba(255,248,252,.88);color:#a26a86;font-size:11px;font-weight:650;line-height:1.3}
+.home-location .home-area-town{margin:5px 0 0 22px;color:#a18b9c;font-size:11px;line-height:1.4;font-weight:500;min-height:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:calc(100% - 23px)}
+@media(max-width:355px){.home-location .home-area-chip{max-width:112px;padding:4px 7px;font-size:10px}}
 .home-hero{padding:21px 19px 18px;border:1px solid rgba(255,255,255,.55);margin-bottom:12px;box-shadow:0 9px 28px rgba(136,90,128,.075)}
 .home-hero .section-kicker{font-size:13px;font-weight:750;letter-spacing:.015em}
 .home-hero .home-kicker-jp{font-size:10px;font-weight:550;color:var(--muted)}
@@ -731,7 +732,8 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <div class="home-location">
     <div class="locrow">
       <div>
-        <div class="location-name"><span class="pin">⌖</span><span id="selected-location">現在地</span><span id="current-area" class="home-area-chip hidden" aria-label="現在地付近の地名"></span></div>
+        <div class="location-name"><span class="pin">⌖</span><span id="selected-location">現在地</span><span id="current-area" class="home-area-chip hidden" aria-label="現在地付近の都道府県と市区町村"></span></div>
+        <div id="current-area-town" class="home-area-town hidden" aria-label="現在地付近の町名"></div>
         <div id="geo-status" class="sub" style="margin:4px 0 0 22px">位置情報の取得待ち</div>
       </div>
       <button class="btn home-location-change" id="choose-location" type="button">現場一覧へ ›</button>
@@ -998,10 +1000,10 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
     <span class="settings-widget-copy"><strong>♡ 하늘 · ロック画面に追加</strong><small>今いる場所の天気＋1時間ごとの予報 · 作り方を見る</small></span>
     <span class="settings-widget-arrow" aria-hidden="true">›</span>
   </a>
-  <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。ホームの短い地名表示だけは、GPS座標を小数3桁に丸めて国土地理院の住所検索へ送り、付近の町名を調べるよ。</p>
+  <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。ホームの現在地（県・市町村・町名）表示だけは、GPS座標を小数3桁に丸めて国土地理院の住所検索へ送り、返ってきた自治体コードを端末内の国土地理院自治体名一覧に照合するよ。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.39 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.40 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -1028,6 +1030,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
 <button class="tab" data-tab="sites" type="button" aria-label="現場"><span class="tab-label">現場</span><span class="ko" lang="ko">현장</span></button>
 </footer>
 <div id="toast" role="status" aria-live="polite"></div>
+<script src="./municipalities-gsi.js"></script>
 <script src="./location-label.js"></script>
 <script src="./model-comparison.js"></script>
 <script src="./observation-verification.js"></script>
