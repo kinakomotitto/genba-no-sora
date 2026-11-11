@@ -246,6 +246,10 @@ body>.tabs .ko{white-space:nowrap}
 .reminder-test{display:block;width:100%;padding:10px;border:1px solid #e9c9dc;border-radius:11px;background:linear-gradient(125deg,#fbe6f2,#f2e6f8);color:#906883;font-size:12px;font-weight:700;min-height:42px}
 .reminder-test:disabled{opacity:.5;cursor:wait}
 .reminder-result{margin-top:7px}
+.weather-watch-panel{border-top:1px solid #f1dfe9;padding-top:12px;margin-top:14px}
+.weather-watch-panel strong{font-size:13px;color:#8b6880}
+.weather-watch-panel p{margin:9px 0;font-size:11px;line-height:1.7}
+.weather-watch-panel .reminder-test{margin-top:9px}
 
 
 
@@ -989,7 +993,17 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <button type="button" id="push-disable" class="reminder-test hidden">通知をすべてオフにする</button>
   <button type="button" id="push-server-test" class="reminder-test hidden">② サーバーから実際にプッシュ通知をテストする</button>
   <div id="push-setup-status" class="reminder-result" role="status" aria-live="polite"></div>
-  <p class="push-schedule-note">※ サーバーテストが成功しても、指定時刻の定時配信は別途サーバー側のスケジュール設定が必要だよ。</p>
+  <p class="push-schedule-note">※ 通知の配信時刻は通信環境によって遅れることがあります。</p>
+  <div class="weather-watch-panel hidden" id="weather-watch-panel">
+    <strong>☔🌬️⚡ ポケットに届く天気変化通知 ♡</strong>
+    <p>このボタンを押したときの現在地だけを、最大4時間サーバーが確認する試験版だよ。アプリを閉じても予報の変化が見つかれば通知を試みます。</p>
+    <p>雨・最大瞬間風速15m/s以上・雷雨の<strong>予報</strong>を約15分間隔で確認します。日本の15分値は1時間予報の補間であり「あと何分で雨」とは正確に判断できません。落雷接近の実況や気象庁の警報ではありません。</p>
+    <p>【位置情報の送信に同意】開始を押すと、新たに取得したGPS座標を小数3桁に丸め、通知サーバー（Cloudflare）に最大4時間保存します。予報確認にはその座標をOpen-Meteoへ送ります。現場名・メモ・天気記録は送りません。アプリを閉じた後に移動しても自動追跡できず、期限後は監視終了します。</p>
+    <button id="weather-watch-enable" type="button" class="reminder-test">📍 今の地点で4時間の天気通知をオンにする</button>
+    <button id="weather-watch-stop" type="button" class="reminder-test hidden">通知監視を終了・位置情報を削除する</button>
+    <div id="weather-watch-status" class="reminder-result" role="status" aria-live="polite">まだ通知監視は開始していません。</div>
+    <p>⚠️ 通知は届かない・遅れる・予測が外れることがあるため、伐採の作業可否や避難判断は公式警報と現場の安全ルールを優先してね。</p>
+  </div>
 </div>
   <div class="settings-section-label">🌱 天気データ・研究 <span lang="ko">기록</span></div>
   <details class="research-panel" id="research-panel"><summary>🌱 予報の蓄積状況 <small>確認する</small></summary><div class="research-data" id="research-data">公開観測所のデータを確認できるよ。</div><p class="research-note">公開観測所だけの研究データ。個人の現場情報は送信しません。作業の安全判断には使用しないでね。</p></details>
@@ -1000,10 +1014,10 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
     <span class="settings-widget-copy"><strong>♡ 하늘 · ロック画面に追加</strong><small>今いる場所の天気＋1時間ごとの予報 · 作り方を見る</small></span>
     <span class="settings-widget-arrow" aria-hidden="true">›</span>
   </a>
-  <p class="settings-privacy">♡ スキンと通知時刻はこのiPhoneに保存するよ。通知登録には専用サーバーを使うけど、現場名・座標・天気記録は送らないよ。ホームの現在地（県・市町村・町名）表示だけは、GPS座標を小数3桁に丸めて国土地理院の住所検索へ送り、返ってきた自治体コードを端末内の国土地理院自治体名一覧に照合するよ。</p>
+  <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。ただし「ポケットに届く天気変化通知」を本人が開始した場合だけ、丸めた現在地の座標を通知サーバーに最大4時間保存し、予報確認のためOpen-Meteoに送信します。停止・期限切れで位置情報を削除します。ホームの現在地の地名表示では、丸めた座標を国土地理院へ送信します。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.40 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.41 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -1419,7 +1433,7 @@ function pushOwnerToken(){
 }
 function pushStatus(message){$('push-setup-status').textContent=message;}
 function pushLoading(on){
-  for(const id of ['push-enable','push-disable','push-server-test']){
+  for(const id of ['push-enable','push-disable','push-server-test','weather-watch-enable','weather-watch-stop']){
     $(id).disabled=on;
   }
 }
@@ -1449,8 +1463,8 @@ async function showPushButtons(){
     $('push-enable').classList.toggle('hidden',active);
     $('push-disable').classList.toggle('hidden',!active);
     $('push-server-test').classList.toggle('hidden',!active);
-    pushStatus(active?'このiPhoneはプッシュ購読済み。サーバー登録状態は初回のテスト送信で確認できるよ。':
-      'このiPhoneでは定時のプッシュ通知がまだ有効ではありません。');
+    pushStatus(active?'このiPhoneはプッシュ購読済み。定時リマインダーと天気変化通知は別の設定だよ。':
+      'このiPhoneはまだプッシュ購読していないよ。');
   }catch(e){pushStatus('通知の登録状態を確認できません。')}
 }
 async function enableDailyPush(){
@@ -1506,6 +1520,8 @@ async function disableDailyPush(){
     }
     await sub.unsubscribe();
     await showPushButtons();
+    $('weather-watch-stop').classList.add('hidden');
+    watchStatus('通知購読を解除しました。気象監視も終了しました。');
     pushStatus('通知をオフにしたよ ♡');
   }catch(e){
     pushStatus('解除できませんでした。通信環境を確認して再度試してね。');
@@ -1526,6 +1542,112 @@ async function testDailyPushFromServer(){
 $('push-enable').addEventListener('click',enableDailyPush);
 $('push-disable').addEventListener('click',disableDailyPush);
 $('push-server-test').addEventListener('click',testDailyPushFromServer);
+// Only an explicit tap sends a freshly measured, rounded GPS point to the
+// weather-watch backend. No tracking or server uploads on page open/GPS refresh.
+function watchStatus(text){$('weather-watch-status').textContent=text;}
+function watchLoading(on){
+  $('weather-watch-enable').disabled=on;
+  $('weather-watch-stop').disabled=on;
+}
+async function weatherWatchIdentity(){
+  const reg=await navigator.serviceWorker.ready;
+  const subscription=await reg.pushManager.getSubscription();
+  const token=localStorage.getItem(pushOwnerKey);
+  return subscription&&token?{endpoint:subscription.endpoint,token}:null;
+}
+async function refreshWeatherWatchStatus(){
+  const panel=$('weather-watch-panel');
+  if(panel.classList.contains('hidden')||!pushServiceOrigin)return;
+  try{
+    const identity=await weatherWatchIdentity();
+    if(!identity){
+      $('weather-watch-stop').classList.add('hidden');
+      watchStatus('未登録。通知監視を始めるときに現在地を取得するよ。');
+      return;
+    }
+    const result=await pushPost('/api/weather-watch-status',identity);
+    const active=result.active===true;
+    $('weather-watch-stop').classList.toggle('hidden',!active);
+    if(active){
+      const until=new Date(result.expiresAt).toLocaleString('ja-JP',
+        {hour:'2-digit',minute:'2-digit'});
+      watchStatus('☁️ 最後に登録した現在地の予報を監視中。終了予定：'+until+
+        '（移動しても自動で地点は変わらないよ）');
+    }else watchStatus('現在は監視していません。アプリを開いても位置は送信しないよ。');
+  }catch(_){watchStatus('監視状態を確認できません。通信環境を確認してね。');}
+}
+async function enableWeatherWatch(){
+  if(!isInstalledPwa()){
+    watchStatus('Safariではなくホーム画面の「하늘」から開いてね。');return;
+  }
+  if(!pushServiceOrigin||!('Notification' in window)||!('serviceWorker' in navigator)||
+    !('PushManager' in window)||!navigator.geolocation){
+    watchStatus('通知・GPSの機能が利用できないよ。');return;
+  }
+  watchLoading(true);
+  watchStatus('iPhoneの通知許可を確認しています…');
+  try{
+    // Web Push permission must be requested from a direct button tap.
+    const permission=await Notification.requestPermission();
+    if(permission!=='granted'){
+      watchStatus('iPhoneの通知許可が必要だよ。設定から許可してね。');return;
+    }
+    const reg=await navigator.serviceWorker.ready;
+    let subscription=await reg.pushManager.getSubscription();
+    if(!subscription)subscription=await reg.pushManager.subscribe({
+      userVisibleOnly:true,applicationServerKey:pushPublicKeyBytes()
+    });
+    const detail=subscription.toJSON();
+    if(!detail.endpoint||!detail.keys?.p256dh||!detail.keys?.auth){
+      throw Error('Subscription incomplete');
+    }
+    // weatherOnly mode does not enable any daily reminder and never
+    // overwrites a pre-existing user's chosen reminder times.
+    const token=pushOwnerToken();
+    await pushPost('/api/subscribe',{
+      endpoint:detail.endpoint,keys:detail.keys,token,
+      times:[],weatherOnly:true
+    });
+    watchStatus('新しいGPSを取得中…');
+    const position=await new Promise((resolve,reject)=>{
+      navigator.geolocation.getCurrentPosition(resolve,reject,{
+        enableHighAccuracy:true,maximumAge:0,timeout:18000
+      });
+    });
+    const c=position.coords;
+    if(!Number.isFinite(c.accuracy)||c.accuracy>300){
+      watchStatus('GPS誤差が大きいため監視を開始しなかったよ。開けた場所で再取得してね。');
+      return;
+    }
+    const gps={
+      lat:Number(c.latitude.toFixed(3)),lon:Number(c.longitude.toFixed(3)),
+      accuracy:c.accuracy,at:new Date(position.timestamp).toISOString()
+    };
+    await pushPost('/api/weather-watch-enable',{
+      endpoint:detail.endpoint,token,gps,consent:true
+    });
+    await showPushButtons();
+    await refreshWeatherWatchStatus();
+    watchStatus($('weather-watch-status').textContent+
+      '\n♡ アプリを閉じても通知を試みるよ。届くことや予報の正確さは保証できないため、公式の気象情報も確認してね。');
+  }catch(e){
+    watchStatus('監視を開始できなかったよ。通知・GPSの許可や通信を確認してね。');
+  }finally{watchLoading(false);}
+}
+async function stopWeatherWatch(){
+  watchLoading(true);
+  try{
+    const identity=await weatherWatchIdentity();
+    if(identity){
+      await pushPost('/api/weather-watch-stop',identity);
+    }
+    $('weather-watch-stop').classList.add('hidden');
+    watchStatus('停止したよ ♡ サーバーの監視用GPSも削除したよ。');
+  }catch(_){watchStatus('停止を確認できません。通信を確認して再度押してね。');}
+  finally{watchLoading(false);}
+}
+$('weather-watch-enable').addEventListener('click',enableWeatherWatch);
+$('weather-watch-stop').addEventListener('click',stopWeatherWatch);
 async function initializePushBackend(){
   if(!('serviceWorker' in navigator)||!('PushManager' in window))return;
   try{
@@ -1541,7 +1663,9 @@ async function initializePushBackend(){
     if(!cfg.available||typeof cfg.publicKey!=='string'||cfg.publicKey.length<60)return;
     pushServiceOrigin=origin;pushPublicKey=cfg.publicKey;
     $('push-setup-panel').classList.remove('hidden');
+    $('weather-watch-panel').classList.toggle('hidden',cfg.weatherWatchAvailable!==true);
     await showPushButtons();
+    if(cfg.weatherWatchAvailable===true)await refreshWeatherWatchStatus();
   }catch(e){
     // A missing or offline backend must not break the existing weather app.
   }
