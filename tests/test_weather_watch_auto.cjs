@@ -88,7 +88,7 @@ async function verify(){
 
   // Explicit stop revokes consent even if the network is broken.
   assert.equal(gateway.deactivate(),null);
-  assert.equal(storage.has(auto.CONSENT_KEY),false);
+  assert.equal(local.has(auto.CONSENT_KEY),false);
   advance(20000);
   assert.equal((await gateway.refresh()).status,'not-consented');
   assert.equal(posts.length,count);
