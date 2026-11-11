@@ -10,7 +10,7 @@ for(const id of ['weather-content','site-weather-detail','site-weather-host','si
   'site-detail-back','site-detail-name','radar-target-chip','selected-location']){
   assert.equal(count('id="'+id+'"'),1,'duplicate or missing '+id);
 }
-assert.match(html,/表示版 v0\.39/);
+assert.match(html,/表示版 v0\.40/);
 assert.match(html,/>現場一覧へ ›<\/button>/);
 assert.match(html,/<header class="app-header">/);
 assert.match(html,/<span lang="ko">하늘<\/span>/);
@@ -27,7 +27,11 @@ assert.match(html,/consecutive_degraded_checks/);
 assert.match(html,/独立|長期学習/);
 assert.match(html,/\.\/data\/amedas\/latest\.json/);
 assert.match(html,/observation-verification\.js/);
+assert.match(html,/municipalities-gsi\.js/);
 assert.match(html,/location-label\.js/);
+assert.ok(html.indexOf('municipalities-gsi.js')<html.indexOf('location-label.js'),'municipality map must load before place widget');
+assert.match(html,/id="current-area-town"/);
+assert.match(html,/国土地理院自治体名一覧/);
 assert.match(html,/id="current-area"/);
 assert.match(html,/SoraArea\?\.update\(p\.lat,p\.lon\)/);
 assert.match(html,/id="wx-verify-status"/);
