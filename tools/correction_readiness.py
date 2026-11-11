@@ -169,6 +169,72 @@ def archive_matches(rows,archive=ARCHIVE,now=None,finalization_lag_days=2):
             continue
     return appended
 
+def archive_progress(rows,archive=ARCHIVE,now=None,finalization_lag_days=2):
+    """Explain verified matches waiting for the deliberate two-day archive lag.
+
+    A match is NOT archived, a forecast improvement, or learning evidence until
+    its final day partition has been written. The immutable archive guard stays
+    unchanged; counts never use private GPS or user field notes.
+    """
+    now=now or dt.datetime.now(UTC)
+    if now.tzinfo is None:
+        raise ValueError("timezone-aware now required")
+    if finalization_lag_days<1:
+        raise ValueError("finalization lag too short")
+    local_today=now.astimezone(JST).date()
+    latest_finalizable=local_today-dt.timedelta(days=finalization_lag_days)
+    grouped=defaultdict(list)
+    for row in rows:
+        try:
+            local_day=timestamp(row["valid_at"]).astimezone(JST).date()
+            if local_day<=local_today:
+                grouped[local_day].append(row)
+        except (KeyError,ValueError,TypeError,OverflowError):
+            continue
+    daily=[]
+    pending_rows=0
+    pending_cohorts=0
+    eligible_unarchived_days=0
+    for day,matched in sorted(grouped.items()):
+        cohorts_by_lead={str(lead):len(common_cohorts(matched,lead))
+                         for lead in (3,6,12,24)}
+        complete=sum(cohorts_by_lead.values())
+        is_archived=(archive/(day.isoformat()+".jsonl.gz")).exists()
+        if is_archived:
+            state="archived"
+        elif day>latest_finalizable:
+            state="pending_two_day_lag"
+            pending_rows+=len(matched)
+            pending_cohorts+=complete
+        elif complete<5:
+            state="insufficient_complete_cohorts"
+            eligible_unarchived_days+=1
+        else:
+            # This should be investigated rather than silently counted as
+            # long-horizon evidence if finalization could not write a file.
+            state="eligible_not_archived"
+            eligible_unarchived_days+=1
+        daily.append({
+            "local_day_jst":day.isoformat(),
+            "eligible_from_jst":(day+dt.timedelta(days=finalization_lag_days)).isoformat(),
+            "state":state,
+            "matched_rows":len(matched),
+            "complete_three_model_cohorts":complete,
+            "cohorts_by_lead":cohorts_by_lead
+        })
+    return {
+        "schema":1,
+        "matched_rows_current_window":sum(item["matched_rows"] for item in daily),
+        "complete_three_model_cohorts_current_window":sum(
+            item["complete_three_model_cohorts"] for item in daily),
+        "pending_finalization_rows":pending_rows,
+        "pending_finalization_complete_cohorts":pending_cohorts,
+        "eligible_unarchived_days":eligible_unarchived_days,
+        "daily":daily,
+        "note":"Pending matches are not yet in the immutable archive or sufficient for model correction."
+    }
+
+
 def read_archive(archive=ARCHIVE):
     """Read the new small daily files and any legacy monthly JSONL (if present)."""
     rows={}
