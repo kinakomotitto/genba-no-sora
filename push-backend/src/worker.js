@@ -105,14 +105,17 @@ async function subscribe(request, env) {
   try { data=await parseSmallBody(request); }
   catch (_) { return reply({error:'Invalid request'},400); }
   if(!checkPayload(data)) return reply({error:'Invalid subscription'},400);
-  const times=parseReminderTimes(data.times);
+  // Weather-only subscribers can opt in without receiving unrelated daily notes.
+  // Existing reminder subscribers retain their chosen times when adding a watch.
+  const weatherOnly=data.weatherOnly===true&&Array.isArray(data.times)&&data.times.length===0;
+  const times=weatherOnly?[]:parseReminderTimes(data.times);
   if(!times)return reply({error:'Choose 1-3 valid times in 15-minute increments'},400);
   const ip=request.headers.get('cf-connecting-ip')||'unknown';
   const ipKey=await hash(env.RATE_LIMIT_SALT+':'+ip);
   const id=await hash(data.endpoint);
   const tokenHash=await hash(data.token);
   const existing=await env.DB.prepare(
-    'SELECT token_hash FROM push_subscriptions WHERE id=?'
+    'SELECT token_hash,schedule_json FROM push_subscriptions WHERE id=?'
   ).bind(id).first();
   if(existing && existing.token_hash !== tokenHash) {
     return reply({error:'Subscription already owned'},409);
@@ -131,11 +134,13 @@ async function subscribe(request, env) {
       "INSERT INTO push_subscriptions (id,endpoint,p256dh,auth,token_hash,ip_hash,schedule_json,created_at,updated_at) VALUES (?,?,?,?,?,?,?,datetime('now'),datetime('now'))"
     ).bind(id,data.endpoint,data.keys.p256dh,data.keys.auth,tokenHash,ipKey,JSON.stringify(times)).run();
   } else {
+    const registeredTimes=weatherOnly?existing.schedule_json:JSON.stringify(times);
     await env.DB.prepare(
       "UPDATE push_subscriptions SET p256dh=?,auth=?,schedule_json=?,active=1,updated_at=datetime('now') WHERE id=? AND token_hash=?"
-    ).bind(data.keys.p256dh,data.keys.auth,JSON.stringify(times),id,tokenHash).run();
+    ).bind(data.keys.p256dh,data.keys.auth,registeredTimes,id,tokenHash).run();
   }
-  return reply({ok:true,times,timeZone:'Asia/Tokyo'});
+  return reply({ok:true,times:weatherOnly&&existing?JSON.parse(existing.schedule_json):times,
+    timeZone:'Asia/Tokyo'});
 }
 
 async function setPreferences(request, env) {
