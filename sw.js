@@ -1,5 +1,5 @@
 /* 現場の空 v0.8: ホーム画面用のアプリ本体をオフライン保存 */
-const CACHE = 'genba-no-sora-shell-v0.40';
+const CACHE = 'genba-no-sora-shell-v0.41';
 const PREFIX = 'genba-no-sora-shell-';
 const SHELL = [
   './', './index.html', './municipalities-gsi.js', './location-label.js', './model-comparison.js', './observation-verification.js', './amedas-nearby.js', './manifest.webmanifest', './icon.svg',
@@ -65,17 +65,27 @@ self.addEventListener('fetch', event => {
 /* v0.10: Daily reminder receiver only.
    Actual push subscription & secure server scheduling are NOT implemented yet. */
 self.addEventListener('push', (event) => {
-  event.waitUntil(self.registration.showNotification('하늘', {
-    body: '今日の現場のお天気はどう？☁️ タップして記録してね ♡',
-    icon: './icon-192.png',
-    badge: './icon-192.png',
-    tag: 'daily-weather-check',
-    data: { kind: 'daily-weather-record' }
-  }));
+  let message=null;
+  try {
+    if(event.data)message=event.data.json();
+  }catch(_){}
+  const isWatch=message?.data?.kind==='weather-watch'&&
+    typeof message.body==='string'&&message.body.length<=600;
+  event.waitUntil(self.registration.showNotification(
+    isWatch?'하늘 · 天気の変化':'하늘', {
+      body: isWatch?message.body:'今日の現場のお天気はどう？☁️ タップして記録してね ♡',
+      icon: './icon-192.png',
+      badge: './icon-192.png',
+      tag: isWatch?'weather-watch-change':'daily-weather-check',
+      data: { kind: isWatch?'weather-watch':'daily-weather-record' }
+    }
+  ));
 });
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const target = new URL('#weather-record', self.registration.scope).href;
+  const destination=event.notification.data?.kind==='weather-watch'?
+    '#home':'#weather-record';
+  const target = new URL(destination, self.registration.scope).href;
   event.waitUntil((async () => {
     const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     const scopeUrl = new URL(self.registration.scope);

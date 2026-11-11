@@ -27,3 +27,19 @@ CREATE TABLE IF NOT EXISTS push_delivery_log (
   FOREIGN KEY(subscription_id) REFERENCES push_subscriptions(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_push_delivery_day ON push_delivery_log(date_jst);
+
+-- Short-lived location-based forecast watches; explicit opt-in only.
+-- Stored coordinates are rounded to 0.001 degrees. No worksite names or notes.
+-- Worker ensures this table for existing D1 deployments without dropping data.
+CREATE TABLE IF NOT EXISTS weather_watch (
+  subscription_id TEXT PRIMARY KEY,
+  latitude REAL NOT NULL,
+  longitude REAL NOT NULL,
+  updated_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  last_rain_at TEXT,
+  last_wind_at TEXT,
+  last_thunder_at TEXT,
+  FOREIGN KEY(subscription_id) REFERENCES push_subscriptions(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_weather_watch_expiry ON weather_watch(expires_at);
