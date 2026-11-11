@@ -1523,6 +1523,8 @@ async function disableDailyPush(){
     if(token){
       await pushPost('/api/unsubscribe',{endpoint:sub.endpoint,token});
     }
+    window.SoraWatchAuto?.setEnabled(false);
+    await window.SoraWatchAuto?.drain();
     await sub.unsubscribe();
     await showPushButtons();
     $('weather-watch-stop').classList.add('hidden');
@@ -1667,6 +1669,41 @@ async function stopWeatherWatch(){
     $('weather-watch-stop').classList.remove('hidden');
   }finally{watchLoading(false);}
 }
+// Automatic uploads happen ONLY after the device has saved explicit opt-in.
+// Never subscribe to Web Push, request notification permission, or upload a
+// last-known/cached GPS automatically on cold startup.
+async function maybeAutoRefreshWeatherWatch(point){
+  if(!window.SoraWatchAuto?.isEnabled()||!pushServiceOrigin||!navigator.onLine)return;
+  if(!('Notification' in window)||Notification.permission!=='granted'){
+    watchStatus('自動監視はオンだけど通知許可がないよ。iPhoneの設定を確認してね。');
+    return;
+  }
+  try{
+    const updated=await window.SoraWatchAuto.refresh(point,async gpsPoint=>{
+      const identity=await weatherWatchIdentity();
+      if(!identity)throw Error('Existing push subscription required');
+      await pushPost('/api/weather-watch-enable',{
+        ...identity,
+        gps:{
+          lat:Number(gpsPoint.lat.toFixed(3)),
+          lon:Number(gpsPoint.lon.toFixed(3)),
+          accuracy:gpsPoint.accuracy,
+          at:gpsPoint.at
+        },
+        consent:true
+      });
+    });
+    if(updated&&window.SoraWatchAuto.isEnabled()){
+      $('weather-watch-enable').classList.add('hidden');
+      $('weather-watch-stop').classList.remove('hidden');
+      watchStatus('☁️ 現在地の自動更新に成功！ここから4時間、最後に確認した地点の予報を監視するね♡');
+    }
+  }catch(_){
+    if(window.SoraWatchAuto?.isEnabled()){
+      watchStatus('自動更新に失敗したよ。通信・通知・GPSを確認してね。前の監視地点は最終更新から最大4時間で期限切れになるよ。');
+    }
+  }
+}
 $('weather-watch-enable').addEventListener('click',enableWeatherWatch);
 $('weather-watch-stop').addEventListener('click',stopWeatherWatch);
 async function initializePushBackend(){
@@ -1686,7 +1723,14 @@ async function initializePushBackend(){
     $('push-setup-panel').classList.remove('hidden');
     $('weather-watch-panel').classList.toggle('hidden',cfg.weatherWatchAvailable!==true);
     await showPushButtons();
-    if(cfg.weatherWatchAvailable===true)await refreshWeatherWatchStatus();
+    if(cfg.weatherWatchAvailable===true){
+      await refreshWeatherWatchStatus();
+      // The initial GPS callback might have completed before this config.
+      // The consent module independently rejects stale cached GPS points.
+      if(window.SoraWatchAuto?.isEnabled()&&lastGPS){
+        void maybeAutoRefreshWeatherWatch(lastGPS);
+      }
+    }
   }catch(e){
     // A missing or offline backend must not break the existing weather app.
   }
@@ -2144,7 +2188,7 @@ function showTab(id,options={}){
   if(id==='home')locate({fresh:true});
 }
 function gps(success,fail,options={}){if(!navigator.geolocation){fail&&fail('このブラウザではGPSが使えません');return}navigator.geolocation.getCurrentPosition(pos=>{lastGPS={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy,at:new Date().toISOString()};save();updateWindyLinks();success(lastGPS)},err=>{const msg=err.code===1?'位置情報の許可が必要です。ブラウザの設定で許可してください':err.code===3?'GPSの取得がタイムアウトしました':'GPSの位置を取得できませんでした';fail&&fail(msg)},{enableHighAccuracy:true,timeout:options.fresh?18000:12000,maximumAge:options.fresh?0:300000});}
-function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
+function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }void maybeAutoRefreshWeatherWatch(p);},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
 
 function renderWindTrend(hourly,stale){
   const status=$('wind-trend-status'),chart=$('wind-trend-chart'),hours=$('wind-trend-hours');
@@ -2545,7 +2589,19 @@ function focusWxRecordFromNotification(){
 }
 window.addEventListener('hashchange',focusWxRecordFromNotification);
 if(location.hash==='#weather-record')setTimeout(focusWxRecordFromNotification,150);
-window.addEventListener('online',()=>{setConnection();const p=getCoords();if(p)fetchWeather(p.lat,p.lon)});window.addEventListener('offline',()=>{setConnection();const p=getCoords();if(p&&cache[keyFor(p.lat,p.lon)])renderWeather(cache[keyFor(p.lat,p.lon)].data,cache[keyFor(p.lat,p.lon)].fetched,true)});setConnection();renderSites();renderWxLogs();updateWindyLinks();
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState!=='visible'||!window.SoraWatchAuto?.isEnabled())return;
+  const now=Date.now();
+  if(now-watchLastForegroundAt<10000)return;
+  watchLastForegroundAt=now;
+  // A new GPS reading is requested only while the installed app is visible.
+  // When showing a saved worksite, do not overwrite the chosen weather card.
+  if($('home').classList.contains('active'))locate({fresh:true});
+  else gps(p=>{void maybeAutoRefreshWeatherWatch(p);},
+    ()=>{watchStatus('現在地を更新できなかったよ。前の監視地点は最終更新から4時間で期限切れになるよ。');},
+    {fresh:true});
+});
+window.addEventListener('online',()=>{setConnection();const p=getCoords();if(p)fetchWeather(p.lat,p.lon);if(window.SoraWatchAuto?.isEnabled()&&!pushServiceOrigin)void initializePushBackend();});window.addEventListener('offline',()=>{setConnection();const p=getCoords();if(p&&cache[keyFor(p.lat,p.lon)])renderWeather(cache[keyFor(p.lat,p.lon)].data,cache[keyFor(p.lat,p.lon)].fetched,true)});setConnection();renderSites();renderWxLogs();updateWindyLinks();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old){renderWeather(old.data,old.fetched,true);window.SoraCompare?.restore(lastGPS.lat,lastGPS.lon);}}locate();
 })();
