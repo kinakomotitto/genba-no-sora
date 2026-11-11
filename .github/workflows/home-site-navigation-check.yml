@@ -4,6 +4,7 @@ on:
     paths:
       - 'index.html'
       - 'sw.js'
+      - 'tests/test_weather_watch_sw.cjs'
       - 'location-label.js'
       - 'tests/test_location_label.cjs'
       - 'model-comparison.js'
@@ -17,6 +18,7 @@ on:
     paths:
       - 'index.html'
       - 'sw.js'
+      - 'tests/test_weather_watch_sw.cjs'
       - 'location-label.js'
       - 'tests/test_location_label.cjs'
       - 'model-comparison.js'
@@ -44,6 +46,8 @@ jobs:
         run: node tests/test_model_compare_snapshots.cjs
       - name: Test recording UI persists verification without harming manual observations
         run: node tests/test_weather_record_integration.cjs
+      - name: Check closed-iPhone real push and legacy daily reminder rendering
+        run: node tests/test_weather_watch_sw.cjs
       - name: Check JavaScript syntax and PWA background script
         run: |
           node --check location-label.js
