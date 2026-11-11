@@ -115,5 +115,34 @@ function environment(){
   await $('private-place-form').handlers.submit({preventDefault(){}});
   assert.equal(calls.fetch.length,1,'offline place lookup must not call a network API');
   assert.match($('private-place-status').textContent,/通信が必要/);
+  // A real Japanese two-character short name often does not match the indexed
+  // official municipal name, even when language=ja is selected.
+  const short=environment();
+  short.ctx.window.SoraMunicipalities={
+    "2202":["青森県","弘前市"],
+    "2203":["青森県","八戸市"],
+  };
+  assert.deepEqual(Array.from(short.ctx.personalSearchVariants('弘前')),['弘前','弘前市','弘前町','弘前村']);
+  const attempted=[];
+  short.setFetcher(async url=>{
+    const name=new URL(url).searchParams.get('name');
+    attempted.push(name);
+    if(name==='弘前')return {ok:true,json:async()=>({results:[]})};
+    if(name==='弘前市')return {ok:true,json:async()=>({results:[
+      {name:'弘前市',latitude:40.6,longitude:140.4,admin1:'青森県',country:'日本'}
+    ]})};
+    throw Error('Unexpected extra geocoding request');
+  });
+  short.$('private-place-query').value='弘前';
+  await short.$('private-place-form').handlers.submit({preventDefault(){}});
+  assert.deepEqual(attempted,['弘前','弘前市'],'two-kanji fallback should use full official municipality');
+  assert.equal(short.$('private-place-results').children.length,1);
+  assert.match(short.$('private-place-status').textContent,/弘前市/);
+  short.$('private-place-results').children[0].handlers.click();
+  assert.equal(short.ctx.selected.kind,'private');
+  assert.deepEqual(short.calls.weather,[[40.6,140.4]]);
+  assert.deepEqual(Array.from(short.ctx.personalSearchVariants('Hirosaki')),['Hirosaki']);
+  assert.deepEqual(Array.from(short.ctx.personalSearchVariants('十和田')),['十和田']);
+  assert.equal(short.workSites.length,1,'short-name fallback must not change work locations');
   console.log('PASS: private geocoding, disambiguation, weather, favorites persistence, removal, GPS return, radar guard, offline, no worksite mutation');
 })().catch(e=>{console.error(e);process.exitCode=1;});
