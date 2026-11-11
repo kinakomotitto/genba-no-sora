@@ -60,6 +60,8 @@ function environment(){
     showTab:id=>calls.tabs.push(id),
     lastGPS:{lat:40.5,lon:141.3},
   };
+  // The real app opens on Home, so the stub must reflect that initial state.
+  $('home').classList.add('active');
   vm.createContext(ctx);
   vm.runInContext(feature,ctx);
   return {ctx,$,calls,workSites,setFetcher:fn=>{fetcher=fn}};
