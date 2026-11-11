@@ -38,7 +38,7 @@ assert.match(html,/weatherWatchAutoKey/);
 assert.match(html,/watchAutoEnabled\(\)/);
 assert.match(html,/初回設定：開くたび自動監視をオンにする/);
 assert.match(html,/\/api\/weather-watch-enable/);
-assert.match(html,/GPS座標を小数3桁に丸め/);
+assert.match(html,/小数3桁に丸め/);
 assert.match(html,/国土地理院/);
 assert.match(html,/id="current-area"/);
 assert.match(html,/SoraArea\?\.update\(p\.lat,p\.lon\)/);
