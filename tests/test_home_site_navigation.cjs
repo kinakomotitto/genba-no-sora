@@ -10,7 +10,17 @@ for(const id of ['weather-content','site-weather-detail','site-weather-host','si
   'site-detail-back','site-detail-name','radar-target-chip','selected-location']){
   assert.equal(count('id="'+id+'"'),1,'duplicate or missing '+id);
 }
-assert.match(html,/表示版 v0\.42/);
+assert.match(html,/表示版 v0\.43/);
+assert.match(html,/id="private-place-form"/);
+assert.match(html,/id="private-place-query"/);
+assert.match(html,/id="private-place-results"/);
+assert.match(html,/id="private-favorites-list"/);
+assert.match(html,/id="private-place-current"/);
+assert.match(html,/id="private-place-save"/);
+assert.match(html,/geocoding-api\.open-meteo\.com\/v1\/search/);
+assert.match(html,/selected\.kind==='private'/);
+assert.match(html,/personalPlacesKey='genbanosora\.private-places\.v1'/);
+assert.match(html,/if\(id==='home'&&selected\.kind==='current'\)locate/);
 assert.match(html,/>現場一覧へ ›<\/button>/);
 assert.match(html,/<header class="app-header">/);
 assert.match(html,/<span lang="ko">하늘<\/span>/);

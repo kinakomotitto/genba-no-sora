@@ -727,6 +727,28 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
 .home-toolbar .btn{flex:1;min-width:0;font-size:12px;padding:10px 7px;min-height:44px}
 @media(max-width:355px){.home-hero{padding:18px 13px}.home-metrics{gap:2px}.home-metrics .metric+.metric{padding-left:4px}.home-metrics .metric-label{font-size:9px}.home-metrics .metric-value{font-size:12px}.home-kicker-jp{display:none}.home-record-head small{font-size:9px}}
 
+
+/* v0.43 — compact private place search below current GPS, independent from work sites */
+.private-places{margin:-4px 0 15px;padding:10px 11px 11px;border:1px solid #f0e4eb;border-radius:16px;background:rgba(255,255,255,.7)}
+.private-search-form{display:flex;align-items:center;gap:7px}
+.private-search-input{flex:1;min-width:0;min-height:42px;border:1px solid #eedfe7;border-radius:11px;padding:10px 11px;background:#fff;color:var(--ink);font-size:13px}
+.private-search-button{min-height:42px;border:0;border-radius:11px;background:#f8e8f0;color:#a15e7b;font-size:12px;font-weight:700;padding:0 14px;white-space:nowrap}
+.private-search-status{font-size:11px;color:#9a8191;line-height:1.5;margin:6px 2px 0}
+.private-search-results{display:grid;gap:5px;margin-top:8px}
+.private-search-option{display:block;width:100%;border:1px solid #f0e2e9;background:#fff;text-align:left;padding:9px 10px;border-radius:10px;color:#6c5362;font-size:13px}
+.private-search-option small{display:block;font-size:10px;color:#9b8793;margin-top:3px}
+.private-places-actions{display:flex;align-items:center;gap:7px;margin-top:8px;flex-wrap:wrap}
+.private-places-actions button{border:1px solid #eddae4;border-radius:11px;background:#fff9fc;color:#9d6c85;font-size:11px;padding:7px 10px}
+.private-favorites{margin-top:9px;border-top:1px solid #f3e9ed;padding-top:8px}
+.private-favorites-title{font-size:11px;font-weight:700;color:#977286;margin-bottom:7px}
+.private-favorites-list{display:flex;flex-wrap:wrap;gap:6px}
+.private-favorite-item{display:flex;align-items:stretch;max-width:100%;border-radius:12px;border:1px solid #eddae4;background:#fffafc}
+.private-favorite-item button{border:0;background:transparent;color:#9a6681;font-size:11px;min-height:34px}
+.private-favorite-open{max-width:195px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;padding:6px 5px 6px 10px}
+.private-favorite-remove{padding:6px 10px 6px 3px;color:#9f8996!important}
+.home-location .location-name #selected-location.private-active{min-width:0;max-width:min(50vw,220px);overflow:hidden;text-overflow:ellipsis;flex-shrink:1}
+@media(max-width:355px){.private-search-input{font-size:12px;padding:8px}.private-search-button{padding:0 10px}.private-places{padding:9px}}
+
 </style>
 </head>
 <body>
@@ -742,6 +764,22 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
         <div id="geo-status" class="sub" style="margin:4px 0 0 22px">位置情報の取得待ち</div>
       </div>
       <button class="btn home-location-change" id="choose-location" type="button">現場一覧へ ›</button>
+    </div>
+  </div>
+  <div class="private-places" id="private-places">
+    <form class="private-search-form" id="private-place-form" role="search">
+      <input class="private-search-input" id="private-place-query" type="search" maxlength="100" autocomplete="off" enterkeyhint="search" aria-label="市区町村・地名から天気を検索" placeholder="⌕ 地名から天気を探す..." />
+      <button class="private-search-button" id="private-place-submit" type="submit">検索</button>
+    </form>
+    <div class="private-search-status" id="private-place-status" role="status" aria-live="polite">旅行先やお出かけ先も検索できるよ ♡</div>
+    <div class="private-search-results" id="private-place-results" aria-label="地名検索の結果"></div>
+    <div class="private-places-actions">
+      <button type="button" id="private-place-save" class="hidden">♡ お気に入りに保存</button>
+      <button type="button" id="private-place-current" class="hidden">⌖ 現在地に戻る</button>
+    </div>
+    <div id="private-favorites" class="private-favorites hidden">
+      <div class="private-favorites-title">♡ お気に入り <span lang="ko">즐겨찾기</span></div>
+      <div id="private-favorites-list" class="private-favorites-list"></div>
     </div>
   </div>
   <div id="weather-content">
@@ -1018,7 +1056,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。ただし「ポケットに届く天気変化通知」を本人が開始した場合だけ、丸めた現在地の座標を通知サーバーに保存し、予報確認のためOpen-Meteoに送信します。各登録地点の監視は4時間で期限切れ。本人が一度オンにした後は、アプリを開くたび新しい丸めGPSを再送信して監視時間を更新します。停止時または期限後の定期処理で位置情報を削除します。ホームの現在地の地名表示では、丸めた座標を国土地理院へ送信します。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.42 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.43 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -1138,6 +1176,7 @@ function renderWxLogs(){
 }
 function recordWx(weather){
   if(!(weather in wxLabels))return;
+  if(selected.kind==='private'){toast('検索した場所は現場の天気記録と分けているよ ♡');return;}
   const now=new Date(),p=getCoords();
   const entry={id:Date.now().toString(36),at:now.toISOString(),weather,locationName:selected.name||'現在地',siteId:selected.kind==='site'?selected.id:null,lat:p&&Number.isFinite(p.lat)?p.lat:null,lon:p&&Number.isFinite(p.lon)?p.lon:null,kind:'manual_visual'};
   // Match ONLY already-saved forecasts at the moment of the user's tap.
@@ -2132,6 +2171,9 @@ function restoreHomeLocation(){
     fetchController=null; // a delayed site response must never repaint the Home screen
     selected={kind:'current',name:'現在地'};
     $('selected-location').textContent='現在地';
+    $('selected-location').classList.remove('private-active');
+    $('private-place-current').classList.add('hidden');
+    $('private-place-save').classList.add('hidden');
     window.SoraArea?.clear();
     $('geo-status').textContent=lastGPS
       ?'前回のGPS · '+lastGPS.lat.toFixed(4)+', '+lastGPS.lon.toFixed(4)+'（位置を更新中）'
@@ -2141,11 +2183,15 @@ function restoreHomeLocation(){
   updateWindyLinks();
 }
 function selectLoc(s){
-  if(s.kind!=='site'){showTab('home');return}
+  if(s.kind!=='site'){useCurrentFromPersonal();showTab('home');return}
   if(!Number.isFinite(s.lat)||!Number.isFinite(s.lon))return;
   fetchController?.abort();
   fetchController=null;
   selected={...s,kind:'site'};
+  $('selected-location').classList.remove('private-active');
+  $('private-place-current').classList.add('hidden');
+  $('private-place-save').classList.add('hidden');
+  $('weather-record')?.classList.remove('hidden');
   $('site-weather-host').append($('weather-content'));
   $('sites-index').classList.add('hidden');
   $('site-weather-detail').classList.remove('hidden');
@@ -2164,7 +2210,7 @@ function showTab(id,options={}){
     $('sites-index').classList.toggle('hidden',detail);
   }
   if(id==='radar'){
-    const label=selected.kind==='site'?'保存現場：'+selected.name:'現在地';
+    const label=selected.kind==='site'?'保存現場：'+selected.name:selected.kind==='private'?'検索した場所：'+selected.name:'現在地';
     $('radar-target-chip').textContent='⌖ レーダーの表示地点：'+label;
     renderRadar15h();
   }else radarStop();
@@ -2174,10 +2220,190 @@ function showTab(id,options={}){
   if(id==='sites'&&!detail)renderSites();
   if(id==='radar')requestAnimationFrame(()=>ensureRadarMap());
   if(isChanging)window.scrollTo(0,0);
-  if(id==='home')locate({fresh:true});
+  if(id==='home'&&selected.kind==='current')locate({fresh:true});
 }
 function gps(success,fail,options={}){if(!navigator.geolocation){fail&&fail('このブラウザではGPSが使えません');return}navigator.geolocation.getCurrentPosition(pos=>{lastGPS={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy,at:new Date().toISOString()};save();updateWindyLinks();success(lastGPS)},err=>{const msg=err.code===1?'位置情報の許可が必要です。ブラウザの設定で許可してください':err.code===3?'GPSの取得がタイムアウトしました':'GPSの位置を取得できませんでした';fail&&fail(msg)},{enableHighAccuracy:true,timeout:options.fresh?18000:12000,maximumAge:options.fresh?0:300000});}
 function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
+
+
+// v0.43 — private place search. Never create or modify a worksite,
+// a manual weather log, a push subscription, or public model-training data.
+const personalPlacesKey='genbanosora.private-places.v1';
+const personalMaxFavorites=20;
+let personalFavorites=[];
+let personalSearchController=null;
+function normalizePersonalPlace(item){
+  if(!item||typeof item.name!=='string')return null;
+  const lat=item.latitude===undefined?item.lat:item.latitude;
+  const lon=item.longitude===undefined?item.lon:item.longitude;
+  if(typeof lat!=='number'||typeof lon!=='number'||!Number.isFinite(lat)||
+     !Number.isFinite(lon)||lat< -90||lat>90||lon< -180||lon>180)return null;
+  const name=item.name.trim().slice(0,80);
+  if(!name)return null;
+  return {name,lat,lon,
+    region:String(item.admin1||item.region||'').slice(0,80),
+    country:String(item.country||'').slice(0,80)};
+}
+function personalPlaceKey(p){return p.lat.toFixed(4)+','+p.lon.toFixed(4);}
+function personalPlaceLabel(p){
+  const extra=[p.region,p.country].filter(Boolean);
+  return p.name+(extra.length?' · '+extra.join(' / '):'');
+}
+try{
+  const data=JSON.parse(localStorage.getItem(personalPlacesKey)||'[]');
+  if(Array.isArray(data)){
+    const keys=new Set();
+    personalFavorites=data.map(normalizePersonalPlace).filter(p=>{
+      if(!p)return false;
+      const k=personalPlaceKey(p);if(keys.has(k))return false;
+      keys.add(k);return true;
+    }).slice(0,personalMaxFavorites);
+  }
+}catch(_){}
+function storePersonalFavorites(){
+  try{localStorage.setItem(personalPlacesKey,JSON.stringify(personalFavorites));return true;}
+  catch(_){toast('お気に入りの保存に失敗したよ。端末の空き容量やSafari設定を確認してね');return false;}
+}
+function renderPersonalFavorites(){
+  const list=$('private-favorites-list');
+  list.replaceChildren();
+  $('private-favorites').classList.toggle('hidden',personalFavorites.length===0);
+  for(const place of personalFavorites){
+    const row=document.createElement('div');row.className='private-favorite-item';
+    const open=document.createElement('button');
+    open.type='button';open.className='private-favorite-open';
+    open.textContent='♡ '+place.name;
+    open.title=personalPlaceLabel(place);
+    open.setAttribute('aria-label',place.name+'の天気を見る');
+    open.addEventListener('click',()=>showPersonalPlace(place));
+    const remove=document.createElement('button');
+    remove.type='button';remove.className='private-favorite-remove';
+    remove.textContent='×';remove.title='お気に入りから削除';
+    remove.setAttribute('aria-label',place.name+'をお気に入りから削除');
+    remove.addEventListener('click',()=>{
+      // Do not delete work sites or cached forecasts.
+      if(!confirm('「'+place.name+'」をお気に入りから削除する？'))return;
+      const old=personalFavorites.slice();
+      personalFavorites=old.filter(p=>personalPlaceKey(p)!==personalPlaceKey(place));
+      if(!storePersonalFavorites())personalFavorites=old;
+      renderPersonalFavorites();updatePersonalSelectionActions();
+    });
+    row.append(open,remove);list.append(row);
+  }
+}
+function updatePersonalSelectionActions(){
+  const active=selected.kind==='private';
+  $('private-place-current').classList.toggle('hidden',!active);
+  $('private-place-save').classList.toggle('hidden',!active);
+  if(active){
+    const already=personalFavorites.some(p=>personalPlaceKey(p)===personalPlaceKey(selected));
+    $('private-place-save').textContent=already?'♥ お気に入り済み（解除）':'♡ お気に入りに保存';
+  }
+  // The worksite weather record must never collect private-place searches.
+  $('weather-record')?.classList.toggle('hidden',active);
+}
+function useCurrentFromPersonal(){
+  if(selected.kind!=='private')return;
+  fetchController?.abort();fetchController=null;
+  selected={kind:'current',name:'現在地'};
+  $('selected-location').textContent='現在地';
+  $('selected-location').classList.remove('private-active');
+  $('geo-status').textContent='現在地の予報を読み込み中…';
+  window.SoraArea?.clear();
+  updatePersonalSelectionActions();
+  showCachedWeatherFor(lastGPS);
+  updateWindyLinks();
+  $('private-place-status').textContent='⌖ 現在地の天気に戻ったよ。';
+}
+function showPersonalPlace(source){
+  const place=normalizePersonalPlace(source);
+  if(!place)return;
+  // Keep a private location separate from saved work sites. Never save it there.
+  fetchController?.abort();fetchController=null;
+  selected={kind:'private',...place};
+  $('selected-location').textContent=place.name;
+  $('selected-location').classList.add('private-active');
+  window.SoraArea?.clear();
+  $('geo-status').textContent='お出かけ先の予報 · 現場には保存しないよ ♡';
+  $('private-place-query').value=place.name;
+  $('private-place-results').replaceChildren();
+  $('private-place-status').textContent=personalPlaceLabel(place)+' の天気を表示中';
+  updatePersonalSelectionActions();
+  updateWindyLinks();
+  showCachedWeatherFor(place);
+  fetchWeather(place.lat,place.lon);
+  if(!$('home').classList.contains('active'))showTab('home');
+}
+function renderPersonalSearchResults(items){
+  const list=$('private-place-results');list.replaceChildren();
+  for(const raw of items){
+    const p=normalizePersonalPlace(raw);
+    if(!p)continue;
+    const button=document.createElement('button');
+    button.type='button';button.className='private-search-option';
+    const name=document.createElement('strong');name.textContent=p.name;
+    const area=document.createElement('small');area.textContent=[p.region,p.country].filter(Boolean).join(' / ')||'地域情報なし';
+    button.append(name,area);
+    button.addEventListener('click',()=>showPersonalPlace(p));
+    list.append(button);
+  }
+  return list.children.length;
+}
+$('private-place-form').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const query=$('private-place-query').value.trim();
+  personalSearchController?.abort();
+  $('private-place-results').replaceChildren();
+  if(Array.from(query).length<2){$('private-place-status').textContent='地名を2文字以上入力してね。';return;}
+  if(!navigator.onLine){$('private-place-status').textContent='地名検索には通信が必要だよ。保存したお気に入りは使えるよ。';return;}
+  const controller=new AbortController();personalSearchController=controller;
+  const button=$('private-place-submit');button.disabled=true;
+  $('private-place-status').textContent='「'+query+'」を検索中…';
+  const timeout=setTimeout(()=>controller.abort(),10000);
+  try{
+    const params=new URLSearchParams({name:query,count:'8',language:'ja',format:'json'});
+    const response=await fetch('https://geocoding-api.open-meteo.com/v1/search?'+params,{signal:controller.signal});
+    if(!response.ok)throw Error('地名検索HTTP '+response.status);
+    const data=await response.json();
+    if(controller!==personalSearchController)return;
+    const n=renderPersonalSearchResults(Array.isArray(data.results)?data.results:[]);
+    $('private-place-status').textContent=n?'検索結果 '+n+'件 · 見たい場所をタップしてね ♡':'見つからなかったよ。市区町村名やローマ字でも試してみてね。';
+  }catch(err){
+    if(controller!==personalSearchController)return;
+    $('private-place-status').textContent='地名を検索できなかったよ。通信を確認して、もう一度試してね。';
+  }finally{
+    clearTimeout(timeout);
+    if(controller===personalSearchController)button.disabled=false;
+  }
+});
+$('private-place-query').addEventListener('input',()=>{
+  personalSearchController?.abort();personalSearchController=null;
+  $('private-place-submit').disabled=false;
+  $('private-place-results').replaceChildren();
+});
+$('private-place-save').addEventListener('click',()=>{
+  if(selected.kind!=='private')return;
+  const place=normalizePersonalPlace(selected);
+  if(!place)return;
+  const key=personalPlaceKey(place);
+  const old=personalFavorites.slice();
+  if(personalFavorites.some(p=>personalPlaceKey(p)===key)){
+    personalFavorites=personalFavorites.filter(p=>personalPlaceKey(p)!==key);
+    if(!storePersonalFavorites())personalFavorites=old;
+    else toast('お気に入りから外したよ ♡');
+  }else{
+    if(personalFavorites.length>=personalMaxFavorites){toast('お気に入りは20地点までだよ ♡');return;}
+    personalFavorites.unshift(place);
+    if(!storePersonalFavorites())personalFavorites=old;
+    else toast('♡ '+place.name+'をお気に入りに保存したよ！');
+  }
+  renderPersonalFavorites();updatePersonalSelectionActions();
+});
+$('private-place-current').addEventListener('click',()=>{
+  useCurrentFromPersonal();
+  showTab('home');
+});
+renderPersonalFavorites();
 
 function renderWindTrend(hourly,stale){
   const status=$('wind-trend-status'),chart=$('wind-trend-chart'),hours=$('wind-trend-hours');

@@ -15,6 +15,7 @@ on:
       - 'tests/test_model_compare_snapshots.cjs'
       - 'tests/test_weather_record_integration.cjs'
       - 'tests/test_home_site_navigation.cjs'
+      - 'tests/test_private_places.cjs'
       - '.github/workflows/home-site-navigation-check.yml'
   pull_request:
     paths:
@@ -31,6 +32,7 @@ on:
       - 'tests/test_model_compare_snapshots.cjs'
       - 'tests/test_weather_record_integration.cjs'
       - 'tests/test_home_site_navigation.cjs'
+      - 'tests/test_private_places.cjs'
       - '.github/workflows/home-site-navigation-check.yml'
 permissions:
   contents: read
@@ -42,6 +44,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify Home GPS and Sites detail navigation without real GPS
         run: node tests/test_home_site_navigation.cjs
+      - name: Verify private place search and favorites without network
+        run: node tests/test_private_places.cjs
       - name: Verify current GPS short Japanese area label without external calls
         run: node tests/test_location_label.cjs
       - name: Check pre-record only visual weather observation matching

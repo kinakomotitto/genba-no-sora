@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const code=fs.readFileSync('sw.js','utf8');
-assert.match(code,/genba-no-sora-shell-v0\.42/);
+assert.match(code,/genba-no-sora-shell-v0\.43/);
 const listeners={};let displayed=null,visited=null;
 const listenersContext={
   self:{
