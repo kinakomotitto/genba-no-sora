@@ -998,7 +998,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
     <strong>☔🌬️⚡ ポケットに届く天気変化通知 ♡</strong>
     <p>このボタンを押したときの現在地だけを、最大4時間サーバーが確認する試験版だよ。アプリを閉じても予報の変化が見つかれば通知を試みます。</p>
     <p>雨・最大瞬間風速15m/s以上・雷雨の<strong>予報</strong>を約15分間隔で確認します。日本の15分値は1時間予報の補間であり「あと何分で雨」とは正確に判断できません。落雷接近の実況や気象庁の警報ではありません。</p>
-    <p>【位置情報の送信に同意】開始を押すと、新たに取得したGPS座標を小数3桁に丸め、通知サーバー（Cloudflare）に最大4時間保存します。予報確認にはその座標をOpen-Meteoへ送ります。現場名・メモ・天気記録は送りません。アプリを閉じた後に移動しても自動追跡できず、期限後は監視終了します。</p>
+    <p>【位置情報の送信に同意】開始を押すと、新たに取得したGPS座標を小数3桁に丸め、通知サーバー（Cloudflare）に保存します。監視は4時間で期限切れとなり、座標は停止時または期限後の次回定期処理で削除します。予報確認にはその座標をOpen-Meteoへ送ります。現場名・メモ・天気記録は送りません。アプリを閉じた後に移動しても自動追跡できず、期限後は監視終了します。</p>
     <button id="weather-watch-enable" type="button" class="reminder-test">📍 今の地点で4時間の天気通知をオンにする</button>
     <button id="weather-watch-stop" type="button" class="reminder-test hidden">通知監視を終了・位置情報を削除する</button>
     <div id="weather-watch-status" class="reminder-result" role="status" aria-live="polite">まだ通知監視は開始していません。</div>
@@ -1014,7 +1014,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
     <span class="settings-widget-copy"><strong>♡ 하늘 · ロック画面に追加</strong><small>今いる場所の天気＋1時間ごとの予報 · 作り方を見る</small></span>
     <span class="settings-widget-arrow" aria-hidden="true">›</span>
   </a>
-  <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。ただし「ポケットに届く天気変化通知」を本人が開始した場合だけ、丸めた現在地の座標を通知サーバーに最大4時間保存し、予報確認のためOpen-Meteoに送信します。停止・期限切れで位置情報を削除します。ホームの現在地の地名表示では、丸めた座標を国土地理院へ送信します。</p>
+  <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。ただし「ポケットに届く天気変化通知」を本人が開始した場合だけ、丸めた現在地の座標を通知サーバーに保存し、予報確認のためOpen-Meteoに送信します。監視は4時間で終了し、停止時または期限後の定期処理で位置情報を削除します。ホームの現在地の地名表示では、丸めた座標を国土地理院へ送信します。</p>
 </section>
 
 <div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.41 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
