@@ -1511,9 +1511,12 @@ async function enableDailyPush(){
   }finally{pushLoading(false);}
 }
 async function disableDailyPush(){
+  // "all notifications off" also revokes ongoing automatic-location consent.
+  setWatchAutoEnabled(false);
   pushLoading(true);
   pushStatus('通知の登録を解除しています…');
   try{
+    if(watchAutoInFlight)await watchAutoInFlight;
     const reg=await navigator.serviceWorker.ready;
     const sub=await reg.pushManager.getSubscription();
     if(!sub){await showPushButtons();return;}
@@ -1558,25 +1561,101 @@ async function weatherWatchIdentity(){
   const token=localStorage.getItem(pushOwnerKey);
   return subscription&&token?{endpoint:subscription.endpoint,token}:null;
 }
+// Saved only after the first explicit button-tap consent and successful
+// watch registration. Normal GPS checks NEVER upload unless this is true.
+const weatherWatchAutoKey='genbanosora.weatherwatch.auto.v1';
+let watchAutoInFlight=null,watchRecentFreshGps=null;
+let watchAutoLastKey='',watchAutoLastAt=0;
+function watchAutoEnabled(){
+  try{return localStorage.getItem(weatherWatchAutoKey)==='on';}
+  catch(_){return false;}
+}
+function setWatchAutoEnabled(enabled){
+  try{
+    if(enabled)localStorage.setItem(weatherWatchAutoKey,'on');
+    else localStorage.removeItem(weatherWatchAutoKey);
+  }catch(_){/* Storage disabled: never silently opt in to future GPS uploads. */}
+  const enabledNow=watchAutoEnabled();
+  $('weather-watch-enable').textContent=enabledNow?
+    '⌖ 今の地点に監視を更新する':
+    '📍 初回設定：開くたび自動監視をオンにする';
+  if(enabledNow)$('weather-watch-stop').classList.remove('hidden');
+  return enabledNow;
+}
+function watchValidFreshGps(p){
+  if(!p||!Number.isFinite(p.lat)||!Number.isFinite(p.lon)||
+     !Number.isFinite(p.accuracy)||p.accuracy<=0||p.accuracy>300||
+     typeof p.at!=='string')return false;
+  const age=Date.now()-Date.parse(p.at);
+  return Number.isFinite(age)&&age>=-30000&&age<=5*60000;
+}
+function rememberFreshGpsForWatch(p){
+  if(!watchValidFreshGps(p))return;
+  watchRecentFreshGps=p; // in-memory only, never read stale persistent GPS
+  if(watchAutoEnabled())void maybeAutoWeatherWatch(p);
+}
+async function maybeAutoWeatherWatch(p){
+  if(!watchAutoEnabled()||!pushServiceOrigin||document.hidden||
+     !watchValidFreshGps(p)||watchAutoInFlight)return;
+  const key=p.lat.toFixed(3)+','+p.lon.toFixed(3);
+  // Avoid duplicate requests when visiting Home repeatedly. A changed
+  // rounded location always triggers a new update even inside 2 minutes.
+  if(key===watchAutoLastKey&&Date.now()-watchAutoLastAt<2*60000)return;
+  const request=(async()=>{
+    if(!watchAutoEnabled())return;
+    if(!('Notification' in window)||Notification.permission!=='granted'){
+      watchStatus('通知許可がオフです。iPhoneの設定から許可を確認してね。');
+      return;
+    }
+    const identity=await weatherWatchIdentity();
+    if(!identity){
+      // A removed push subscription must not silently request permission.
+      setWatchAutoEnabled(false);
+      watchStatus('プッシュ購読がありません。自動監視を使うには初回設定を押してね。');
+      return;
+    }
+    if(!watchAutoEnabled())return;
+    const gps={
+      lat:Number(p.lat.toFixed(3)),lon:Number(p.lon.toFixed(3)),
+      accuracy:p.accuracy,at:p.at
+    };
+    await pushPost('/api/weather-watch-enable',{...identity,gps,consent:true});
+    // Stop waits for this request and then deletes any still-active watch.
+    if(!watchAutoEnabled())return;
+    watchAutoLastKey=key;watchAutoLastAt=Date.now();
+    $('weather-watch-stop').classList.remove('hidden');
+    watchStatus('☁️ 現在地を自動更新したよ！この地点を4時間監視するよ。'+
+      'アプリを閉じたまま移動した先へは自動追跡できないよ。');
+  })().catch(_=>{
+    if(watchAutoEnabled())watchStatus(
+      '現在地の自動更新が失敗しました。前の監視地点は期限まで残る場合があります。'+
+      '通信とGPSを確認して、アプリをもう一度開いてね。');
+  }).finally(()=>{watchAutoInFlight=null;});
+  watchAutoInFlight=request;
+  return request;
+}
 async function refreshWeatherWatchStatus(){
   const panel=$('weather-watch-panel');
   if(panel.classList.contains('hidden')||!pushServiceOrigin)return;
   try{
     const identity=await weatherWatchIdentity();
     if(!identity){
-      $('weather-watch-stop').classList.add('hidden');
-      watchStatus('未登録。通知監視を始めるときに現在地を取得するよ。');
+      setWatchAutoEnabled(false);
+      watchStatus('未登録。自動監視を使うには初回設定を押してね。');
       return;
     }
     const result=await pushPost('/api/weather-watch-status',identity);
     const active=result.active===true;
-    $('weather-watch-stop').classList.toggle('hidden',!active);
+    $('weather-watch-stop').classList.toggle('hidden',!active&&!watchAutoEnabled());
     if(active){
       const until=new Date(result.expiresAt).toLocaleString('ja-JP',
         {hour:'2-digit',minute:'2-digit'});
-      watchStatus('☁️ 最後に登録した現在地の予報を監視中。終了予定：'+until+
-        '（移動しても自動で地点は変わらないよ）');
-    }else watchStatus('現在は監視していません。アプリを開いても位置は送信しないよ。');
+      watchStatus('☁️ '+(watchAutoEnabled()?'自動更新ON。':'')+
+        '最後に確認した地点を監視中。終了予定：'+until+
+        '（アプリを開くたび現在地を更新／閉じたまま移動先への追跡はしないよ）');
+    }else watchStatus(watchAutoEnabled()?
+      '自動更新ON。前の監視は期限切れ。アプリを開くと新しい現在地から再開するよ。':
+      '現在は監視していません。初回同意がない限り位置は送信しないよ。');
   }catch(_){watchStatus('監視状態を確認できません。通信環境を確認してね。');}
 }
 async function enableWeatherWatch(){
@@ -1629,6 +1708,16 @@ async function enableWeatherWatch(){
     await pushPost('/api/weather-watch-enable',{
       endpoint:detail.endpoint,token,gps,consent:true
     });
+    if(!setWatchAutoEnabled(true)){
+      // If storage cannot retain the opt-in, do not leave a watch running
+      // after claiming subsequent app openings will be automatic.
+      await pushPost('/api/weather-watch-stop',{endpoint:detail.endpoint,token});
+      watchStatus('自動更新の同意を端末に保存できません。端末の保存設定を確認してね。');
+      return;
+    }
+    watchRecentFreshGps={...gps};
+    watchAutoLastKey=gps.lat.toFixed(3)+','+gps.lon.toFixed(3);
+    watchAutoLastAt=Date.now();
     await showPushButtons();
     await refreshWeatherWatchStatus();
     watchStatus($('weather-watch-status').textContent+
@@ -1638,15 +1727,21 @@ async function enableWeatherWatch(){
   }finally{watchLoading(false);}
 }
 async function stopWeatherWatch(){
+  // Revoke future background-location uploads immediately on tap.
+  setWatchAutoEnabled(false);
   watchLoading(true);
   try{
+    if(watchAutoInFlight)await watchAutoInFlight;
     const identity=await weatherWatchIdentity();
     if(identity){
       await pushPost('/api/weather-watch-stop',identity);
     }
     $('weather-watch-stop').classList.add('hidden');
     watchStatus('停止したよ ♡ サーバーの監視用GPSも削除したよ。');
-  }catch(_){watchStatus('停止を確認できません。通信を確認して再度押してね。');}
+  }catch(_){
+    $('weather-watch-stop').classList.remove('hidden');
+    watchStatus('この端末の自動更新はOFF。サーバー側の停止・削除を確認できていないため、再度「停止」を押してね。');
+  }
   finally{watchLoading(false);}
 }
 $('weather-watch-enable').addEventListener('click',enableWeatherWatch);
@@ -1668,7 +1763,13 @@ async function initializePushBackend(){
     $('push-setup-panel').classList.remove('hidden');
     $('weather-watch-panel').classList.toggle('hidden',cfg.weatherWatchAvailable!==true);
     await showPushButtons();
-    if(cfg.weatherWatchAvailable===true)await refreshWeatherWatchStatus();
+    if(cfg.weatherWatchAvailable===true){
+      setWatchAutoEnabled(watchAutoEnabled());
+      await refreshWeatherWatchStatus();
+      // Page load GPS may finish before the async backend configuration.
+      if(watchAutoEnabled()&&watchRecentFreshGps)
+        void maybeAutoWeatherWatch(watchRecentFreshGps);
+    }
   }catch(e){
     // A missing or offline backend must not break the existing weather app.
   }
