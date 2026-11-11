@@ -1,21 +1,19 @@
 {
   "schema": 2,
-  "assessed_at_utc": "2026-11-10T18:56:16.676463Z",
-  "state": "healthy",
-  "consecutive_degraded_checks": 0,
+  "assessed_at_utc": "2026-11-11T01:06:44.030929Z",
+  "state": "degraded",
+  "consecutive_degraded_checks": 1,
   "sustained_outage_alert_eligible": false,
   "sustained_outage_after_checks": 3,
-  "reasons": [],
+  "reasons": [
+    "model_coverage_degraded"
+  ],
   "national_observation_station_count": 1284,
-  "observation_age_hours": 0.94,
+  "observation_age_hours": 7.11,
   "forecast_collection_age_hours": 0.0,
   "verification_age_hours": 0.0,
-  "available_models": [
-    "jma_msm",
-    "ecmwf_ifs",
-    "icon_seamless"
-  ],
-  "three_model_comparison_available": true,
+  "available_models": [],
+  "three_model_comparison_available": false,
   "automatic_correction_enabled": false,
   "detail": "Healthy means the research data feed is fresh, not that forecasts are accurate or safe."
 }
