@@ -144,6 +144,62 @@ class CorrectionGateTests(unittest.TestCase):
             self.assertEqual(cr.archive_matches(yesterday,archive,now),0)
             self.assertEqual(len(cr.read_archive(archive)),15)
 
+    def test_new_verified_matches_are_visible_before_two_day_archive(self):
+        valid=dt.datetime(2026,11,11,3,tzinfo=UTC)
+        now=dt.datetime(2026,11,11,14,tzinfo=UTC) # 23:00 JST
+        rows=[]
+        for station in range(5):
+            for model in cr.MODELS:
+                rows.append({
+                    "station_id":str(11000+station),"model":model,
+                    "valid_at":valid.isoformat().replace("+00:00","Z"),
+                    "fetched_at":(valid-dt.timedelta(hours=6)).isoformat().replace("+00:00","Z"),
+                    "lead_h":6,
+                    "wind_forecast_ms":4,"wind_observed_ms":5,
+                    "rain_forecast_mm":0,"rain_observed_mm":0
+                })
+        with tempfile.TemporaryDirectory() as temp:
+            archive=Path(temp)
+            self.assertEqual(cr.archive_matches(rows,archive,now),0)
+            self.assertEqual(cr.read_archive(archive),[])
+            pending=cr.archive_progress(rows,archive,now)
+            self.assertEqual(pending["matched_rows_current_window"],15)
+            self.assertEqual(pending["complete_three_model_cohorts_current_window"],5)
+            self.assertEqual(pending["pending_finalization_rows"],15)
+            self.assertEqual(pending["pending_finalization_complete_cohorts"],5)
+            self.assertEqual(pending["daily"][0]["state"],"pending_two_day_lag")
+            self.assertEqual(pending["daily"][0]["eligible_from_jst"],"2026-11-13")
+            self.assertFalse(cr.report(cr.read_archive(archive))["records_archived"])
+            later=dt.datetime(2026,11,13,2,tzinfo=UTC)
+            self.assertEqual(cr.archive_matches(rows,archive,later),15)
+            finalized=cr.archive_progress(rows,archive,later)
+            self.assertEqual(finalized["pending_finalization_rows"],0)
+            self.assertEqual(finalized["daily"][0]["state"],"archived")
+            self.assertEqual(len(cr.read_archive(archive)),15)
+
+    def test_old_incomplete_day_is_not_mislabeled_as_archived(self):
+        valid=dt.datetime(2026,11,8,6,tzinfo=UTC)
+        rows=[]
+        for station in range(4):
+            for model in cr.MODELS:
+                rows.append({
+                    "station_id":str(11000+station),"model":model,
+                    "valid_at":valid.isoformat().replace("+00:00","Z"),
+                    "fetched_at":(valid-dt.timedelta(hours=6)).isoformat().replace("+00:00","Z"),
+                    "lead_h":6,
+                    "wind_forecast_ms":4,"wind_observed_ms":5,
+                    "rain_forecast_mm":0,"rain_observed_mm":0
+                })
+        with tempfile.TemporaryDirectory() as temp:
+            archive=Path(temp)
+            now=dt.datetime(2026,11,11,14,tzinfo=UTC)
+            self.assertEqual(cr.archive_matches(rows,archive,now),0)
+            state=cr.archive_progress(rows,archive,now)
+            self.assertEqual(state["eligible_unarchived_days"],1)
+            self.assertEqual(state["daily"][0]["state"],"insufficient_complete_cohorts")
+            self.assertEqual(state["daily"][0]["complete_three_model_cohorts"],4)
+            self.assertEqual(state["pending_finalization_rows"],0)
+
     def test_missing_one_model_does_not_claim_common_samples(self):
         groups=pair_rows(550,stations=5,models=("jma_msm","ecmwf_ifs"))
         result=cr.report(groups)
