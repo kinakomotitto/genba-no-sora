@@ -40,6 +40,7 @@ function createEnvironment(sharedStore=new Map()){
     Date,Number,console,localStorage:storage,
     document:{get hidden(){return state.hidden}},
     Notification:{get permission(){return state.permission}},
+    window:{Notification:{permission:'granted'}},
     isInstalledPwa:()=>true,pushServiceOrigin:'https://mock.example',
     weatherWatchIdentity:async()=>state.identity,
     pushPost:async(path,data)=>{
