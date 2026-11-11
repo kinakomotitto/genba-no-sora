@@ -188,22 +188,53 @@ class TestNationwidePilot(unittest.TestCase):
             self.assertEqual(result["per_model"]["icon_seamless"]["failure_types"],["upstream_rate_limited_stop"])
             self.assertEqual(result["state"],"no_forecasts_available")
 
-    def test_off_schedule_collection_does_not_hammer_public_apis(self):
-        late=dt.datetime(2026,11,10,13,20,tzinfo=UTC)
+    def test_delayed_scheduled_runs_preserve_true_hourly_leads(self):
+        # Previously, runs >1h past the six-hour slot silently skipped.
+        for hour,minute in [(1,6),(7,17),(13,20),(8,29)]:
+            with self.subTest(utc=f"{hour:02d}:{minute:02d}"):
+                now=dt.datetime(2026,11,10,hour,minute,tzinfo=UTC)
+                targets=tc.forecast_targets(now)
+                self.assertEqual(len(targets),3)
+                for lead,target in zip(tc.TARGET_LEADS,targets.values()):
+                    actual=(dt.datetime.fromisoformat(target.replace("Z","+00:00"))-now).total_seconds()/3600
+                    self.assertLessEqual(abs(actual-lead),0.5)
+                with tempfile.TemporaryDirectory() as tmp:
+                    folder=Path(tmp)
+                    infile=folder/"latest.json"
+                    infile.write_text(json.dumps(snap()),encoding="utf-8")
+                    result=tc.collect(infile,folder/"out",fake_model,lambda:now)
+                    self.assertTrue(result["all_three_models_collected"])
+                    self.assertEqual(result["forecast_rows_saved"],27*3)
+                    self.assertEqual(result["calls_attempted"],3)
+
+    def test_off_schedule_collection_does_not_hammer_or_erase_prior_status(self):
+        late=dt.datetime(2026,11,10,15,20,tzinfo=UTC)
+        boundary=dt.datetime(2026,11,10,8,31,tzinfo=UTC)
         self.assertEqual(tc.forecast_targets(late),{})
+        self.assertEqual(tc.forecast_targets(boundary),{})
         self.assertTrue(tc.forecast_targets(NOW))
         with tempfile.TemporaryDirectory() as tmp:
             folder=Path(tmp)
             file=folder/"latest.json"
             file.write_text(json.dumps(snap()),encoding="utf-8")
+            output=folder/"results"
+            output.mkdir()
+            saved={"state":"saved","fetched_at":"2026-11-10T12:12:00Z",
+                   "consecutive_model_failures":0,
+                   "per_model":{m:{"state":"ok"} for m in tc.MODELS}}
+            reportfile=output/"collection-status.json"
+            reportfile.write_text(json.dumps(saved),encoding="utf-8")
             called=[]
             def no_network(model,subset):
                 called.append(model)
                 raise AssertionError("API must not be called")
-            status=tc.collect(file,folder/"results",no_network,lambda:late)
+            status=tc.collect(file,output,no_network,lambda:late)
             self.assertEqual(called,[])
             self.assertEqual(status["calls_attempted"],0)
             self.assertEqual(status["state"],"not_ready")
+            self.assertEqual(status["reason"],"outside_scheduled_window")
+            self.assertTrue(status["previous_collection_status_preserved"])
+            self.assertEqual(json.loads(reportfile.read_text(encoding="utf-8")),saved)
 
     def test_public_source_required(self):
         with self.assertRaises(ValueError):

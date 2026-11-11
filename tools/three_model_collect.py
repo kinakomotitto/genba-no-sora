@@ -130,20 +130,33 @@ def request_model(model,stations):
     return parsed
 
 def forecast_targets(fetched):
-    """Only verification times which can match 6-hourly hourly-map snapshots."""
+    """Capture real 6/12/24-hour-ahead forecasts despite delayed cron starts.
+
+    GitHub's scheduled jobs can start more than an hour late. Accept starts
+    up to 2h30 after a 00/06/12/18 UTC slot, never a whole missed cycle.
+    Choose hourly target times around the ACTUAL fetch time (not the original
+    cron slot), so downstream verification uses honest forecast lead times.
+    Do not reconstruct or backdate forecasts for missed runs.
+    """
     if fetched.tzinfo is None:
         raise ValueError("Timezone-aware fetch time required")
-    t=fetched.astimezone(UTC).replace(minute=0,second=0,microsecond=0)
-    t-=dt.timedelta(hours=t.hour%6)
-    # A push/manual run outside the :00/:06/:12/:18 UTC collection window is
-    # NOT a genuine 6/12/24-hour forecast. Never query the API in that case.
-    if abs((fetched.astimezone(UTC)-t).total_seconds())>3600:
+    actual=fetched.astimezone(UTC)
+    scheduled_slot=actual.replace(minute=0,second=0,microsecond=0)
+    scheduled_slot-=dt.timedelta(hours=scheduled_slot.hour%6)
+    delay=actual-scheduled_slot
+    if not dt.timedelta(0)<=delay<=dt.timedelta(hours=2,minutes=30):
         return {}
+    # Open-Meteo supplies hourly targets. Nearest hour keeps each lead in
+    # the existing verifier's <=1-hour tolerance without claiming a stale
+    # schedule-derived forecast was made six hours before its target.
+    target_hour=actual.replace(minute=0,second=0,microsecond=0)
+    if actual-target_hour>=dt.timedelta(minutes=30):
+        target_hour+=dt.timedelta(hours=1)
     targets={}
     for lead in TARGET_LEADS:
-        valid=t+dt.timedelta(hours=lead)
-        actual=(valid-fetched).total_seconds()/3600
-        if 0<actual<=25 and abs(actual-lead)<=1:
+        valid=target_hour+dt.timedelta(hours=lead)
+        actual_lead=(valid-actual).total_seconds()/3600
+        if 0<actual_lead<=25 and abs(actual_lead-lead)<=1:
             targets[valid.strftime("%Y-%m-%dT%H:%M")]=valid.isoformat().replace("+00:00","Z")
     return targets
 
@@ -247,9 +260,18 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
             except (OSError,ValueError):pass
         target=adaptive_station_target(previous)
         if not forecast_targets(stamp):
-            # Prevent needless API requests and misleading "failed weather"
-            # alerts for code pushes made at arbitrary hours.
-            raise ValueError("forecast_collection_outside_scheduled_hour")
+            # An off-window manual/very-late run must not erase the last
+            # successful model coverage or fabricate a failed collection.
+            # Keep the last persisted report intact for truthful freshness
+            # checks; the skip remains visible in this run's Actions log.
+            status["state"]="not_ready"
+            status["reason"]="outside_scheduled_window"
+            previous_failures=(previous or {}).get("consecutive_model_failures",0) if isinstance(previous,dict) else 0
+            status["consecutive_model_failures"]=previous_failures if isinstance(previous_failures,int) and previous_failures>=0 else 0
+            status["all_three_models_collected"]=False
+            status["previous_collection_status_preserved"]=old_status.exists()
+            print(json.dumps(status,ensure_ascii=False))
+            return status
         preferred=previous.get("station_ids") if isinstance(previous,dict) else None
         stations=select_public_stations(snapshot,max_sites=target,
                                         preferred_station_ids=preferred)
