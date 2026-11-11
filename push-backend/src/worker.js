@@ -244,13 +244,22 @@ async function weatherWatchAction(request,env,action){
     const expiresAt=new Date(now.getTime()+WATCH_HOURS*3600000).toISOString();
     await env.DB.prepare(
       `INSERT INTO weather_watch
-        (subscription_id,latitude,longitude,updated_at,expires_at,last_alert_at)
-        VALUES(?,?,?,?,?,NULL)
+        (subscription_id,latitude,longitude,updated_at,expires_at,
+         last_rain_at,last_wind_at,last_thunder_at)
+        VALUES(?,?,?,?,?,NULL,NULL,NULL)
         ON CONFLICT(subscription_id) DO UPDATE SET
-        last_alert_at=CASE WHEN
+        last_rain_at=CASE WHEN
           abs(weather_watch.latitude-excluded.latitude)>.01 OR
           abs(weather_watch.longitude-excluded.longitude)>.01
-          THEN NULL ELSE weather_watch.last_alert_at END,
+          THEN NULL ELSE weather_watch.last_rain_at END,
+        last_wind_at=CASE WHEN
+          abs(weather_watch.latitude-excluded.latitude)>.01 OR
+          abs(weather_watch.longitude-excluded.longitude)>.01
+          THEN NULL ELSE weather_watch.last_wind_at END,
+        last_thunder_at=CASE WHEN
+          abs(weather_watch.latitude-excluded.latitude)>.01 OR
+          abs(weather_watch.longitude-excluded.longitude)>.01
+          THEN NULL ELSE weather_watch.last_thunder_at END,
         latitude=excluded.latitude,longitude=excluded.longitude,
         updated_at=excluded.updated_at,expires_at=excluded.expires_at`
     ).bind(id,coords.lat,coords.lon,now.toISOString(),expiresAt).run();
@@ -277,7 +286,8 @@ async function sendWeatherWatch(env,scheduledTime){
   await env.DB.prepare('DELETE FROM weather_watch WHERE expires_at<=?')
     .bind(isoNow).run();
   const rows=await env.DB.prepare(
-    `SELECT w.subscription_id,w.latitude,w.longitude,w.expires_at,w.last_alert_at,
+    `SELECT w.subscription_id,w.latitude,w.longitude,w.expires_at,
+       w.last_rain_at,w.last_wind_at,w.last_thunder_at,
        s.endpoint,s.p256dh,s.auth
        FROM weather_watch w JOIN push_subscriptions s ON s.id=w.subscription_id
        WHERE s.active=1 AND w.expires_at>?
@@ -285,31 +295,48 @@ async function sendWeatherWatch(env,scheduledTime){
   ).bind(isoNow,WATCH_LIMIT).all();
   let notified=0,unavailable=0,skipped=0;
   for(const row of rows.results||[]){
-    // Never print coordinates or push subscriptions in logs.
-    const last=Date.parse(row.last_alert_at);
-    if(Number.isFinite(last)&&now-last<WATCH_COOLDOWN_MS){skipped++;continue;}
     try{
       const forecast=await fetchForecast(row.latitude,row.longitude);
       const events=evaluateForecast(forecast,Date.now());
-      if(!events.length)continue;
+      // Dedup *each weather type separately*. A rain notice must not suppress
+      // a newly forecast thunderstorm or strong gust 15 minutes later.
+      const eligible=events.filter(e=>{
+        const at=Date.parse(row['last_'+e.kind+'_at']);
+        return !Number.isFinite(at)||now-at>=WATCH_COOLDOWN_MS;
+      });
+      if(!eligible.length){skipped++;continue;}
+      const rain=eligible.some(e=>e.kind==='rain');
+      const wind=eligible.some(e=>e.kind==='wind');
+      const thunder=eligible.some(e=>e.kind==='thunder');
+      const cutoff=new Date(now-WATCH_COOLDOWN_MS).toISOString();
       const claimed=await env.DB.prepare(
-        `UPDATE weather_watch SET last_alert_at=?
-         WHERE subscription_id=? AND expires_at>?
-         AND (last_alert_at IS NULL OR last_alert_at<=?)`
-      ).bind(isoNow,row.subscription_id,isoNow,
-        new Date(now-WATCH_COOLDOWN_MS).toISOString()).run();
+        `UPDATE weather_watch SET
+          last_rain_at=CASE WHEN ?=1 THEN ? ELSE last_rain_at END,
+          last_wind_at=CASE WHEN ?=1 THEN ? ELSE last_wind_at END,
+          last_thunder_at=CASE WHEN ?=1 THEN ? ELSE last_thunder_at END
+          WHERE subscription_id=? AND expires_at>? AND (
+            (?=1 AND (last_rain_at IS NULL OR last_rain_at<=?)) OR
+            (?=1 AND (last_wind_at IS NULL OR last_wind_at<=?)) OR
+            (?=1 AND (last_thunder_at IS NULL OR last_thunder_at<=?)))`
+      ).bind(rain?1:0,isoNow,wind?1:0,isoNow,thunder?1:0,isoNow,
+        row.subscription_id,isoNow,
+        rain?1:0,cutoff,wind?1:0,cutoff,thunder?1:0,cutoff).run();
       if(!claimed.meta?.changes){skipped++;continue;}
-      const detail=events.slice(0,3).map(x=>x.text).join(' ');
-      const text='最後に登録した地点の参考予報：'+detail+
+      const text='最後に登録した地点の参考予報：'+
+        eligible.map(e=>e.text).join(' ')+
         ' 気象庁の最新の警報・雷情報を確認してね。';
       try{
-        await sendWeatherNote(row,env,
-          'weather-watch-'+Math.floor(now/WATCH_COOLDOWN_MS),text);
+        await sendWeatherNote(row,env,'weather-watch-'+now,text);
         notified++;
       }catch(pushError){
+        // Allow a future scheduled retry of a failed delivery.
         await env.DB.prepare(
-          'UPDATE weather_watch SET last_alert_at=NULL WHERE subscription_id=? AND last_alert_at=?'
-        ).bind(row.subscription_id,isoNow).run();
+          `UPDATE weather_watch SET
+            last_rain_at=CASE WHEN ?=1 AND last_rain_at=? THEN NULL ELSE last_rain_at END,
+            last_wind_at=CASE WHEN ?=1 AND last_wind_at=? THEN NULL ELSE last_wind_at END,
+            last_thunder_at=CASE WHEN ?=1 AND last_thunder_at=? THEN NULL ELSE last_thunder_at END
+            WHERE subscription_id=?`
+        ).bind(rain?1:0,isoNow,wind?1:0,isoNow,thunder?1:0,isoNow,row.subscription_id).run();
         if([404,410].includes(pushError?.statusCode)){
           await env.DB.prepare('DELETE FROM weather_watch WHERE subscription_id=?')
             .bind(row.subscription_id).run();
