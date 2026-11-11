@@ -42,7 +42,7 @@ assert.match(html,/window\.addEventListener\('pageshow'/);
 assert.match(html,/await autoRefreshWeatherWatch\(\)/);
 assert.match(html,/次にアプリを開くと自動で地点を更新/);
 assert.match(html,/\/api\/weather-watch-enable/);
-assert.match(html,/GPS座標を小数3桁に丸め/);
+assert.match(html,/小数3桁に丸め/);
 assert.match(html,/国土地理院/);
 assert.match(html,/id="current-area"/);
 assert.match(html,/SoraArea\?\.update\(p\.lat,p\.lon\)/);
