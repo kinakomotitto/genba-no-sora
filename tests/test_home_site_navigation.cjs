@@ -10,9 +10,12 @@ for(const id of ['weather-content','site-weather-detail','site-weather-host','si
   'site-detail-back','site-detail-name','radar-target-chip','selected-location']){
   assert.equal(count('id="'+id+'"'),1,'duplicate or missing '+id);
 }
-assert.match(html,/表示版 v0\.43/);
+assert.match(html,/表示版 v0\.44/);
 assert.match(html,/id="private-place-form"/);
 assert.match(html,/id="private-place-query"/);
+assert.match(html,/id="private-place-suggestions"/);
+assert.match(html,/aria-autocomplete="list"/);
+assert.match(html,/function personalMunicipalitySuggestions\(/);
 assert.match(html,/id="private-place-results"/);
 assert.match(html,/id="private-favorites-list"/);
 assert.match(html,/id="private-place-current"/);

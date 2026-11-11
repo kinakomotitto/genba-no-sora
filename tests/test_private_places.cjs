@@ -18,13 +18,15 @@ const stored=new Map();
 function fakeNode(){
   const cls=new Set(),events={};
   return {
-    children:[],value:'',textContent:'',className:'',disabled:false,
+    children:[],value:'',textContent:'',className:'',disabled:false,attrs:{},lastSubmit:null,
     classList:{
       add(v){cls.add(v)},remove(v){cls.delete(v)},contains(v){return cls.has(v)},
       toggle(v,force){const state=force===undefined?!cls.has(v):!!force;state?cls.add(v):cls.delete(v);return state}
     },
     addEventListener(event,fn){events[event]=fn},handlers:events,
-    setAttribute(){},append(...nodes){this.children.push(...nodes)},
+    setAttribute(name,value){this.attrs[name]=value},removeAttribute(name){delete this.attrs[name]},
+    requestSubmit(){this.lastSubmit=this.handlers.submit({preventDefault(){}});return this.lastSubmit},
+    append(...nodes){this.children.push(...nodes)},
     replaceChildren(){this.children=[]}
   };
 }
@@ -45,7 +47,13 @@ function environment(){
     fetchController:{abort(){calls.aborts++}},
     localStorage:{getItem(k){return stored.get(k)||null},setItem(k,v){stored.set(k,v)}},
     document:{createElement:fakeNode},
-    window:{SoraArea:{clear(){calls.clears++}}},
+    window:{SoraArea:{clear(){calls.clears++}},SoraMunicipalities:{
+      '2202':['青森県','弘前市'],
+      '2201':['青森県','青森市'],
+      '2206':['青森県','十和田市'],
+      '4100':['宮城県','仙台市'],
+      '1210':['北海道','函館市']
+    }},
     navigator:{onLine:true},
     URLSearchParams,
     AbortController,
@@ -144,5 +152,52 @@ function environment(){
   assert.deepEqual(Array.from(short.ctx.personalSearchVariants('Hirosaki')),['Hirosaki']);
   assert.deepEqual(Array.from(short.ctx.personalSearchVariants('十和田')),['十和田']);
   assert.equal(short.workSites.length,1,'short-name fallback must not change work locations');
+  // Municipality suggestions are rendered from bundled GSI data, without
+  // calling a weather/geocoding API for every input keystroke.
+  const auto=environment();
+  assert.equal(auto.ctx.personalMunicipalitySuggestions('弘').length,1);
+  auto.$('private-place-query').value='弘';
+  auto.$('private-place-query').handlers.input();
+  assert.equal(auto.$('private-place-suggestions').children.length,1);
+  assert.equal(auto.$('private-place-suggestions').children[0].children[0].textContent,'弘前市');
+  assert.equal(auto.$('private-place-suggestions').children[0].children[1].textContent,'青森県');
+  assert.equal(auto.$('private-place-query').attrs['aria-expanded'],'true');
+  assert.deepEqual(auto.calls.fetch,[],'typing must never send data to geocoding service');
+  auto.$('private-place-suggestions').children[0].handlers.click();
+  await auto.$('private-place-form').lastSubmit;
+  assert.equal(new URL(auto.calls.fetch[0]).searchParams.get('name'),'弘前市');
+  assert.equal(auto.ctx.selected.kind,'private');
+  assert.deepEqual(auto.calls.weather,[[40.6,140.4]],'verified prefecture should resolve the correct place in one tap');
+  assert.equal(auto.$('private-place-query').attrs['aria-expanded'],'false');
+  assert.equal(auto.$('private-place-suggestions').children.length,0);
+  assert.equal(auto.workSites.length,1,'suggestions must not touch registered work sites');
+  assert.equal(JSON.parse(stored.get('genbanosora.private-places.v1')).length,0,'suggestions do not auto-favorite');
+  const ime=environment();
+  ime.$('private-place-query').handlers.compositionstart();
+  ime.$('private-place-query').value='十';
+  ime.$('private-place-query').handlers.input();
+  assert.equal(ime.$('private-place-suggestions').children.length,0,'IME composition must not show transient guesses');
+  ime.$('private-place-query').handlers.compositionend();
+  assert.equal(ime.$('private-place-suggestions').children.length,1);
+  assert.equal(ime.$('private-place-suggestions').children[0].children[0].textContent,'十和田市');
+  let prevented=0;
+  ime.$('private-place-query').handlers.keydown({key:'ArrowDown',preventDefault(){prevented++}});
+  assert.equal(ime.$('private-place-suggestions').children[0].attrs['aria-selected'],'true');
+  ime.$('private-place-query').handlers.keydown({key:'Escape',preventDefault(){prevented++}});
+  assert.equal(ime.$('private-place-suggestions').children.length,0);
+  assert.equal(prevented,2);
+  ime.$('private-place-query').value='弘前';
+  ime.$('private-place-query').handlers.input();
+  assert.equal(ime.$('private-place-suggestions').children.length,1);
+  ime.$('private-place-query').handlers.keydown({key:'ArrowDown',preventDefault(){}});
+  ime.$('private-place-query').handlers.keydown({key:'Enter',preventDefault(){}});
+  await ime.$('private-place-form').lastSubmit;
+  assert.equal(ime.ctx.selected.kind,'private');
+  assert.equal(ime.ctx.selected.name,'弘前市');
+  assert.deepEqual(Array.from(ime.ctx.personalMunicipalitySuggestions('ひろ')),[],
+    'kana readings are not bundled; the iPhone IME handles kana-to-kanji');
+  ime.$('private-place-query').value='';
+  ime.$('private-place-query').handlers.input();
+  assert.equal(ime.$('private-place-suggestions').children.length,0,'clearing input must clear suggestions');
   console.log('PASS: private geocoding, disambiguation, weather, favorites persistence, removal, GPS return, radar guard, offline, no worksite mutation');
 })().catch(e=>{console.error(e);process.exitCode=1;});

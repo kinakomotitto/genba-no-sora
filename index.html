@@ -749,6 +749,13 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
 .home-location .location-name #selected-location.private-active{min-width:0;max-width:min(50vw,220px);overflow:hidden;text-overflow:ellipsis;flex-shrink:1}
 @media(max-width:355px){.private-search-input{font-size:12px;padding:8px}.private-search-button{padding:0 10px}.private-places{padding:9px}}
 
+/* v0.44 — locally suggested Japanese municipalities, touch-friendly and IME-safe */
+.private-suggest-list{margin-top:6px;max-height:230px;overflow-y:auto;display:grid;gap:4px;padding:3px 0}
+.private-suggest-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:44px;padding:9px 11px;background:#fff;border:1px solid #f1e0e9;border-radius:11px;color:#665360;text-align:left;font-size:13px}
+.private-suggest-item span{font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.private-suggest-item small{color:#a48096;font-size:11px;white-space:nowrap}
+.private-suggest-item[aria-selected="true"],.private-suggest-item:focus-visible{background:#f9e8f0;border-color:#dda9c0;outline:none}
+
 </style>
 </head>
 <body>
@@ -768,9 +775,10 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   </div>
   <div class="private-places" id="private-places">
     <form class="private-search-form" id="private-place-form" role="search">
-      <input class="private-search-input" id="private-place-query" type="search" maxlength="100" autocomplete="off" enterkeyhint="search" aria-label="市区町村・地名から天気を検索" placeholder="⌕ 地名から天気を探す..." />
+      <input class="private-search-input" id="private-place-query" type="search" maxlength="100" autocomplete="off" enterkeyhint="search" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="private-place-suggestions" aria-label="市区町村・地名から天気を検索" placeholder="⌕ 地名から天気を探す..." />
       <button class="private-search-button" id="private-place-submit" type="submit">検索</button>
     </form>
+    <div id="private-place-suggestions" class="private-suggest-list hidden" role="listbox" aria-label="入力中の市区町村の候補"></div>
     <div class="private-search-status" id="private-place-status" role="status" aria-live="polite">旅行先やお出かけ先も検索できるよ ♡</div>
     <div class="private-search-results" id="private-place-results" aria-label="地名検索の結果"></div>
     <div class="private-places-actions">
@@ -1056,7 +1064,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。ただし「ポケットに届く天気変化通知」を本人が開始した場合だけ、丸めた現在地の座標を通知サーバーに保存し、予報確認のためOpen-Meteoに送信します。各登録地点の監視は4時間で期限切れ。本人が一度オンにした後は、アプリを開くたび新しい丸めGPSを再送信して監視時間を更新します。停止時または期限後の定期処理で位置情報を削除します。ホームの現在地の地名表示では、丸めた座標を国土地理院へ送信します。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.43 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.44 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -2371,9 +2379,105 @@ function personalSearchVariants(query){
   }
   return result;
 }
+// No network traffic while typing. Use bundled official GSI municipality names.
+// Only Japanese written prefixes are supported; kana reading-to-kanji conversion
+// remains the responsibility of the user's Japanese iPhone keyboard.
+const personalMunicipalities=(()=>{
+  const rows=[],seen=new Set();
+  for(const item of Object.values(window.SoraMunicipalities||{})){
+    if(!Array.isArray(item)||typeof item[0]!=='string'||typeof item[1]!=='string')continue;
+    const region=item[0].trim(),name=item[1].trim();
+    if(!name||!region||seen.has(region+'\u0000'+name))continue;
+    seen.add(region+'\u0000'+name);
+    rows.push({name,region});
+  }
+  return rows;
+})();
+let personalSuggestions=[],personalSuggestionIndex=-1,personalComposing=false;
+let personalPickedMunicipality=null;
+function personalMunicipalitySuggestions(text,limit=6){
+  const query=String(text||'').trim();
+  if(!query||query.length>40)return [];
+  return personalMunicipalities.filter(place=>place.name.startsWith(query))
+    .sort((a,b)=>(a.name===query?-1:b.name===query?1:0)||
+      a.name.length-b.name.length||a.name.localeCompare(b.name,'ja')||a.region.localeCompare(b.region,'ja'))
+    .slice(0,limit);
+}
+function closePersonalSuggestions(){
+  personalSuggestions=[];personalSuggestionIndex=-1;
+  $('private-place-suggestions').replaceChildren();
+  $('private-place-suggestions').classList.add('hidden');
+  $('private-place-query').setAttribute('aria-expanded','false');
+  $('private-place-query').removeAttribute?.('aria-activedescendant');
+}
+function highlightPersonalSuggestion(index){
+  const list=$('private-place-suggestions');
+  if(!personalSuggestions.length)return;
+  personalSuggestionIndex=(index+personalSuggestions.length)%personalSuggestions.length;
+  for(const [i,el] of Array.from(list.children).entries()){
+    el.setAttribute('aria-selected',String(i===personalSuggestionIndex));
+    if(i===personalSuggestionIndex){
+      $('private-place-query').setAttribute('aria-activedescendant',el.id);
+      el.scrollIntoView?.({block:'nearest'});
+    }
+  }
+}
+function pickPersonalSuggestion(place){
+  personalPickedMunicipality=place;
+  $('private-place-query').value=place.name;
+  closePersonalSuggestions();
+  // A suggestion is an official name without coordinates; verify geocoding
+  // before using its forecast. Never substitute an unrelated same-name town.
+  $('private-place-form').requestSubmit();
+}
+function renderPersonalSuggestions(query){
+  closePersonalSuggestions();
+  if(personalComposing)return;
+  personalSuggestions=personalMunicipalitySuggestions(query);
+  if(!personalSuggestions.length)return;
+  const list=$('private-place-suggestions');
+  for(const [i,place] of personalSuggestions.entries()){
+    const button=document.createElement('button');
+    button.type='button';button.className='private-suggest-item';
+    button.id='private-municipality-option-'+i;
+    button.setAttribute('role','option');
+    button.setAttribute('aria-selected','false');
+    button.setAttribute('aria-label',place.region+'・'+place.name+'の天気を検索');
+    const name=document.createElement('span');name.textContent=place.name;
+    const region=document.createElement('small');region.textContent=place.region;
+    button.append(name,region);
+    button.addEventListener('click',()=>pickPersonalSuggestion(place));
+    list.append(button);
+  }
+  list.classList.remove('hidden');
+  $('private-place-query').setAttribute('aria-expanded','true');
+}
+$('private-place-query').addEventListener('focus',()=>{
+  if(!personalComposing)renderPersonalSuggestions($('private-place-query').value);
+});
+$('private-place-query').addEventListener('compositionstart',()=>{
+  personalComposing=true;closePersonalSuggestions();
+});
+$('private-place-query').addEventListener('compositionend',()=>{
+  personalComposing=false;personalPickedMunicipality=null;
+  renderPersonalSuggestions($('private-place-query').value);
+});
+$('private-place-query').addEventListener('keydown',e=>{
+  if(personalComposing||!personalSuggestions.length)return;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){
+    e.preventDefault();
+    highlightPersonalSuggestion(personalSuggestionIndex+(e.key==='ArrowDown'?1:-1));
+  }else if(e.key==='Enter'&&personalSuggestionIndex>=0){
+    e.preventDefault();pickPersonalSuggestion(personalSuggestions[personalSuggestionIndex]);
+  }else if(e.key==='Escape'){
+    e.preventDefault();closePersonalSuggestions();
+  }
+});
 $('private-place-form').addEventListener('submit',async e=>{
   e.preventDefault();
   const query=$('private-place-query').value.trim();
+  const picked=personalPickedMunicipality?.name===query?personalPickedMunicipality:null;
+  closePersonalSuggestions();
   personalSearchController?.abort();
   $('private-place-results').replaceChildren();
   if(Array.from(query).length<2){$('private-place-status').textContent='地名を2文字以上入力してね。';return;}
@@ -2394,6 +2498,17 @@ $('private-place-form').addEventListener('submit',async e=>{
       found=Array.isArray(data.results)?data.results:[];
       if(found.length){matchedName=name;break;}
     }
+    // If the user tapped a specific municipality, show it in one tap only
+    // when the geocoder returns exactly one matching name AND prefecture.
+    // Otherwise present disambiguated results rather than guessing a location.
+    if(picked){
+      const matching=found.filter(row=>row&&row.name===picked.name&&row.admin1===picked.region
+        &&(row.country_code==='JP'||row.country==='日本'||row.country==='Japan'));
+      if(matching.length===1){
+        showPersonalPlace(matching[0]);
+        return;
+      }
+    }
     const n=renderPersonalSearchResults(found);
     $('private-place-status').textContent=n
       ?(matchedName===query?'検索結果 '+n+'件':'「'+matchedName+'」でも検索して、'+n+'件見つけたよ ♡')+' · 見たい場所をタップしてね'
@@ -2408,8 +2523,11 @@ $('private-place-form').addEventListener('submit',async e=>{
 });
 $('private-place-query').addEventListener('input',()=>{
   personalSearchController?.abort();personalSearchController=null;
+  personalPickedMunicipality=null;
   $('private-place-submit').disabled=false;
   $('private-place-results').replaceChildren();
+  if(personalComposing)return;
+  renderPersonalSuggestions($('private-place-query').value);
 });
 $('private-place-save').addEventListener('click',()=>{
   if(selected.kind!=='private')return;
