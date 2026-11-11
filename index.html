@@ -1595,7 +1595,7 @@ function rememberFreshGpsForWatch(p){
   if(watchAutoEnabled())void maybeAutoWeatherWatch(p);
 }
 async function maybeAutoWeatherWatch(p){
-  if(!watchAutoEnabled()||!pushServiceOrigin||document.hidden||
+  if(!watchAutoEnabled()||!isInstalledPwa()||!pushServiceOrigin||document.hidden||
      !watchValidFreshGps(p)||watchAutoInFlight)return;
   const key=p.lat.toFixed(3)+','+p.lon.toFixed(3);
   // Avoid duplicate requests when visiting Home repeatedly. A changed
@@ -2227,7 +2227,7 @@ function showTab(id,options={}){
   if(id==='home')locate({fresh:true});
 }
 function gps(success,fail,options={}){if(!navigator.geolocation){fail&&fail('このブラウザではGPSが使えません');return}navigator.geolocation.getCurrentPosition(pos=>{lastGPS={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy,at:new Date().toISOString()};save();updateWindyLinks();success(lastGPS)},err=>{const msg=err.code===1?'位置情報の許可が必要です。ブラウザの設定で許可してください':err.code===3?'GPSの取得がタイムアウトしました':'GPSの位置を取得できませんでした';fail&&fail(msg)},{enableHighAccuracy:true,timeout:options.fresh?18000:12000,maximumAge:options.fresh?0:300000});}
-function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
+function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon);rememberFreshGpsForWatch(p)}else{toast('GPSを取得しました') }},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(watchAutoEnabled())watchStatus('自動監視ONだけどGPSを更新できませんでした。前回の監視地点は期限まで残る場合があります。');if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
 
 function renderWindTrend(hourly,stale){
   const status=$('wind-trend-status'),chart=$('wind-trend-chart'),hours=$('wind-trend-hours');
@@ -2630,7 +2630,22 @@ window.addEventListener('hashchange',focusWxRecordFromNotification);
 if(location.hash==='#weather-record')setTimeout(focusWxRecordFromNotification,150);
 window.addEventListener('online',()=>{setConnection();const p=getCoords();if(p)fetchWeather(p.lat,p.lon)});window.addEventListener('offline',()=>{setConnection();const p=getCoords();if(p&&cache[keyFor(p.lat,p.lon)])renderWeather(cache[keyFor(p.lat,p.lon)].data,cache[keyFor(p.lat,p.lon)].fetched,true)});setConnection();renderSites();renderWxLogs();updateWindyLinks();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
-if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old){renderWeather(old.data,old.fetched,true);window.SoraCompare?.restore(lastGPS.lat,lastGPS.lon);}}locate();
+if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old){renderWeather(old.data,old.fetched,true);window.SoraCompare?.restore(lastGPS.lat,lastGPS.lon);}}// iPhone Home Screen PWA can be suspended, not fully reloaded. On return to
+// foreground, refresh GPS again with an explicit one-time opt-in already
+// stored; when showing a saved site, leave that site screen untouched.
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden||!watchAutoEnabled())return;
+  if(selected.kind==='current'){
+    locate({fresh:true});
+  }else{
+    gps(p=>rememberFreshGpsForWatch(p),()=>{
+      watchStatus('自動監視ONだけどGPSを更新できませんでした。以前の監視地点は期限まで残る場合があります。');
+    },{fresh:true});
+  }
+});
+// Initial app launch always asks for *fresh* current GPS; auto-upload only
+// happens if the user previously completed the explicit watch consent.
+locate({fresh:true});
 })();
 </script>
 </body>
