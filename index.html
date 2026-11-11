@@ -746,6 +746,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
 .private-favorite-item button{border:0;background:transparent;color:#9a6681;font-size:11px;min-height:34px}
 .private-favorite-open{max-width:195px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;padding:6px 5px 6px 10px}
 .private-favorite-remove{padding:6px 10px 6px 3px;color:#9f8996!important}
+.home-location .location-name #selected-location.private-active{min-width:0;max-width:min(50vw,220px);overflow:hidden;text-overflow:ellipsis;flex-shrink:1}
 @media(max-width:355px){.private-search-input{font-size:12px;padding:8px}.private-search-button{padding:0 10px}.private-places{padding:9px}}
 
 </style>
@@ -1055,7 +1056,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。ただし「ポケットに届く天気変化通知」を本人が開始した場合だけ、丸めた現在地の座標を通知サーバーに保存し、予報確認のためOpen-Meteoに送信します。各登録地点の監視は4時間で期限切れ。本人が一度オンにした後は、アプリを開くたび新しい丸めGPSを再送信して監視時間を更新します。停止時または期限後の定期処理で位置情報を削除します。ホームの現在地の地名表示では、丸めた座標を国土地理院へ送信します。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.42 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.43 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -2170,6 +2171,9 @@ function restoreHomeLocation(){
     fetchController=null; // a delayed site response must never repaint the Home screen
     selected={kind:'current',name:'現在地'};
     $('selected-location').textContent='現在地';
+    $('selected-location').classList.remove('private-active');
+    $('private-place-current').classList.add('hidden');
+    $('private-place-save').classList.add('hidden');
     window.SoraArea?.clear();
     $('geo-status').textContent=lastGPS
       ?'前回のGPS · '+lastGPS.lat.toFixed(4)+', '+lastGPS.lon.toFixed(4)+'（位置を更新中）'
@@ -2184,6 +2188,9 @@ function selectLoc(s){
   fetchController?.abort();
   fetchController=null;
   selected={...s,kind:'site'};
+  $('selected-location').classList.remove('private-active');
+  $('private-place-current').classList.add('hidden');
+  $('private-place-save').classList.add('hidden');
   $('weather-record')?.classList.remove('hidden');
   $('site-weather-host').append($('weather-content'));
   $('sites-index').classList.add('hidden');
@@ -2300,6 +2307,7 @@ function useCurrentFromPersonal(){
   fetchController?.abort();fetchController=null;
   selected={kind:'current',name:'現在地'};
   $('selected-location').textContent='現在地';
+  $('selected-location').classList.remove('private-active');
   $('geo-status').textContent='現在地の予報を読み込み中…';
   window.SoraArea?.clear();
   updatePersonalSelectionActions();
@@ -2314,6 +2322,7 @@ function showPersonalPlace(source){
   fetchController?.abort();fetchController=null;
   selected={kind:'private',...place};
   $('selected-location').textContent=place.name;
+  $('selected-location').classList.add('private-active');
   window.SoraArea?.clear();
   $('geo-status').textContent='お出かけ先の予報 · 現場には保存しないよ ♡';
   $('private-place-query').value=place.name;
