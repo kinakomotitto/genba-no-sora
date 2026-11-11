@@ -62,6 +62,28 @@ async function verify(){
   assert.deepEqual(posts[1].body.gps,
     {lat:39.278,lon:141.124,accuracy:29,at:new Date(time).toISOString()});
 
+  // Simulate a completely new app process after iPhone PWA was closed.
+  // The consent is remembered without a second button click.
+  advance(90*60000);
+  position={coords:{latitude:40.622345,longitude:141.234567,accuracy:15},
+    timestamp:time};
+  const reloaded=auto.create({
+    store:storage,clock:()=>time,permission:()=>permission,
+    isInstalled:()=>installed,isVisible:()=>visible,isOnline:()=>online,
+    getIdentity:async()=>({endpoint:'https://web.push.apple.com/fiction',
+      token:'x'.repeat(64)}),
+    getPosition:async()=>{gpsCalls++;return position;},
+    post:async(path,body)=>{posts.push({path,body});return {ok:true};}
+  });
+  assert.equal(reloaded.enabled(),true,'prior explicit consent survives a full process restart');
+  assert.equal((await reloaded.refresh()).status,'refreshed');
+  assert.equal(posts.length,3);
+  assert.equal(posts[2].body.gps.lat,40.622);
+  assert.equal(posts[2].body.gps.lon,141.235);
+  // A reload must not request notification permission again.
+  assert.doesNotMatch(require('node:fs').readFileSync('weather-watch-auto.js','utf8'),
+    /Notification\.requestPermission|pushManager\.subscribe/);
+
   // Blocking conditions must not accidentally cause GPS or server updates.
   const count=posts.length;
   advance(20000);
