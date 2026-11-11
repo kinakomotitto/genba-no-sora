@@ -995,13 +995,13 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <div id="push-setup-status" class="reminder-result" role="status" aria-live="polite"></div>
   <p class="push-schedule-note">※ 通知の配信時刻は通信環境によって遅れることがあります。</p>
   <div class="weather-watch-panel hidden" id="weather-watch-panel">
-    <strong>☔🌬️⚡ ポケットに届く天気変化通知 ♡</strong>
-    <p>このボタンを押したときの現在地だけを、最大4時間サーバーが確認する試験版だよ。アプリを閉じても予報の変化が見つかれば通知を試みます。</p>
+    <strong>☔🌬️⚡ ポケットに届く天気変化通知 ♡（自動更新）</strong>
+    <p>最初の1回だけオンにしてね。その後はアプリを開く・前面に戻すたび、新しいGPSが取得できれば監視地点を自動更新する試験版だよ。閉じた後も最後に登録した地点を監視します。</p>
     <p>雨・最大瞬間風速15m/s以上・雷雨の<strong>予報</strong>を約15分間隔で確認します。日本の15分値は1時間予報の補間であり「あと何分で雨」とは正確に判断できません。落雷接近の実況や気象庁の警報ではありません。</p>
-    <p>【位置情報の送信に同意】開始を押すと、新たに取得したGPS座標を小数3桁に丸め、通知サーバー（Cloudflare）に保存します。監視は4時間で期限切れとなり、座標は停止時または期限後の次回定期処理で削除します。予報確認にはその座標をOpen-Meteoへ送ります。現場名・メモ・天気記録は送りません。アプリを閉じた後に移動しても自動追跡できず、期限後は監視終了します。</p>
-    <button id="weather-watch-enable" type="button" class="reminder-test">📍 今の地点で4時間の天気通知をオンにする</button>
+    <p>【一度だけ位置情報の自動更新に同意】オンにすると今回と次回以降にアプリを開いたとき、取得したGPS座標を小数3桁に丸め、通知サーバー（Cloudflare）へ自動送信します。予報確認にはその座標をOpen-Meteoへ送ります。最後の更新から4時間で監視が期限切れになり、期限後の定期処理で削除します。アプリを閉じて移動しただけではGPSは追跡できません。現場名・メモ・天気記録は送りません。停止すると今後の自動更新はオフになり、送信済みの地点も削除を試みます。</p>
+    <button id="weather-watch-enable" type="button" class="reminder-test">📍 最初の1回だけ自動監視をオンにする</button>
     <button id="weather-watch-stop" type="button" class="reminder-test hidden">通知監視を終了・位置情報を削除する</button>
-    <div id="weather-watch-status" class="reminder-result" role="status" aria-live="polite">まだ通知監視は開始していません。</div>
+    <div id="weather-watch-status" class="reminder-result" role="status" aria-live="polite">自動監視はオフ。初回だけオンにすると、アプリを開くたび更新するよ。</div>
     <p>⚠️ 通知は届かない・遅れる・予測が外れることがあるため、伐採の作業可否や避難判断は公式警報と現場の安全ルールを優先してね。</p>
   </div>
 </div>
@@ -1014,10 +1014,10 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
     <span class="settings-widget-copy"><strong>♡ 하늘 · ロック画面に追加</strong><small>今いる場所の天気＋1時間ごとの予報 · 作り方を見る</small></span>
     <span class="settings-widget-arrow" aria-hidden="true">›</span>
   </a>
-  <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。ただし「ポケットに届く天気変化通知」を本人が開始した場合だけ、丸めた現在地の座標を通知サーバーに保存し、予報確認のためOpen-Meteoに送信します。監視は4時間で終了し、停止時または期限後の定期処理で位置情報を削除します。ホームの現在地の地名表示では、丸めた座標を国土地理院へ送信します。</p>
+  <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。ただし「ポケットに届く天気変化通知」を本人が開始した場合だけ、丸めた現在地の座標を通知サーバーに送信し、予報確認のためOpen-Meteoにも送ります。最初に同意してオンにすると、以後アプリを開いたり前面に戻したりするたびにGPSを取得し、地点を自動更新します。アプリを閉じたまま移動した位置は追跡できません。最終更新から4時間で監視終了し、停止時または期限後の定期処理で位置情報を削除します。ホームの現在地の地名表示では、丸めた座標を国土地理院へ送信します。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.41 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.42 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -1046,6 +1046,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
 <div id="toast" role="status" aria-live="polite"></div>
 <script src="./municipalities-gsi.js"></script>
 <script src="./location-label.js"></script>
+<script src="./weather-watch-auto.js"></script>
 <script src="./model-comparison.js"></script>
 <script src="./observation-verification.js"></script>
 <script src="./amedas-nearby.js"></script>
@@ -1413,6 +1414,7 @@ async function saveReminderChoices(){
 initializeReminderTimes();
 $('reminder-times-save').addEventListener('click',saveReminderChoices);
 const pushOwnerKey='genbanosora.pushowner.v1';
+let watchLastForegroundAt=0;
 let pushServiceOrigin=null,pushPublicKey=null;
 const encodePushKey=(value)=>{
   const text=String(value).replace(/-/g,'+').replace(/_/g,'/');
