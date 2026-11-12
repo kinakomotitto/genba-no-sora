@@ -17,6 +17,7 @@ on:
       - 'tests/test_home_site_navigation.cjs'
       - 'amedas-nearby.js'
       - 'tests/test_amedas_temperature.cjs'
+      - 'tests/test_amedas_elevation.cjs'
       - 'tests/test_private_places.cjs'
       - '.github/workflows/home-site-navigation-check.yml'
   pull_request:
@@ -36,6 +37,7 @@ on:
       - 'tests/test_home_site_navigation.cjs'
       - 'amedas-nearby.js'
       - 'tests/test_amedas_temperature.cjs'
+      - 'tests/test_amedas_elevation.cjs'
       - 'tests/test_private_places.cjs'
       - '.github/workflows/home-site-navigation-check.yml'
 permissions:
@@ -50,6 +52,8 @@ jobs:
         run: node tests/test_home_site_navigation.cjs
       - name: Verify nearby AMeDAS temperature versus time-aligned forecast
         run: node tests/test_amedas_temperature.cjs
+      - name: Verify opt-in GSI elevation and station-height comparison without network
+        run: node tests/test_amedas_elevation.cjs
       - name: Verify private place search and favorites without network
         run: node tests/test_private_places.cjs
       - name: Verify current GPS short Japanese area label without external calls
