@@ -81,7 +81,8 @@ function renderTemperature(){
   }
   const diff=fc.temperature-obs.temp;
   delta.textContent=(diff>0?'＋':diff<0?'−':'±')+Math.abs(diff).toFixed(1)+'℃';
-  note.textContent='差＝選択地点の予報 − 別地点の実測。地形や標高が違うため、予報誤差そのものではないよ。';
+  const clock=t=>t.toLocaleTimeString('ja-JP',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit'});
+  note.textContent='予報 '+clock(target)+'／実測 '+clock(stamp)+'。差は別地点との参考比較で、地形や標高が違うため予報誤差とは断定できないよ。';
 }
 function setForecast(current,fetched,stale){
   const temp=n(current?.temperature_2m);
