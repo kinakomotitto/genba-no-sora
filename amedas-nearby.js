@@ -11,6 +11,9 @@ const details=e('amedas-nearby');
 if(!details)return;
 let locationPoint=null,requestId=0,cache=null,loading=null;
 let currentForecast=null,temperatureStation=null,temperatureObservedAt=null;
+let groundElevation=null,elevationController=null,elevationRequestId=0;
+const GSI_ELEVATION='https://cyberjapandata2.gsi.go.jp/general/dem/scripts/getelevation.php';
+const OPEN_METEO_ELEVATION='https://api.open-meteo.com/v1/elevation';
 const n=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
 function valid(entry){
   // Web JSON observations use [value,quality]; accept only quality 0.
@@ -98,17 +101,113 @@ function clearForecast(){
   renderTemperature();
 }
 
+
+// Ground height at the selected GPS/site/private point, NOT GPS ellipsoid altitude
+// or a forecast-model grid's elevation. A user tap is required before sending
+// coordinates to an external elevation provider. No stored GPS elevation log.
+function renderElevation(){
+  const here=e('amedas-ground-height'),station=e('amedas-station-height');
+  const difference=e('amedas-height-difference'),note=e('amedas-height-status');
+  if(!here||!station||!difference||!note)return;
+  const altitude=typeof temperatureStation?.alt==='number'&&Number.isFinite(temperatureStation.alt)
+    ?temperatureStation.alt:null;
+  const local=groundElevation?.height;
+  here.textContent=Number.isFinite(local)?Math.round(local)+'m':'—';
+  station.textContent=altitude!==null?Math.round(altitude)+'m':'—';
+  difference.textContent='—';
+  if(Number.isFinite(local)&&altitude!==null){
+    const diff=Math.round(local-altitude);
+    difference.textContent=(diff>0?'＋':diff<0?'−':'±')+Math.abs(diff)+'m';
+  }
+  if(groundElevation){
+    note.textContent='出典：'+groundElevation.source+'。選択地点の地形上の標高（概算）で、建物の階数やGPS高度ではないよ。';
+  }else if(locationPoint){
+    note.textContent='「標高を調べる」を押すと選択地点の座標を標高サービスへ送って調べるよ。';
+  }else{
+    note.textContent='現在地を取得するか、地点を選ぶと標高を調べられるよ。';
+  }
+}
+function resetElevation(){
+  elevationRequestId++;
+  elevationController?.abort();
+  elevationController=null;
+  groundElevation=null;
+  const button=e('amedas-ground-lookup');
+  if(button)button.disabled=false;
+  renderElevation();
+}
+function parseGsiElevation(data){
+  const elevation=data?.elevation;
+  // Official API returns "-----" when terrain data is unavailable.
+  if(typeof elevation!=='number'||!Number.isFinite(elevation)||elevation< -500||elevation>10000)
+    return null;
+  const hsrc=typeof data.hsrc==='string'&&/^(1m|5m|10m)/.test(data.hsrc)?data.hsrc:'地形データ';
+  return {height:elevation,source:'国土地理院・'+hsrc};
+}
+function parseOpenMeteoElevation(data){
+  const value=data?.elevation?.[0];
+  if(typeof value!=='number'||!Number.isFinite(value)||value< -500||value>10000)return null;
+  return {height:value,source:'Open-Meteo・約90m地形メッシュ（参考）'};
+}
+async function lookupGroundElevation(){
+  if(!locationPoint)return;
+  if(!navigator.onLine){e('amedas-height-status').textContent='圏外では新しい標高を取得できないよ。';return}
+  const point=locationPoint,requestId=++elevationRequestId;
+  elevationController?.abort();
+  const controller=new AbortController();elevationController=controller;
+  const button=e('amedas-ground-lookup');
+  if(button)button.disabled=true;
+  groundElevation=null;renderElevation();
+  e('amedas-height-status').textContent='選択地点の地形上の標高を調べているよ…';
+  const getJson=async(url)=>{
+    const timer=setTimeout(()=>controller.abort(),9000);
+    try{
+      const response=await fetch(url,{signal:controller.signal,cache:'no-store'});
+      if(!response.ok)throw Error('HTTP '+response.status);
+      return await response.json();
+    }finally{clearTimeout(timer)}
+  };
+  try{
+    const lat=point.lat.toFixed(5),lon=point.lon.toFixed(5);
+    let result=null;
+    try{
+      const qs=new URLSearchParams({lat,lon,outtype:'JSON'});
+      result=parseGsiElevation(await getJson(GSI_ELEVATION+'?'+qs));
+    }catch(_){
+      // GSI may not permit every browser's cross-origin request, or may be down.
+      // Do not execute remote JSONP; switch to a separately labeled DEM fallback.
+    }
+    if(!result&&!controller.signal.aborted){
+      const qs=new URLSearchParams({latitude:lat,longitude:lon});
+      result=parseOpenMeteoElevation(await getJson(OPEN_METEO_ELEVATION+'?'+qs));
+    }
+    if(requestId!==elevationRequestId||point.id!==locationPoint?.id)return;
+    if(!result)throw Error('Elevation data not available');
+    groundElevation=result;
+    renderElevation();
+  }catch(_){
+    if(requestId!==elevationRequestId||point.id!==locationPoint?.id)return;
+    groundElevation=null;renderElevation();
+    e('amedas-height-status').textContent='標高を取得できなかったよ。通信が使える場所でもう一度試してね。';
+  }finally{
+    if(requestId===elevationRequestId&&point.id===locationPoint?.id){
+      if(button)button.disabled=false;
+      elevationController=null;
+    }
+  }
+}
+
 function reset(){
   for(const key of ['amedas-wind-value','amedas-rain-value'])e(key).textContent='—';
   for(const key of ['amedas-wind-station','amedas-rain-station'])e(key).textContent='観測所を確認中';
-  temperatureStation=null;temperatureObservedAt=null;renderTemperature();
+  temperatureStation=null;temperatureObservedAt=null;renderTemperature();renderElevation();
 }
 function setLocation(lat,lon){
   if(!Number.isFinite(lat)||!Number.isFinite(lon))return;
   const newPoint=lat.toFixed(4)+','+lon.toFixed(4);
   if(locationPoint?.id===newPoint)return;
   locationPoint={id:newPoint,lat,lon};
-  ++requestId;currentForecast=null;reset();
+  ++requestId;currentForecast=null;resetElevation();reset();
   e('amedas-status').textContent='選択地点の近くの観測所を確認できるよ。';
   if(details.open)load();
 }
@@ -172,7 +271,7 @@ async function load(){
       if(temp!==null&&temp>=-100&&temp<=65&&(!nearestTemperature||distance<nearestTemperature.distance))nearestTemperature=station;
     }
     displayStation(nearestWind,'wind');displayStation(nearestRain,'rain');
-    temperatureStation=nearestTemperature;temperatureObservedAt=data.at;renderTemperature();
+    temperatureStation=nearestTemperature;temperatureObservedAt=data.at;renderTemperature();renderElevation();
     const age=Math.max(0,Math.round((Date.now()-data.at.getTime())/60000));
     const label=data.at.toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
     e('amedas-status').textContent=label+' 観測 · '+age+'分前'+(age>30?'（最新の観測ではない可能性があります）':'');
@@ -184,9 +283,10 @@ async function load(){
 }
 details.addEventListener('toggle',()=>{if(details.open)load()});
 e('amedas-refresh')?.addEventListener('click',()=>{cache=null;load()});
+e('amedas-ground-lookup')?.addEventListener('click',lookupGroundElevation);
 function clear(){
-  ++requestId;locationPoint=null;currentForecast=null;reset();
+  ++requestId;locationPoint=null;currentForecast=null;resetElevation();reset();
   e('amedas-status').textContent='現在地を取得すると近くの観測所を表示できるよ。';
 }
-window.SoraAmedas={setLocation,setForecast,clearForecast,refresh:load,clear};
+window.SoraAmedas={setLocation,setForecast,clearForecast,refresh:load,lookupGroundElevation,clear};
 })();

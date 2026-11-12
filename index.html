@@ -766,6 +766,19 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
 .amedas-temp-station,.amedas-temp-note{font-size:10px;color:#927b8c;line-height:1.6;margin:8px 0 0}
 @media(max-width:355px){.amedas-temp-item strong{font-size:16px}.amedas-temp-item{padding:8px 2px}}
 
+
+/* v0.46 — requested ground elevation, compared with nearby AMeDAS station */
+.amedas-height-panel{margin:0 0 11px;padding:12px 11px;border:1px solid #e6e7f0;border-radius:15px;background:#f8f9ff}
+.amedas-height-title{font-size:12px;font-weight:750;color:#827a9c;margin-bottom:10px}
+.amedas-height-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.amedas-height-item{min-width:0;text-align:center;border-radius:11px;background:#fff;padding:9px 4px}
+.amedas-height-item small{display:block;font-size:10px;color:#948b9e;line-height:1.45}
+.amedas-height-item strong{display:block;font-size:19px;color:#82758f;margin-top:6px;white-space:nowrap}
+.amedas-ground-lookup{display:block;margin-top:10px;border:1px solid #e9d8e8;border-radius:11px;background:#fff4fb;color:#946983;font-size:11px;font-weight:700;padding:9px 12px;min-height:40px}
+.amedas-ground-lookup:disabled{opacity:.6}
+.amedas-height-status{font-size:10px;color:#93869b;line-height:1.6;margin:8px 0 0}
+@media(max-width:355px){.amedas-height-item strong{font-size:16px}.amedas-height-item{padding:8px 2px}}
+
 </style>
 </head>
 <body>
@@ -865,6 +878,16 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
       </div>
       <p class="amedas-temp-station" id="amedas-temp-station">80km以内の気温観測所を確認中</p>
       <p class="amedas-temp-note" id="amedas-temp-note">観測値を見ると、近くの実測気温が分かるよ。</p>
+    </div>
+    <div class="amedas-height-panel" aria-label="選択地点と気温観測所の標高比較">
+      <div class="amedas-height-title">⛰️ この地点と観測所の標高</div>
+      <div class="amedas-height-grid">
+        <div class="amedas-height-item"><small>📍 この地点</small><strong id="amedas-ground-height">—</strong></div>
+        <div class="amedas-height-item"><small>🌿 気温観測所</small><strong id="amedas-station-height">—</strong></div>
+        <div class="amedas-height-item"><small>標高差（地点−観測所）</small><strong id="amedas-height-difference">—</strong></div>
+      </div>
+      <button class="amedas-ground-lookup" type="button" id="amedas-ground-lookup">⛰️ この地点の標高を調べる ♡</button>
+      <p id="amedas-height-status" class="amedas-height-status" role="status" aria-live="polite">ボタンを押すと選択地点の座標を標高サービスへ送って調べるよ。建物の階数やGPS高度は含まないよ。</p>
     </div>
     <div class="amedas-metrics">
       <div class="amedas-metric"><small>🌬️ 10分間平均風速</small><strong id="amedas-wind-value">—</strong><span id="amedas-wind-station">観測所を確認中</span></div>
@@ -1084,7 +1107,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。ただし「ポケットに届く天気変化通知」を本人が開始した場合だけ、丸めた現在地の座標を通知サーバーに保存し、予報確認のためOpen-Meteoに送信します。各登録地点の監視は4時間で期限切れ。本人が一度オンにした後は、アプリを開くたび新しい丸めGPSを再送信して監視時間を更新します。停止時または期限後の定期処理で位置情報を削除します。ホームの現在地の地名表示では、丸めた座標を国土地理院へ送信します。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.45.1 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.46 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -1116,7 +1139,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
 <script src="./weather-watch-auto.js"></script>
 <script src="./model-comparison.js"></script>
 <script src="./observation-verification.js"></script>
-<script src="./amedas-nearby.js?v=0.45.1"></script>
+<script src="./amedas-nearby.js?v=0.46"></script>
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
@@ -2174,6 +2197,7 @@ function resetWeatherDashboard(message){
     'model-compare-headline':'比較する ⌄','amedas-status':'観測地点を確認中…',
     'amedas-wind-value':'—','amedas-rain-value':'—',
     'amedas-temp-forecast':'—','amedas-temp-observed':'—','amedas-temp-difference':'—',
+    'amedas-ground-height':'—','amedas-station-height':'—','amedas-height-difference':'—',
     'amedas-wind-station':'観測所を確認中','amedas-rain-station':'観測所を確認中',
     'saved-label':'選択地点の天気予報を取得中…'
   };
