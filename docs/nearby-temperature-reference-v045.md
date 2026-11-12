@@ -24,3 +24,10 @@
 - `.github/workflows/home-site-navigation-check.yml` の自動テストに追加。
 - PWA Service Workerキャッシュ v0.45。
 - 本番iPhoneで実際のアメダス公開JSONの取得・気温表示は別途確認が必要。
+
+## v0.45.1 iPhone表示不具合への対策
+- v0.45の画面に気温比較欄が表示される一方、iPhoneのService Workerが以前の`amedas-nearby.js`を返し、風速と雨量のみ表示され、気温3欄が「—」と初期説明のまま残る場合があった。
+- `index.html`の読み込みURLを`./amedas-nearby.js?v=0.45.1`にしてキャッシュを識別し、Service WorkerのプリキャッシュURLも同じに変更。以前のService Workerが有効でも、古いURLと一致せずオンラインで新版を取得する。
+- 旧モジュールを検知したら「気温表示の更新がまだ反映されていないよ」と表示し、観測所が存在しないと誤認させない。
+- 保存現場、私用お気に入り、通知設定、研究用データには変更なし。新規のアメダス温度情報は従来通り表示を展開した時だけ取得。
+- 本番公開の成否とiPhoneの表示は別途確認する。

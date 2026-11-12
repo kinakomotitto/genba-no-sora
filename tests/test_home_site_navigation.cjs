@@ -10,7 +10,8 @@ for(const id of ['weather-content','site-weather-detail','site-weather-host','si
   'site-detail-back','site-detail-name','radar-target-chip','selected-location']){
   assert.equal(count('id="'+id+'"'),1,'duplicate or missing '+id);
 }
-assert.match(html,/表示版 v0\.45/);
+assert.match(html,/表示版 v0\.45\.1/);
+assert.match(html,/src="\.\/amedas-nearby\.js\?v=0\.45\.1"/);
 assert.match(html,/id="private-place-form"/);
 assert.match(html,/id="amedas-temp-difference"/);
 assert.match(html,/id="private-place-query"/);

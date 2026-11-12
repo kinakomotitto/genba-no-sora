@@ -12,7 +12,9 @@ for(const id of ['amedas-temp-forecast','amedas-temp-observed','amedas-temp-diff
 }
 assert.match(html,/SoraAmedas\?\.setForecast\?\.\(c,fetched,stale\)/);
 assert.match(html,/SoraAmedas\?\.clearForecast\?\.\(\)/);
-assert.match(html,/表示版 v0\.45/);
+assert.match(html,/表示版 v0\.45\.1/);
+assert.match(html,/src="\.\/amedas-nearby\.js\?v=0\.45\.1"/);
+assert.match(html,/気温表示の更新がまだ反映されていないよ/);
 assert.match(source,/valid\(obs\.temp\)/,'JMA temp quality must be checked');
 const now=new Date(Math.floor(Date.now()/60000)*60000);
 const japanStamp=new Date(now.getTime()+9*3600000).toISOString().slice(0,19)+'+09:00';
