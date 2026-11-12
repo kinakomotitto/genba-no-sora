@@ -310,9 +310,11 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
                         try:
                             return [(subset,fetcher(model,subset))]
                         except Exception as error:
-                            if (model!="jma_msm" or getattr(error,"code",None)!=400
-                                    or len(subset)<=1):
+                            if model!="jma_msm" or getattr(error,"code",None)!=400:
                                 raise
+                            if len(subset)==1:
+                                failures.append("HTTP_400")
+                                return []
                             midpoint=len(subset)//2
                             return (fetch_bounded(subset[:midpoint])+
                                     fetch_bounded(subset[midpoint:]))
