@@ -15,6 +15,8 @@ on:
       - 'tests/test_model_compare_snapshots.cjs'
       - 'tests/test_weather_record_integration.cjs'
       - 'tests/test_home_site_navigation.cjs'
+      - 'amedas-nearby.js'
+      - 'tests/test_amedas_temperature.cjs'
       - 'tests/test_private_places.cjs'
       - '.github/workflows/home-site-navigation-check.yml'
   pull_request:
@@ -32,6 +34,8 @@ on:
       - 'tests/test_model_compare_snapshots.cjs'
       - 'tests/test_weather_record_integration.cjs'
       - 'tests/test_home_site_navigation.cjs'
+      - 'amedas-nearby.js'
+      - 'tests/test_amedas_temperature.cjs'
       - 'tests/test_private_places.cjs'
       - '.github/workflows/home-site-navigation-check.yml'
 permissions:
@@ -44,6 +48,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify Home GPS and Sites detail navigation without real GPS
         run: node tests/test_home_site_navigation.cjs
+      - name: Verify nearby AMeDAS temperature versus time-aligned forecast
+        run: node tests/test_amedas_temperature.cjs
       - name: Verify private place search and favorites without network
         run: node tests/test_private_places.cjs
       - name: Verify current GPS short Japanese area label without external calls
@@ -60,6 +66,7 @@ jobs:
         run: node tests/test_weather_watch_auto.cjs
       - name: Check JavaScript syntax and PWA background script
         run: |
+          node --check amedas-nearby.js
           node --check location-label.js
           node --check weather-watch-auto.js
           node --check model-comparison.js

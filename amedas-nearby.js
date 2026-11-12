@@ -10,6 +10,7 @@ const e=id=>document.getElementById(id);
 const details=e('amedas-nearby');
 if(!details)return;
 let locationPoint=null,requestId=0,cache=null,loading=null;
+let currentForecast=null,temperatureStation=null,temperatureObservedAt=null;
 const n=x=>typeof x==='number'&&Number.isFinite(x)?x:null;
 function valid(entry){
   // Web JSON observations use [value,quality]; accept only quality 0.
@@ -43,16 +44,71 @@ function displayStation(station,what){
     : station.rain.toFixed(1)+' mm';
   label.textContent=station.name+' · 約'+station.distance.toFixed(1)+'km';
 }
+
+// Side-by-side values are a *reference only*: model temperature is for the
+// selected coordinate and measured temperature is from another location.
+function jstForecastInstant(value){
+  if(typeof value!=='string')return null;
+  const stamp=/^\d{4}-\d\d-\d\dT\d\d:\d\d(?::\d\d)?$/.test(value)?value+'+09:00':value;
+  const at=new Date(stamp);
+  return Number.isFinite(at.getTime())?at:null;
+}
+function renderTemperature(){
+  const fore=e('amedas-temp-forecast'),actual=e('amedas-temp-observed');
+  const delta=e('amedas-temp-difference'),station=e('amedas-temp-station');
+  const note=e('amedas-temp-note');
+  if(!fore||!actual||!delta||!station||!note)return;
+  const fc=currentForecast,obs=temperatureStation;
+  fore.textContent=fc&&n(fc.temperature)!==null?fc.temperature.toFixed(1)+'℃':'—';
+  actual.textContent=obs&&n(obs.temp)!==null?obs.temp.toFixed(1)+'℃':'—';
+  delta.textContent='—';
+  station.textContent=obs
+    ?'観測所：'+obs.name+' · 約'+obs.distance.toFixed(1)+'km'+
+      (n(obs.alt)!==null?' · 標高'+Math.round(obs.alt)+'m':'')
+    :'80km以内の気温観測所を確認中';
+  if(!obs){note.textContent=temperatureObservedAt?'近くに有効な気温の観測値がないよ。':'観測値を見ると、近くの実測気温が分かるよ。';return}
+  if(!fc||n(fc.temperature)===null){note.textContent='この地点の予報気温を取得すると比較できるよ。';return}
+  if(fc.stale){note.textContent='保存済みの予報は最新ではないため、実測との差を計算しないよ。';return}
+  const target=jstForecastInstant(fc.validAt);
+  const stamp=temperatureObservedAt;
+  const fetched=new Date(fc.fetched);
+  if(!target||!stamp||!Number.isFinite(fetched.getTime())||
+     Math.abs(target.getTime()-stamp.getTime())>30*60*1000||
+     Date.now()-stamp.getTime()>45*60*1000||
+     Date.now()-fetched.getTime()>90*60*1000){
+    note.textContent='予報と実測の時刻が十分に近くないため、差は計算しないよ。';
+    return;
+  }
+  const diff=fc.temperature-obs.temp;
+  delta.textContent=(diff>0?'＋':diff<0?'−':'±')+Math.abs(diff).toFixed(1)+'℃';
+  const clock=t=>t.toLocaleTimeString('ja-JP',{timeZone:'Asia/Tokyo',hour:'2-digit',minute:'2-digit'});
+  note.textContent='予報 '+clock(target)+'／実測 '+clock(stamp)+'。差は別地点との参考比較で、地形や標高が違うため予報誤差とは断定できないよ。';
+}
+function setForecast(current,fetched,stale){
+  const temp=n(current?.temperature_2m);
+  currentForecast={
+    temperature:temp,validAt:current?.time||null,
+    fetched:typeof fetched==='string'?fetched:'',
+    stale:!!stale
+  };
+  renderTemperature();
+}
+function clearForecast(){
+  currentForecast=null;
+  renderTemperature();
+}
+
 function reset(){
   for(const key of ['amedas-wind-value','amedas-rain-value'])e(key).textContent='—';
   for(const key of ['amedas-wind-station','amedas-rain-station'])e(key).textContent='観測所を確認中';
+  temperatureStation=null;temperatureObservedAt=null;renderTemperature();
 }
 function setLocation(lat,lon){
   if(!Number.isFinite(lat)||!Number.isFinite(lon))return;
   const newPoint=lat.toFixed(4)+','+lon.toFixed(4);
   if(locationPoint?.id===newPoint)return;
   locationPoint={id:newPoint,lat,lon};
-  ++requestId;reset();
+  ++requestId;currentForecast=null;reset();
   e('amedas-status').textContent='選択地点の近くの観測所を確認できるよ。';
   if(details.open)load();
 }
@@ -99,7 +155,7 @@ async function load(){
   try{
     const data=await national();
     if(requested!==requestId)return;
-    let nearestWind=null,nearestRain=null;
+    let nearestWind=null,nearestRain=null,nearestTemperature=null;
     for(const [id,obs] of Object.entries(data.map)){
       const meta=data.catalog[id];
       if(!meta||!obs||typeof obs!=='object')continue;
@@ -108,11 +164,15 @@ async function load(){
       const distance=km(site.lat,site.lon,lat,lon);
       if(distance>RANGE_KM)continue;
       const wind=valid(obs.wind),rain=valid(obs.precipitation1h),windDir=valid(obs.windDirection);
-      const station={name:String(meta.kjName||id),distance,wind,rain,windDir};
+      const temp=valid(obs.temp);
+      const station={name:String(meta.kjName||id),distance,wind,rain,windDir,temp,
+        alt:typeof meta.alt==='number'&&Number.isFinite(meta.alt)?meta.alt:null};
       if(wind!==null&&wind>=0&&(!nearestWind||distance<nearestWind.distance))nearestWind=station;
       if(rain!==null&&rain>=0&&(!nearestRain||distance<nearestRain.distance))nearestRain=station;
+      if(temp!==null&&temp>=-100&&temp<=65&&(!nearestTemperature||distance<nearestTemperature.distance))nearestTemperature=station;
     }
     displayStation(nearestWind,'wind');displayStation(nearestRain,'rain');
+    temperatureStation=nearestTemperature;temperatureObservedAt=data.at;renderTemperature();
     const age=Math.max(0,Math.round((Date.now()-data.at.getTime())/60000));
     const label=data.at.toLocaleString('ja-JP',{timeZone:'Asia/Tokyo',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
     e('amedas-status').textContent=label+' 観測 · '+age+'分前'+(age>30?'（最新の観測ではない可能性があります）':'');
@@ -125,8 +185,8 @@ async function load(){
 details.addEventListener('toggle',()=>{if(details.open)load()});
 e('amedas-refresh')?.addEventListener('click',()=>{cache=null;load()});
 function clear(){
-  ++requestId;locationPoint=null;reset();
+  ++requestId;locationPoint=null;currentForecast=null;reset();
   e('amedas-status').textContent='現在地を取得すると近くの観測所を表示できるよ。';
 }
-window.SoraAmedas={setLocation,refresh:load,clear};
+window.SoraAmedas={setLocation,setForecast,clearForecast,refresh:load,clear};
 })();

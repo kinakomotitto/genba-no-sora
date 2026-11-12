@@ -756,6 +756,16 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
 .private-suggest-item small{color:#a48096;font-size:11px;white-space:nowrap}
 .private-suggest-item[aria-selected="true"],.private-suggest-item:focus-visible{background:#f9e8f0;border-color:#dda9c0;outline:none}
 
+/* v0.45 — reference-only temperature side-by-side in existing AMeDAS disclosure */
+.amedas-temp-compare{margin:0 0 11px;padding:12px 11px;border:1px solid #f0e2eb;border-radius:15px;background:#fff9fc}
+.amedas-temp-heading{font-size:12px;font-weight:750;color:#936b85;margin-bottom:10px}
+.amedas-temp-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.amedas-temp-item{min-width:0;text-align:center;background:#fff;border-radius:11px;padding:9px 5px}
+.amedas-temp-item small{display:block;font-size:10px;color:#a48898;line-height:1.3}
+.amedas-temp-item strong{display:block;margin-top:6px;color:#8f6682;font-size:20px;white-space:nowrap}
+.amedas-temp-station,.amedas-temp-note{font-size:10px;color:#927b8c;line-height:1.6;margin:8px 0 0}
+@media(max-width:355px){.amedas-temp-item strong{font-size:16px}.amedas-temp-item{padding:8px 2px}}
+
 </style>
 </head>
 <body>
@@ -846,6 +856,16 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <details class="section home-amedas" id="amedas-nearby" aria-label="近くの気象庁アメダス観測値">
     <summary><span class="home-amedas-title">🌿 近くのアメダス実測 <small lang="ko">실제 관측</small></span><span class="home-amedas-more">観測値を見る ⌄</span></summary>
     <p id="amedas-status" role="status">開くと近くの観測所のデータを取得するよ。</p>
+    <div class="amedas-temp-compare" aria-label="気温の予報と近くの実測値を比較">
+      <div class="amedas-temp-heading">🌡️ この地点の予報と近くの実測</div>
+      <div class="amedas-temp-grid">
+        <div class="amedas-temp-item"><small>☁️ アプリ予報</small><strong id="amedas-temp-forecast">—</strong></div>
+        <div class="amedas-temp-item"><small>🌿 近くの実測</small><strong id="amedas-temp-observed">—</strong></div>
+        <div class="amedas-temp-item"><small>差（予報−実測）</small><strong id="amedas-temp-difference">—</strong></div>
+      </div>
+      <p class="amedas-temp-station" id="amedas-temp-station">80km以内の気温観測所を確認中</p>
+      <p class="amedas-temp-note" id="amedas-temp-note">観測値を見ると、近くの実測気温が分かるよ。</p>
+    </div>
     <div class="amedas-metrics">
       <div class="amedas-metric"><small>🌬️ 10分間平均風速</small><strong id="amedas-wind-value">—</strong><span id="amedas-wind-station">観測所を確認中</span></div>
       <div class="amedas-metric"><small>🌧️ 過去1時間の降水量</small><strong id="amedas-rain-value">—</strong><span id="amedas-rain-station">観測所を確認中</span></div>
@@ -1064,7 +1084,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。ただし「ポケットに届く天気変化通知」を本人が開始した場合だけ、丸めた現在地の座標を通知サーバーに保存し、予報確認のためOpen-Meteoに送信します。各登録地点の監視は4時間で期限切れ。本人が一度オンにした後は、アプリを開くたび新しい丸めGPSを再送信して監視時間を更新します。停止時または期限後の定期処理で位置情報を削除します。ホームの現在地の地名表示では、丸めた座標を国土地理院へ送信します。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.44 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.45 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -2149,6 +2169,7 @@ function resetWeatherDashboard(message){
     'model-compare-status':'地点の予報を確認中…',
     'model-compare-headline':'比較する ⌄','amedas-status':'観測地点を確認中…',
     'amedas-wind-value':'—','amedas-rain-value':'—',
+    'amedas-temp-forecast':'—','amedas-temp-observed':'—','amedas-temp-difference':'—',
     'amedas-wind-station':'観測所を確認中','amedas-rain-station':'観測所を確認中',
     'saved-label':'選択地点の天気予報を取得中…'
   };
@@ -2160,14 +2181,15 @@ function resetWeatherDashboard(message){
   }
   if($('model-compare-note'))$('model-compare-note').textContent='予報の取得後に比較するよ。';
   $('offline-notice')?.classList.add('hidden');
+  window.SoraAmedas?.clearForecast?.();
 }
 function showCachedWeatherFor(p){
   if(!p){resetWeatherDashboard('GPSの現在地を取得してね');window.SoraCompare?.clear();window.SoraAmedas?.clear();return}
+  window.SoraAmedas?.setLocation(p.lat,p.lon);
   const old=cache[keyFor(p.lat,p.lon)];
   if(old)renderWeather(old.data,old.fetched,true);
   else resetWeatherDashboard('この地点の天気を取得中…');
   window.SoraCompare?.prepare(p.lat,p.lon);
-  window.SoraAmedas?.setLocation(p.lat,p.lon);
 }
 function restoreHomeLocation(){
   const dashboard=$('weather-content');
@@ -2625,7 +2647,7 @@ function renderWindTrend(hourly,stale){
   chart.setAttribute('aria-label','この先6時間の風速と最大瞬間風速の予測。風速・突風の数値と風向は下の各時刻に表示。');
 }
 
-function renderWeather(data,fetched,stale){const c=data.current||{},h=data.hourly||{},desc=weatherDesc(c.weather_code);$('temperature').textContent=Number.isFinite(c.temperature_2m)?Math.round(c.temperature_2m)+'°':'--°';$('description').textContent=desc[0];$('weather-icon').textContent=desc[1];$('apparent').textContent=`体感温度 ${fmt(c.apparent_temperature)}°C · 湿度 ${fmt(c.relative_humidity_2m)}%`;$('wind').textContent=`${fmt(c.wind_speed_10m)} m/s`;$('gust').textContent=`${fmt(c.wind_gusts_10m)} m/s`;
+function renderWeather(data,fetched,stale){const c=data.current||{},h=data.hourly||{},desc=weatherDesc(c.weather_code);window.SoraAmedas?.setForecast?.(c,fetched,stale);$('temperature').textContent=Number.isFinite(c.temperature_2m)?Math.round(c.temperature_2m)+'°':'--°';$('description').textContent=desc[0];$('weather-icon').textContent=desc[1];$('apparent').textContent=`体感温度 ${fmt(c.apparent_temperature)}°C · 湿度 ${fmt(c.relative_humidity_2m)}%`;$('wind').textContent=`${fmt(c.wind_speed_10m)} m/s`;$('gust').textContent=`${fmt(c.wind_gusts_10m)} m/s`;
 let first=-1;if(Array.isArray(h.time)){const thisHourJP=new Date(Date.now()+9*3600000).toISOString().slice(0,13)+':00';first=h.time.findIndex(t=>t>=thisHourJP);}$('rain-prob').textContent=first>=0&&Array.isArray(h.precipitation_probability)&&h.precipitation_probability[first]!=null?`${Math.round(h.precipitation_probability[first])}%`:'--%';
 renderWindTrend(h,stale);renderRainOutlook(h,stale);if($('radar').classList.contains('active'))renderRadar15h();const hours=$('hours');hours.replaceChildren();if(Array.isArray(h.time)&&first>=0){h.time.slice(first,first+8).forEach((t,j)=>{const i=first+j;const el=document.createElement('div');el.className='hour';const time=document.createElement('div');time.className='sub';time.textContent=new Date(t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});const ic=document.createElement('div');ic.style.fontSize='19px';ic.style.marginTop='6px';ic.textContent=weatherDesc(h.weather_code?.[i])[1];const temp=document.createElement('strong');temp.textContent=h.temperature_2m?.[i]!=null?Math.round(h.temperature_2m[i])+'°':'--°';const p=document.createElement('div');p.className='rain';p.textContent=h.precipitation_probability?.[i]!=null?'☂ '+h.precipitation_probability[i]+'%':'—';el.append(time,ic,temp,p);hours.append(el)})}else{hours.textContent='この時間帯の予報はありません。最新データを取得してください。'}
 $('weather-state').textContent=(stale?'保存データ':'最新取得')+' · '+datefmt(fetched);$('saved-label').textContent=stale?'保存された予報です（最新ではありません）。最終取得：'+datefmt(fetched):'予報の取得時刻：'+datefmt(fetched)+' ／ 山間部の局地的な天気とは異なる場合があります。';if(stale){$('offline-notice').textContent='保存済みの予報を表示中。現在の状況とは異なる可能性があります。警報・雨雲接近情報は更新されません。';$('offline-notice').classList.remove('hidden')}else if(navigator.onLine)$('offline-notice').classList.add('hidden');}
