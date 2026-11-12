@@ -128,7 +128,7 @@ class TestNationwidePilot(unittest.TestCase):
             class BadRequest(Exception):
                 code=400
             def fake(model,subset):
-                if model=="jma_msm" and any(s["id"]=="20000" for s in subset):
+                if model=="jma_msm" and any(s["id"] not in {x["id"] for x in stations()} for s in subset):
                     raise BadRequest()
                 return fake_model(model,subset)
             result=tc.collect(source,output,fake,lambda:NOW)
