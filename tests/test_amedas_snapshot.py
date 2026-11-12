@@ -34,12 +34,16 @@ class AmedasTests(unittest.TestCase):
 
     def test_national_map_parser_and_observation_values(self):
         cat,raw=self.data()
+        cat["11000"]["alt"]=143.8
+        cat["11001"]["alt"]=-900
         raw["11000"]["wind"]=[0,6]
         raw["11001"]["precipitation1h"]=[0,6]
         result=am.parse_map(cat,raw,dt.datetime(2026,11,10,19,tzinfo=am.JST))
         self.assertEqual(result["metrics"]["stations"],210)
         self.assertEqual(result["metrics"]["valid_wind"],209)
         self.assertEqual(result["metrics"]["valid_rain"],209)
+        self.assertEqual(result["stations"][0]["altitude_m"],143.8)
+        self.assertIsNone(result["stations"][1]["altitude_m"])
         self.assertIsNone(result["stations"][0]["wind_ms"])
         self.assertIsNone(result["stations"][0]["wind_direction_16"])
         self.assertIsNone(result["stations"][1]["precipitation_1h_mm"])
