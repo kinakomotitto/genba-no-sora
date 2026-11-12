@@ -299,10 +299,29 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
                     break
                 status["calls_attempted"]+=1
                 try:
-                    # Each chunk has its own validation. A failed remote island
-                    # must never suppress all successful public stations.
-                    data=fetcher(model,chunk)
-                    piece=parse_forecast(model,chunk,data,stamp)
+                    # An HTTP 400 can be specific to one unsupported gridpoint.
+                    # Isolate that public station without discarding valid peers.
+                    # Never retry 401/403/429, and never exceed the run budget.
+                    def fetch_bounded(subset,already_counted=False):
+                        if not already_counted:
+                            if status["calls_attempted"]>=MAX_HTTP_GETS_PER_RUN:
+                                raise ForecastResponseError("request_budget_exhausted")
+                            status["calls_attempted"]+=1
+                        try:
+                            return [(subset,fetcher(model,subset))]
+                        except Exception as error:
+                            if model!="jma_msm" or getattr(error,"code",None)!=400:
+                                raise
+                            if len(subset)==1:
+                                failures.append("HTTP_400")
+                                return []
+                            midpoint=len(subset)//2
+                            return (fetch_bounded(subset[:midpoint])+
+                                    fetch_bounded(subset[midpoint:]))
+                    batches=fetch_bounded(chunk,already_counted=True)
+                    piece=[]
+                    for subset,response in batches:
+                        piece.extend(parse_forecast(model,subset,response,stamp))
                     if not piece:raise ValueError("No matching future hourly forecast")
                     rows.extend(piece)
                     expected={v for v in forecast_targets(stamp).values()}

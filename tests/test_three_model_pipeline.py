@@ -108,6 +108,37 @@ class TestNationwidePilot(unittest.TestCase):
             self.assertTrue(state["forecast_rows_saved"]>200)
             self.assertEqual(state["daily_site_model_units_estimate"],432)
 
+    def test_msm_http400_isolates_one_station_and_keeps_good_rows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            items=stations()+[
+                {"id":str(20000+i),"name":"公開観測所"+str(i),
+                 "lat":25+i,"lon":125+i,"wind_ms":2,"precipitation_1h_mm":0}
+                for i in range(9)]
+            source=root/"snap.json"
+            source.write_text(json.dumps({
+                "source":"jma-amedas-public-homepage-json","stations":items
+            }),encoding="utf-8")
+            output=root/"out"
+            output.mkdir()
+            (output/"collection-status.json").write_text(json.dumps({
+                "state":"saved","selected_station_count":9,
+                "per_model":{m:{"state":"ok"} for m in tc.MODELS}
+            }),encoding="utf-8")
+            bad_id=next(x["id"] for x in tc.select_public_stations({"source":"jma-amedas-public-homepage-json","stations":items},max_sites=18) if x["name"] not in tc.SITES)
+            class BadRequest(Exception):
+                code=400
+            def fake(model,subset):
+                if model=="jma_msm" and any(s["id"]==bad_id for s in subset):
+                    raise BadRequest()
+                return fake_model(model,subset)
+            result=tc.collect(source,output,fake,lambda:NOW)
+            self.assertEqual(result["per_model"]["jma_msm"]["state"],"partial")
+            self.assertIn("HTTP_400",result["per_model"]["jma_msm"]["failure_types"])
+            self.assertGreater(result["per_model"]["jma_msm"]["stations_successful"],9)
+            self.assertLessEqual(result["calls_attempted"],tc.MAX_HTTP_GETS_PER_RUN)
+            self.assertFalse(result["all_three_models_collected"])
+
     def test_incomplete_hourly_wind_or_rain_is_not_an_all_model_success(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
