@@ -74,6 +74,9 @@ def parse_map(catalog,raw_map,when):
         lat,lon=coordinate(details.get("lat")),coordinate(details.get("lon"))
         if lat is None or lon is None or not (20<=lat<=46.5 and 122<=lon<=154):
             continue
+        altitude=numeric(details.get("alt"))
+        if altitude is not None and not (-500<=altitude<=4000):
+            altitude=None
         wind=observed(obs.get("wind"))
         rain=observed(obs.get("precipitation1h"))
         temp=observed(obs.get("temp"))
@@ -89,6 +92,7 @@ def parse_map(catalog,raw_map,when):
         rows.append({
             "id":station_id,"name":str(details.get("kjName") or station_id)[:60],
             "lat":lat,"lon":lon,
+            "altitude_m":altitude,
             "wind_ms":wind,"wind_direction_16":int(direction) if direction is not None else None,
             "precipitation_1h_mm":rain,"temperature_c":temp
         })
