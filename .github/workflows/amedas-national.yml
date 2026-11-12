@@ -18,6 +18,10 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+      - name: Report scheduled trigger delay (diagnostic only)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/schedule_delay_audit.py
       - name: Check observation quality and precipitation-time tests offline
         run: python3 -m unittest discover -s tests -p test_amedas_snapshot.py -v
       - name: Check 3-model collection and scoring completely offline
