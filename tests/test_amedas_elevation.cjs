@@ -55,7 +55,7 @@ function build(provider,online=true){
   assert.equal(gsi.el('amedas-station-height').textContent,'14m');
   assert.equal(gsi.el('amedas-ground-height').textContent,'—');
   assert.equal(gsi.services.length,0,'never transmit selected GPS to elevation API until button tap');
-  assert.match(gsi.el('amedas-height-status').textContent,/ボタン/);
+  assert.match(gsi.el('amedas-height-status').textContent,/標高を調べる/);
   await gsi.el('amedas-ground-lookup').events.click();
   assert.equal(gsi.services.length,1);
   assert.equal(gsi.el('amedas-ground-height').textContent,'109m');
