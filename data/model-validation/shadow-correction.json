@@ -32,7 +32,7 @@
     },
     "6": {
       "split": {
-        "independent_days": 1,
+        "independent_days": 2,
         "train_days": 0,
         "holdout_days": 0
       },
@@ -43,7 +43,7 @@
       "rolling_validation": {
         "state": "insufficient_seasonal_evidence",
         "required_independent_days": 570,
-        "independent_days": 1,
+        "independent_days": 2,
         "required_folds": 4,
         "fold_count": 0,
         "seasons_covered": [],
@@ -54,7 +54,7 @@
     },
     "12": {
       "split": {
-        "independent_days": 0,
+        "independent_days": 1,
         "train_days": 0,
         "holdout_days": 0
       },
@@ -65,7 +65,7 @@
       "rolling_validation": {
         "state": "insufficient_seasonal_evidence",
         "required_independent_days": 570,
-        "independent_days": 0,
+        "independent_days": 1,
         "required_folds": 4,
         "fold_count": 0,
         "seasons_covered": [],
@@ -76,7 +76,7 @@
     },
     "24": {
       "split": {
-        "independent_days": 0,
+        "independent_days": 1,
         "train_days": 0,
         "holdout_days": 0
       },
@@ -87,7 +87,7 @@
       "rolling_validation": {
         "state": "insufficient_seasonal_evidence",
         "required_independent_days": 570,
-        "independent_days": 0,
+        "independent_days": 1,
         "required_folds": 4,
         "fold_count": 0,
         "seasons_covered": [],
@@ -103,5 +103,5 @@
     "Even a passing holdout challenger does not prove mountain/forestry-site accuracy.",
     "Rainfall is one-hour total; strong-event cutoffs are research diagnostics, not work thresholds."
   ],
-  "evaluated_at_utc": "2026-11-13T13:10:57.000750Z"
+  "evaluated_at_utc": "2026-11-13T18:58:06.963473Z"
 }
