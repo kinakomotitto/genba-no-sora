@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "study": "station_elevation_day_night_air_temperature",
+  "updated_at_utc": "2026-11-13T01:12:16.883165Z",
+  "state": "collecting_observations",
+  "automatic_correction_enabled": false,
+  "production_forecast_changes": false,
+  "source": "JMA public AMeDAS temperature/wind; original quality flag 0 only",
+  "area": "public_stations_in_japan_not_user_gps",
+  "observation_history_days_limit": 14,
+  "station_selection": "deterministic nearest disjoint pairs, same timestamp, 70-800m elevation separation within 25km",
+  "matched_pair_count": 160,
+  "stations_in_selected_pairs": 320,
+  "earliest_observation_jst": "2026-11-10",
+  "latest_observation_jst": "2026-11-13",
+  "distinct_observation_days": 4,
+  "distinct_matched_timestamps": 11,
+  "day_night_definition_jst": "day 06:00-17:59 / night 18:00-05:59 (not local sunrise/sunset)",
+  "by_period": {
+    "day": {
+      "samples": 640,
+      "matched_timestamps": 4,
+      "distinct_days": 3,
+      "warmer_higher_count": 152,
+      "warmer_higher_share": 0.237,
+      "mean_higher_minus_lower_c": -1.24,
+      "median_higher_minus_lower_c": -1.2
+    },
+    "night": {
+      "samples": 1117,
+      "matched_timestamps": 7,
+      "distinct_days": 4,
+      "warmer_higher_count": 221,
+      "warmer_higher_share": 0.198,
+      "mean_higher_minus_lower_c": -1.6,
+      "median_higher_minus_lower_c": -1.5
+    },
+    "night_calm": {
+      "samples": 748,
+      "matched_timestamps": 7,
+      "distinct_days": 4,
+      "warmer_higher_count": 134,
+      "warmer_higher_share": 0.179,
+      "mean_higher_minus_lower_c": -1.47,
+      "median_higher_minus_lower_c": -1.3
+    },
+    "night_other_wind": {
+      "samples": 369,
+      "matched_timestamps": 7,
+      "distinct_days": 4,
+      "warmer_higher_count": 87,
+      "warmer_higher_share": 0.236,
+      "mean_higher_minus_lower_c": -1.87,
+      "median_higher_minus_lower_c": -2.1
+    }
+  },
+  "interpretation": "Higher station warmer is a cross-station contrast, NOT demonstrated inversion, error or local observation.",
+  "next_evidence_needed": "Longer dates/seasons, station representativeness, forecast temperature snapshots, and independent held-out validation before considering any correction.",
+  "limitations": [
+    "Pairs are selected from latest available stations and may change over time.",
+    "Different sensors, locations, terrain and land cover cause temperature differences.",
+    "Multiple pairs/timestamps are correlated, not independent proof of a physical inversion.",
+    "Cloud cover, radiative cooling and valley geometry are not directly measured here.",
+    "No local user position or private workplace coordinates are collected."
+  ]
+}
