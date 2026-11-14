@@ -27,17 +27,24 @@ def expected_slot(started):
                 options.append(slot)
     return max(options)
 
-def diagnose(started,scheduled_event=True):
+def diagnose(started,scheduled_event=True,created=None):
     if not scheduled_event:
         return {"state":"not_scheduled","delay_minutes":None}
     slot=expected_slot(started)
     minutes=round((started-slot).total_seconds()/60,1)
-    return {"state":"late" if minutes>WARN_MINUTES else "on_time",
+    report={"state":"late" if minutes>WARN_MINUTES else "on_time",
             "expected_at_utc":slot.isoformat(),
             "observed_at_utc":started.astimezone(UTC).isoformat(),
             "delay_minutes":minutes,
             "warning_threshold_minutes":WARN_MINUTES,
             "note":"Workflow start delay only; not evidence of model collection success."}
+    if created is not None:
+        if created.tzinfo is None:
+            raise ValueError("timezone-aware creation time required")
+        # created_at is when GitHub recorded the run, not guaranteed cron dispatch time.
+        report["created_after_slot_minutes"]=round((created-slot).total_seconds()/60,1)
+        report["queue_wait_minutes"]=round((started-created).total_seconds()/60,1)
+    return report
 
 def main():
     event=os.environ.get("GITHUB_EVENT_NAME","")
@@ -59,7 +66,8 @@ def main():
         with urllib.request.urlopen(request,timeout=10) as response:
             run=json.load(response)
         started=dt.datetime.fromisoformat(run["run_started_at"].replace("Z","+00:00"))
-        report=diagnose(started)
+        created=dt.datetime.fromisoformat(run["created_at"].replace("Z","+00:00"))
+        report=diagnose(started,created=created)
         print(json.dumps(report,ensure_ascii=False))
         if report["state"]=="late":
             print(f"::warning::Scheduled workflow started {report['delay_minutes']} minutes late")
