@@ -23,7 +23,7 @@ function create(kind='current'){
     document:{visibilityState:'visible'},
     navigator:{onLine:true},
     setConnection(){calls.connection++},
-    getCoords(){return kind==='current'?this.lastGPS:place},
+    getCoords(){return kind==='current'?context.lastGPS:place},
     keyFor:(lat,lon)=>lat+','+lon,
     renderWeather:(data,fetched,stale)=>calls.render.push({stale,fetched}),
     fetchWeather:(lat,lon)=>calls.forecast.push({lat,lon}),
