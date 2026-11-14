@@ -1,5 +1,5 @@
 /* 現場の空 v0.8: ホーム画面用のアプリ本体をオフライン保存 */
-const CACHE = 'genba-no-sora-shell-v0.46.1-foreground1';
+const CACHE = 'genba-no-sora-shell-v0.46.2-towada-geocoding1';
 const PREFIX = 'genba-no-sora-shell-';
 const SHELL = [
   './', './index.html', './municipalities-gsi.js', './location-label.js', './weather-watch-auto.js', './model-comparison.js', './observation-verification.js', './amedas-nearby.js?v=0.46', './manifest.webmanifest', './icon.svg',
