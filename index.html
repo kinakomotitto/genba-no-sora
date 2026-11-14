@@ -2303,8 +2303,9 @@ function refreshForegroundWeather(reason='resume'){
   if(reason!=='online'&&forecastFresh&&(selected.kind!=='current'||gpsFresh))return;
   // Old cards remain available offline but must never masquerade as fresh data.
   if(cached)renderWeather(cached.data,cached.fetched,true);
-  if(selected.kind==='current')locate({fresh:true});
+  if(selected.kind==='current'&&!gpsFresh)locate({fresh:true});
   else if(p)fetchWeather(p.lat,p.lon);
+  else if(selected.kind==='current')locate({fresh:true});
 }
 
 
