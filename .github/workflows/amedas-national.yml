@@ -47,6 +47,8 @@ jobs:
         run: python3 tools/three_model_collect.py
       - name: Score captured forecasts against prior quality-checked observations
         run: python3 tools/score_amedas_models.py
+      - name: Audit matched 6/12/24-hour public-station coverage (read only)
+        run: python3 tools/match_coverage_audit.py
       - name: Evaluate whether the public research feed is healthy
         run: python3 tools/weather_collection_health.py
       - name: Fail-closed shadow-only correction circuit breaker

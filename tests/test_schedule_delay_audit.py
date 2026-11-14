@@ -18,5 +18,12 @@ class TestScheduleDelay(unittest.TestCase):
         self.assertEqual(report["state"],"late")
         self.assertEqual(report["expected_at_utc"],"2026-11-12T00:12:00+00:00")
         self.assertEqual(report["delay_minutes"],73)
+    def test_distinguish_creation_delay_and_queue_wait(self):
+        started=dt.datetime(2026,11,14,7,1,tzinfo=UTC)
+        created=dt.datetime(2026,11,14,6,57,tzinfo=UTC)
+        report=audit.diagnose(started,created=created)
+        self.assertEqual(report["state"],"late")
+        self.assertEqual(report["created_after_slot_minutes"],45)
+        self.assertEqual(report["queue_wait_minutes"],4)
     def test_manual_is_not_a_scheduled_failure(self):
         self.assertEqual(audit.diagnose(dt.datetime.now(UTC),False)["state"],"not_scheduled")
