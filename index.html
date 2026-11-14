@@ -1107,7 +1107,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。ただし「ポケットに届く天気変化通知」を本人が開始した場合だけ、丸めた現在地の座標を通知サーバーに保存し、予報確認のためOpen-Meteoに送信します。各登録地点の監視は4時間で期限切れ。本人が一度オンにした後は、アプリを開くたび新しい丸めGPSを再送信して監視時間を更新します。停止時または期限後の定期処理で位置情報を削除します。ホームの現在地の地名表示では、丸めた座標を国土地理院へ送信します。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.46 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.46.1 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -2281,7 +2281,32 @@ function showTab(id,options={}){
   if(id==='home'&&selected.kind==='current')locate({fresh:true});
 }
 function gps(success,fail,options={}){if(!navigator.geolocation){fail&&fail('このブラウザではGPSが使えません');return}navigator.geolocation.getCurrentPosition(pos=>{lastGPS={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy,at:new Date().toISOString()};save();updateWindyLinks();success(lastGPS)},err=>{const msg=err.code===1?'位置情報の許可が必要です。ブラウザの設定で許可してください':err.code===3?'GPSの取得がタイムアウトしました':'GPSの位置を取得できませんでした';fail&&fail(msg)},{enableHighAccuracy:true,timeout:options.fresh?18000:12000,maximumAge:options.fresh?0:300000});}
-function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPS未取得 · 保存現場からも表示できます';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
+function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPSを更新できなかったよ · 前回の位置・予報が残っている場合があります';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
+
+
+// v0.46.1 — refresh weather when a previously open iPhone PWA returns to the
+// foreground. Weather and GPS are independently cached; "オンライン" alone
+// cannot prove that either was refreshed. Throttle wakeups to save battery.
+let foregroundWeatherCheckedAt=Date.now();
+function refreshForegroundWeather(reason='resume'){
+  if(document.visibilityState==='hidden')return;
+  if(!navigator.onLine){setConnection();return}
+  const now=Date.now(),MIN_GAP=10*60*1000,MAX_AGE=15*60*1000;
+  if(reason!=='online'&&now-foregroundWeatherCheckedAt<MIN_GAP)return;
+  foregroundWeatherCheckedAt=now;
+  const p=getCoords();
+  const cached=p&&cache[keyFor(p.lat,p.lon)];
+  const time=Date.parse(cached?.fetched||'');
+  const last=Date.parse(lastGPS?.at||'');
+  const forecastFresh=Number.isFinite(time)&&now-time>=0&&now-time<MAX_AGE;
+  const gpsFresh=Number.isFinite(last)&&now-last>=0&&now-last<MAX_AGE;
+  if(reason!=='online'&&forecastFresh&&(selected.kind!=='current'||gpsFresh))return;
+  // Old cards remain available offline but must never masquerade as fresh data.
+  if(cached)renderWeather(cached.data,cached.fetched,true);
+  if(selected.kind==='current'&&!gpsFresh)locate({fresh:true});
+  else if(p)fetchWeather(p.lat,p.lon);
+  else if(selected.kind==='current')locate({fresh:true});
+}
 
 
 // v0.43 — private place search. Never create or modify a worksite,
@@ -2989,7 +3014,7 @@ $('site-map-save-now').addEventListener('click',()=>{
   showTab('sites');
 });
 
-$('site-detail-back').onclick=()=>showTab('sites');$('choose-location').onclick=()=>showTab('sites');$('use-current').onclick=()=>selectLoc({kind:'current',name:'現在地'});$('refresh').onclick=()=>{const p=getCoords();p?fetchWeather(p.lat,p.lon):locate()};$('gps').onclick=()=>selectLoc({kind:'current',name:'現在地'});$('settings-open').addEventListener('click',()=>showTab('settings'));
+$('site-detail-back').onclick=()=>showTab('sites');$('choose-location').onclick=()=>showTab('sites');$('use-current').onclick=()=>selectLoc({kind:'current',name:'現在地'});$('refresh').onclick=()=>{if(selected.kind==='current'){locate({fresh:true});return}const p=getCoords();p?fetchWeather(p.lat,p.lon):locate({fresh:true})};$('gps').onclick=()=>selectLoc({kind:'current',name:'現在地'});$('settings-open').addEventListener('click',()=>showTab('settings'));
 $('settings-back').addEventListener('click',()=>showTab('sites'));
 document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
 function focusWxRecordFromNotification(){
@@ -3002,9 +3027,11 @@ function focusWxRecordFromNotification(){
 }
 window.addEventListener('hashchange',focusWxRecordFromNotification);
 if(location.hash==='#weather-record')setTimeout(focusWxRecordFromNotification,150);
-window.addEventListener('online',()=>{setConnection();const p=getCoords();if(p)fetchWeather(p.lat,p.lon)});window.addEventListener('offline',()=>{setConnection();const p=getCoords();if(p&&cache[keyFor(p.lat,p.lon)])renderWeather(cache[keyFor(p.lat,p.lon)].data,cache[keyFor(p.lat,p.lon)].fetched,true)});setConnection();renderSites();renderWxLogs();updateWindyLinks();
+window.addEventListener('online',()=>{setConnection();refreshForegroundWeather('online')});
+window.addEventListener('pageshow',event=>{if(event.persisted)refreshForegroundWeather()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshForegroundWeather()});window.addEventListener('offline',()=>{setConnection();const p=getCoords();if(p&&cache[keyFor(p.lat,p.lon)])renderWeather(cache[keyFor(p.lat,p.lon)].data,cache[keyFor(p.lat,p.lon)].fetched,true)});setConnection();renderSites();renderWxLogs();updateWindyLinks();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
-if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old){renderWeather(old.data,old.fetched,true);window.SoraCompare?.restore(lastGPS.lat,lastGPS.lon);}}locate();
+if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old){renderWeather(old.data,old.fetched,true);window.SoraCompare?.restore(lastGPS.lat,lastGPS.lon);}}locate({fresh:true});
 })();
 </script>
 </body>
