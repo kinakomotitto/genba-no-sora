@@ -1107,7 +1107,7 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
   <p class="settings-privacy">♡ スキンと天気記録はiPhone内に保存。定時の通知登録では現場名やGPSは送りません。ただし「ポケットに届く天気変化通知」を本人が開始した場合だけ、丸めた現在地の座標を通知サーバーに保存し、予報確認のためOpen-Meteoに送信します。各登録地点の監視は4時間で期限切れ。本人が一度オンにした後は、アプリを開くたび新しい丸めGPSを再送信して監視時間を更新します。停止時または期限後の定期処理で位置情報を削除します。ホームの現在地の地名表示では、丸めた座標を国土地理院へ送信します。</p>
 </section>
 
-<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.46.1 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
+<div class="footnote"><span id="saved-label">予報は取得できる時だけ更新されます。</span><br>表示版 v0.46.2 ／ 天気データ：<a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer">Open-Meteo</a>（非商用試作版）／ 気象観測・公式警報の代わりにはなりません。</div>
 </div></div>
 <div class="site-map-overlay hidden" id="site-map-overlay" role="dialog" aria-modal="true" aria-labelledby="site-map-title">
   <div class="site-map-sheet">
@@ -2325,12 +2325,13 @@ function normalizePersonalPlace(item){
   if(!name)return null;
   return {name,lat,lon,
     region:String(item.admin1||item.region||'').slice(0,80),
-    country:String(item.country||'').slice(0,80)};
+    country:String(item.country||'').slice(0,80),
+    reference_label:String(item.reference_label||'').slice(0,80)};
 }
 function personalPlaceKey(p){return p.lat.toFixed(4)+','+p.lon.toFixed(4);}
 function personalPlaceLabel(p){
   const extra=[p.region,p.country].filter(Boolean);
-  return p.name+(extra.length?' · '+extra.join(' / '):'');
+  return p.name+(extra.length?' · '+extra.join(' / '):'')+(p.reference_label?' · '+p.reference_label:'');
 }
 try{
   const data=JSON.parse(localStorage.getItem(personalPlacesKey)||'[]');
@@ -2407,7 +2408,9 @@ function showPersonalPlace(source){
   $('selected-location').textContent=place.name;
   $('selected-location').classList.add('private-active');
   window.SoraArea?.clear();
-  $('geo-status').textContent='お出かけ先の予報 · 現場には保存しないよ ♡';
+  $('geo-status').textContent=place.reference_label
+    ?'参照地点：'+place.reference_label+'（市内全域を代表する観測ではないよ）'
+    :'お出かけ先の予報 · 現場には保存しないよ ♡';
   $('private-place-query').value=place.name;
   $('private-place-results').replaceChildren();
   $('private-place-status').textContent=personalPlaceLabel(place)+' の天気を表示中';
@@ -2425,12 +2428,26 @@ function renderPersonalSearchResults(items){
     const button=document.createElement('button');
     button.type='button';button.className='private-search-option';
     const name=document.createElement('strong');name.textContent=p.name;
-    const area=document.createElement('small');area.textContent=[p.region,p.country].filter(Boolean).join(' / ')||'地域情報なし';
+    const area=document.createElement('small');area.textContent=[p.region,p.country,p.reference_label].filter(Boolean).join(' / ')||'地域情報なし';
     button.append(name,area);
     button.addEventListener('click',()=>showPersonalPlace(p));
     list.append(button);
   }
   return list.children.length;
+}
+// Some Japanese cities are absent from the Open-Meteo place-name index.
+// This exact, public municipality reference was verified against Aomori
+// Prefecture's municipal facilities open-data (Towada City Hall; 2026).
+// It is deliberately a CITY HALL reference point, NOT a city centroid,
+// current GPS location or observed weather. No generic guessed coordinates.
+function publicMunicipalityReference(query,picked){
+  const official=Object.values(window.SoraMunicipalities||{}).some(row=>
+    Array.isArray(row)&&row[0]==='青森県'&&row[1]==='十和田市');
+  if(!official||!['十和田市','十和田'].includes(query))return null;
+  if(picked&&(picked.name!=='十和田市'||picked.region!=='青森県'))return null;
+  return {name:'十和田市',latitude:40.612703,longitude:141.20591,
+    admin1:'青森県',country:'日本',country_code:'JP',
+    reference_label:'十和田市役所付近（青森県公開データ）'};
 }
 // Open-Meteo treats 2-character search terms as EXACT names, not prefixes.
 // Local official municipality aliases allow users to search 弘前→弘前市,
@@ -2572,6 +2589,17 @@ $('private-place-form').addEventListener('submit',async e=>{
       if(controller!==personalSearchController)return;
       found=Array.isArray(data.results)?data.results:[];
       if(found.length){matchedName=name;break;}
+    }
+    // Prefer a verified official reference for this municipality if the
+    // third-party index returns no matching city (even if unrelated results
+    // exist). Do not replace a valid Open-Meteo city hit, and never guess.
+    const officialReference=publicMunicipalityReference(query,picked);
+    const exactCityFound=officialReference&&found.some(row=>
+      row&&row.name==='十和田市'&&row.admin1==='青森県'&&
+      (row.country_code==='JP'||row.country==='日本'||row.country==='Japan'));
+    if(officialReference&&!exactCityFound&&
+       (query==='十和田市'||picked||found.length===0)){
+      found=[officialReference];matchedName='十和田市';
     }
     // If the user tapped a specific municipality, show it in one tap only
     // when the geocoder returns exactly one matching name AND prefecture.

@@ -12,7 +12,7 @@ for(const id of ['amedas-temp-forecast','amedas-temp-observed','amedas-temp-diff
 }
 assert.match(html,/SoraAmedas\?\.setForecast\?\.\(c,fetched,stale\)/);
 assert.match(html,/SoraAmedas\?\.clearForecast\?\.\(\)/);
-assert.match(html,/表示版 v0\.46\.1/);
+assert.match(html,/表示版 v0\.46\.2/);
 assert.match(html,/src="\.\/amedas-nearby\.js\?v=0\.46"/);
 assert.match(html,/気温表示の更新がまだ反映されていないよ/);
 assert.match(html,/id="amedas-height-difference"/);

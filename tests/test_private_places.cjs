@@ -199,5 +199,79 @@ function environment(){
   ime.$('private-place-query').value='';
   ime.$('private-place-query').handlers.input();
   assert.equal(ime.$('private-place-suggestions').children.length,0,'clearing input must clear suggestions');
+
+  // 十和田市 exists in the bundled official municipality list but may be
+  // absent from the Open-Meteo index. Never respond "not found" in that case:
+  // show a plainly labeled, public Aomori Prefecture city hall reference.
+  const towada=environment();
+  const towadaQueries=[];
+  towada.setFetcher(async url=>{
+    towadaQueries.push(new URL(url).searchParams.get('name'));
+    return {ok:true,json:async()=>({results:[]})};
+  });
+  towada.$('private-place-query').value='十和田市';
+  await towada.$('private-place-form').handlers.submit({preventDefault(){}});
+  assert.deepEqual(towadaQueries,['十和田市']);
+  assert.equal(towada.$('private-place-results').children.length,1,
+    'official Towada reference must be offered when public geocoder lacks the municipality');
+  assert.equal(towada.$('private-place-results').children[0].children[0].textContent,'十和田市');
+  assert.match(towada.$('private-place-results').children[0].children[1].textContent,
+    /青森県.*十和田市役所付近/,'city hall fallback must never pretend to be an arbitrary point in the city');
+  towada.$('private-place-results').children[0].handlers.click();
+  assert.equal(towada.ctx.selected.kind,'private');
+  assert.equal(towada.ctx.selected.name,'十和田市');
+  assert.equal(towada.ctx.selected.lat,40.612703);
+  assert.equal(towada.ctx.selected.lon,141.20591);
+  assert.match(towada.ctx.selected.reference_label,/十和田市役所付近/);
+  assert.deepEqual(towada.calls.weather,[[40.612703,141.20591]]);
+  assert.match(towada.$('geo-status').textContent,/市内全域を代表する観測ではない/);
+  assert.equal(towada.workSites.length,1,'no worksite registration side effects');
+  towada.$('private-place-save').handlers.click();
+  const persistedTowada=JSON.parse(stored.get('genbanosora.private-places.v1'));
+  assert.equal(persistedTowada.length,1);
+  assert.match(persistedTowada[0].reference_label,/市役所付近/,
+    'favorite must keep the fact that its coordinate is a municipality reference');
+  const reopenTowada=environment();
+  reopenTowada.$('private-favorites-list').children[0].children[0].handlers.click();
+  assert.match(reopenTowada.$('geo-status').textContent,/市役所付近/);
+  assert.equal(reopenTowada.workSites.length,1);
+  reopenTowada.$('private-favorites-list').children[0].children[1].handlers.click();
+
+  // Selecting a GSI name from autocomplete must resolve through the same
+  // fallback even if Open-Meteo has an unrelated name at that prefix.
+  const pickTowada=environment();
+  pickTowada.setFetcher(async()=>({ok:true,json:async()=>({results:[
+    {name:'十和田湖',latitude:40.45,longitude:140.88,admin1:'青森県',country:'日本'}
+  ]})}));
+  pickTowada.$('private-place-query').value='十和田市';
+  pickTowada.$('private-place-query').handlers.input();
+  assert.equal(pickTowada.$('private-place-suggestions').children.length,1);
+  pickTowada.$('private-place-suggestions').children[0].handlers.click();
+  await pickTowada.$('private-place-form').lastSubmit;
+  assert.equal(pickTowada.ctx.selected.name,'十和田市');
+  assert.equal(pickTowada.ctx.selected.lat,40.612703);
+  assert.match(pickTowada.ctx.selected.reference_label,/市役所付近/);
+
+  // Never override a matching city/prefecture result that does exist
+  // in the geocoder with the fallback city hall point.
+  const foundTowada=environment();
+  foundTowada.setFetcher(async()=>({ok:true,json:async()=>({results:[
+    {name:'十和田市',latitude:40.6201,longitude:141.2101,
+      admin1:'青森県',country:'日本',country_code:'JP'}
+  ]})}));
+  foundTowada.$('private-place-query').value='十和田市';
+  await foundTowada.$('private-place-form').handlers.submit({preventDefault(){}});
+  assert.equal(foundTowada.$('private-place-results').children.length,1);
+  foundTowada.$('private-place-results').children[0].handlers.click();
+  assert.equal(foundTowada.ctx.selected.lat,40.6201);
+  assert.equal(foundTowada.ctx.selected.reference_label,'');
+
+  const lake=environment();
+  lake.setFetcher(async()=>({ok:true,json:async()=>({results:[]})}));
+  lake.$('private-place-query').value='十和田湖';
+  await lake.$('private-place-form').handlers.submit({preventDefault(){}});
+  assert.equal(lake.$('private-place-results').children.length,0,
+    'Towada Lake must not incorrectly resolve to Towada City Hall');
+
   console.log('PASS: private geocoding, disambiguation, weather, favorites persistence, removal, GPS return, radar guard, offline, no worksite mutation');
 })().catch(e=>{console.error(e);process.exitCode=1;});
