@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const code=fs.readFileSync('sw.js','utf8');
-assert.match(code,/genba-no-sora-shell-v0\.46/);
+assert.match(code,/genba-no-sora-shell-v0\.46\.1/);
 assert.match(code,/amedas-nearby\.js\?v=0\.46/);
 const listeners={};let displayed=null,visited=null;
 const listenersContext={
