@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "study": "station_elevation_day_night_air_temperature",
-  "updated_at_utc": "2026-11-14T07:02:07.276625Z",
+  "updated_at_utc": "2026-11-14T12:53:46.250260Z",
   "state": "collecting_observations",
   "automatic_correction_enabled": false,
   "production_forecast_changes": false,
@@ -14,7 +14,7 @@
   "earliest_observation_jst": "2026-11-10",
   "latest_observation_jst": "2026-11-14",
   "distinct_observation_days": 5,
-  "distinct_matched_timestamps": 16,
+  "distinct_matched_timestamps": 17,
   "day_night_definition_jst": "day 06:00-17:59 / night 18:00-05:59 (not local sunrise/sunset)",
   "by_period": {
     "day": {
@@ -27,31 +27,31 @@
       "median_higher_minus_lower_c": -1.2
     },
     "night": {
-      "samples": 1435,
-      "matched_timestamps": 9,
+      "samples": 1595,
+      "matched_timestamps": 10,
       "distinct_days": 5,
-      "warmer_higher_count": 297,
-      "warmer_higher_share": 0.207,
-      "mean_higher_minus_lower_c": -1.56,
+      "warmer_higher_count": 316,
+      "warmer_higher_share": 0.198,
+      "mean_higher_minus_lower_c": -1.55,
       "median_higher_minus_lower_c": -1.5
     },
     "night_calm": {
-      "samples": 974,
-      "matched_timestamps": 9,
+      "samples": 1104,
+      "matched_timestamps": 10,
       "distinct_days": 5,
-      "warmer_higher_count": 187,
-      "warmer_higher_share": 0.192,
-      "mean_higher_minus_lower_c": -1.43,
+      "warmer_higher_count": 203,
+      "warmer_higher_share": 0.184,
+      "mean_higher_minus_lower_c": -1.41,
       "median_higher_minus_lower_c": -1.3
     },
     "night_other_wind": {
-      "samples": 461,
-      "matched_timestamps": 9,
+      "samples": 491,
+      "matched_timestamps": 10,
       "distinct_days": 5,
-      "warmer_higher_count": 110,
-      "warmer_higher_share": 0.239,
+      "warmer_higher_count": 113,
+      "warmer_higher_share": 0.23,
       "mean_higher_minus_lower_c": -1.86,
-      "median_higher_minus_lower_c": -2.1
+      "median_higher_minus_lower_c": -2.0
     }
   },
   "interpretation": "Higher station warmer is a cross-station contrast, NOT demonstrated inversion, error or local observation.",
