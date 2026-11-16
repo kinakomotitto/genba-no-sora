@@ -116,6 +116,10 @@ def request_model(model,stations):
     if len(data)>MAX_BYTES:
         raise ForecastResponseError("response_too_large")
     parsed=json.loads(data.decode("utf-8"))
+    # Open-Meteo returns an object (not an array) for one coordinate.
+    # MSM HTTP 400 isolation deliberately makes singleton requests.
+    if isinstance(parsed,dict) and len(stations)==1:
+        parsed=[parsed]
     if not isinstance(parsed,list):
         raise ForecastResponseError("invalid_batch_response_type")
     if len(parsed)!=len(stations):
@@ -133,7 +137,7 @@ def forecast_targets(fetched):
     """Capture real 6/12/24-hour-ahead forecasts despite delayed cron starts.
 
     GitHub's scheduled jobs can start more than an hour late. Accept starts
-    up to 2h30 after a 00/06/12/18 UTC slot, never a whole missed cycle.
+    up to 5h30 after a 00/06/12/18 UTC slot, never a whole missed cycle.
     Choose hourly target times around the ACTUAL fetch time (not the original
     cron slot), so downstream verification uses honest forecast lead times.
     Do not reconstruct or backdate forecasts for missed runs.
@@ -144,7 +148,7 @@ def forecast_targets(fetched):
     scheduled_slot=actual.replace(minute=0,second=0,microsecond=0)
     scheduled_slot-=dt.timedelta(hours=scheduled_slot.hour%6)
     delay=actual-scheduled_slot
-    if not dt.timedelta(0)<=delay<=dt.timedelta(hours=2,minutes=30):
+    if not dt.timedelta(0)<=delay<=dt.timedelta(hours=5,minutes=30):
         return {}
     # Open-Meteo supplies hourly targets. Nearest hour keeps each lead in
     # the existing verifier's <=1-hour tolerance without claiming a stale
