@@ -4,6 +4,7 @@ import json
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/"tools"))
@@ -219,9 +220,21 @@ class TestNationwidePilot(unittest.TestCase):
             self.assertEqual(result["per_model"]["icon_seamless"]["failure_types"],["upstream_rate_limited_stop"])
             self.assertEqual(result["state"],"no_forecasts_available")
 
+    def test_single_coordinate_response_object_is_accepted(self):
+        single=stations()[:1]
+        payload=json.dumps(fake_model("jma_msm",single)[0]).encode()
+        class Response:
+            def __enter__(self):return self
+            def __exit__(self,*args):return False
+            def read(self,n):return payload
+        with mock.patch.object(tc.urllib.request,"urlopen",return_value=Response()):
+            result=tc.request_model("jma_msm",single)
+        self.assertEqual(len(result),1)
+        self.assertEqual(result[0]["latitude"],single[0]["lat"])
+
     def test_delayed_scheduled_runs_preserve_true_hourly_leads(self):
         # Previously, runs >1h past the six-hour slot silently skipped.
-        for hour,minute in [(1,6),(7,17),(13,20),(8,29)]:
+        for hour,minute in [(1,6),(7,17),(13,20),(8,29),(8,49),(15,20)]:
             with self.subTest(utc=f"{hour:02d}:{minute:02d}"):
                 now=dt.datetime(2026,11,10,hour,minute,tzinfo=UTC)
                 targets=tc.forecast_targets(now)
@@ -239,8 +252,8 @@ class TestNationwidePilot(unittest.TestCase):
                     self.assertEqual(result["calls_attempted"],3)
 
     def test_off_schedule_collection_does_not_hammer_or_erase_prior_status(self):
-        late=dt.datetime(2026,11,10,15,20,tzinfo=UTC)
-        boundary=dt.datetime(2026,11,10,8,31,tzinfo=UTC)
+        late=dt.datetime(2026,11,10,17,45,tzinfo=UTC)
+        boundary=dt.datetime(2026,11,10,11,31,tzinfo=UTC)
         self.assertEqual(tc.forecast_targets(late),{})
         self.assertEqual(tc.forecast_targets(boundary),{})
         self.assertTrue(tc.forecast_targets(NOW))
