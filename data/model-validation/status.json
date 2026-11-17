@@ -206,9 +206,9 @@
     "Quality-unverified observations, non-numeric and missing readings are excluded.",
     "Not an official warning or a substitute for onsite safety procedures."
   ],
-  "updated_at_utc": "2026-11-17T13:11:22.789439Z",
-  "forecast_snapshot_rows": 2478,
-  "observation_rows": 37260,
+  "updated_at_utc": "2026-11-17T19:05:08.542878Z",
+  "forecast_snapshot_rows": 2586,
+  "observation_rows": 38546,
   "observed_station_count": 1286,
   "source_forecast": "Open-Meteo model-specific snapshots, obtained before valid_at",
   "source_observation": "JMA AMeDAS public map data; values with quality flag 0 only",
@@ -218,8 +218,8 @@
     "schema": 1,
     "matched_rows_current_window": 960,
     "complete_three_model_cohorts_current_window": 239,
-    "pending_finalization_rows": 276,
-    "pending_finalization_complete_cohorts": 66,
+    "pending_finalization_rows": 168,
+    "pending_finalization_complete_cohorts": 48,
     "eligible_unarchived_days": 0,
     "daily": [
       {
@@ -277,7 +277,7 @@
       {
         "local_day_jst": "2026-11-16",
         "eligible_from_jst": "2026-11-18",
-        "state": "pending_two_day_lag",
+        "state": "archived",
         "matched_rows": 108,
         "complete_three_model_cohorts": 18,
         "cohorts_by_lead": {
@@ -325,7 +325,7 @@
     "automatic_correction_enabled": false,
     "forecast_correction_release_authorized": false,
     "safety_threshold_wind_ms": null,
-    "records_archived": 684,
+    "records_archived": 792,
     "lead_groups": {
       "3": {
         "coverage": {
@@ -422,6 +422,94 @@
       },
       "6": {
         "coverage": {
+          "independent_days": 5,
+          "reference_stations": 9,
+          "calendar_months": 1,
+          "seasons": 1,
+          "days_per_season": 0,
+          "days_per_month": 0,
+          "training_days": 5,
+          "holdout_days": 0,
+          "matched_common_hours": 78,
+          "wet_days": 1,
+          "strong_wind_days": 0,
+          "wet_holdout_days": 0,
+          "strong_holdout_days": 0,
+          "history_span_days": 6
+        },
+        "missing_requirements": [
+          {
+            "criterion": "history_span_days",
+            "actual": 6,
+            "required": 540
+          },
+          {
+            "criterion": "independent_days",
+            "actual": 5,
+            "required": 300
+          },
+          {
+            "criterion": "calendar_months",
+            "actual": 1,
+            "required": 12
+          },
+          {
+            "criterion": "seasons",
+            "actual": 1,
+            "required": 4
+          },
+          {
+            "criterion": "days_per_season",
+            "actual": 0,
+            "required": 40
+          },
+          {
+            "criterion": "days_per_month",
+            "actual": 0,
+            "required": 10
+          },
+          {
+            "criterion": "training_days",
+            "actual": 5,
+            "required": 210
+          },
+          {
+            "criterion": "holdout_days",
+            "actual": 0,
+            "required": 90
+          },
+          {
+            "criterion": "matched_common_hours",
+            "actual": 78,
+            "required": 1000
+          },
+          {
+            "criterion": "wet_days",
+            "actual": 1,
+            "required": 45
+          },
+          {
+            "criterion": "strong_wind_days",
+            "actual": 0,
+            "required": 20
+          },
+          {
+            "criterion": "wet_holdout_days",
+            "actual": 0,
+            "required": 10
+          },
+          {
+            "criterion": "strong_holdout_days",
+            "actual": 0,
+            "required": 5
+          }
+        ],
+        "evidence_sufficient_for_candidate_testing": false,
+        "candidate_accepted": false,
+        "automatic_correction_enabled": false
+      },
+      "12": {
+        "coverage": {
           "independent_days": 4,
           "reference_stations": 9,
           "calendar_months": 1,
@@ -481,94 +569,6 @@
           {
             "criterion": "matched_common_hours",
             "actual": 69,
-            "required": 1000
-          },
-          {
-            "criterion": "wet_days",
-            "actual": 1,
-            "required": 45
-          },
-          {
-            "criterion": "strong_wind_days",
-            "actual": 0,
-            "required": 20
-          },
-          {
-            "criterion": "wet_holdout_days",
-            "actual": 0,
-            "required": 10
-          },
-          {
-            "criterion": "strong_holdout_days",
-            "actual": 0,
-            "required": 5
-          }
-        ],
-        "evidence_sufficient_for_candidate_testing": false,
-        "candidate_accepted": false,
-        "automatic_correction_enabled": false
-      },
-      "12": {
-        "coverage": {
-          "independent_days": 3,
-          "reference_stations": 9,
-          "calendar_months": 1,
-          "seasons": 1,
-          "days_per_season": 0,
-          "days_per_month": 0,
-          "training_days": 3,
-          "holdout_days": 0,
-          "matched_common_hours": 60,
-          "wet_days": 1,
-          "strong_wind_days": 0,
-          "wet_holdout_days": 0,
-          "strong_holdout_days": 0,
-          "history_span_days": 4
-        },
-        "missing_requirements": [
-          {
-            "criterion": "history_span_days",
-            "actual": 4,
-            "required": 540
-          },
-          {
-            "criterion": "independent_days",
-            "actual": 3,
-            "required": 300
-          },
-          {
-            "criterion": "calendar_months",
-            "actual": 1,
-            "required": 12
-          },
-          {
-            "criterion": "seasons",
-            "actual": 1,
-            "required": 4
-          },
-          {
-            "criterion": "days_per_season",
-            "actual": 0,
-            "required": 40
-          },
-          {
-            "criterion": "days_per_month",
-            "actual": 0,
-            "required": 10
-          },
-          {
-            "criterion": "training_days",
-            "actual": 3,
-            "required": 210
-          },
-          {
-            "criterion": "holdout_days",
-            "actual": 0,
-            "required": 90
-          },
-          {
-            "criterion": "matched_common_hours",
-            "actual": 60,
             "required": 1000
           },
           {
@@ -765,8 +765,8 @@
         "6": [
           {
             "model": "jma_msm",
-            "matched_station_hours": 69,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 78,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -783,8 +783,8 @@
           },
           {
             "model": "ecmwf_ifs",
-            "matched_station_hours": 69,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 78,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -801,8 +801,8 @@
           },
           {
             "model": "icon_seamless",
-            "matched_station_hours": 69,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 78,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -821,8 +821,8 @@
         "12": [
           {
             "model": "jma_msm",
-            "matched_station_hours": 60,
-            "independent_calendar_days": 3,
+            "matched_station_hours": 69,
+            "independent_calendar_days": 4,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -839,8 +839,8 @@
           },
           {
             "model": "ecmwf_ifs",
-            "matched_station_hours": 60,
-            "independent_calendar_days": 3,
+            "matched_station_hours": 69,
+            "independent_calendar_days": 4,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -857,8 +857,8 @@
           },
           {
             "model": "icon_seamless",
-            "matched_station_hours": 60,
-            "independent_calendar_days": 3,
+            "matched_station_hours": 69,
+            "independent_calendar_days": 4,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -935,8 +935,8 @@
         "秋": [
           {
             "model": "jma_msm",
-            "matched_station_hours": 69,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 78,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -953,8 +953,8 @@
           },
           {
             "model": "ecmwf_ifs",
-            "matched_station_hours": 69,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 78,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -971,8 +971,8 @@
           },
           {
             "model": "icon_seamless",
-            "matched_station_hours": 69,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 78,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -993,8 +993,8 @@
         "11": [
           {
             "model": "jma_msm",
-            "matched_station_hours": 69,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 78,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1011,8 +1011,8 @@
           },
           {
             "model": "ecmwf_ifs",
-            "matched_station_hours": 69,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 78,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1029,8 +1029,8 @@
           },
           {
             "model": "icon_seamless",
-            "matched_station_hours": 69,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 78,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1051,8 +1051,8 @@
         "中国": [
           {
             "model": "jma_msm",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1069,8 +1069,8 @@
           },
           {
             "model": "ecmwf_ifs",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1087,8 +1087,8 @@
           },
           {
             "model": "icon_seamless",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1107,8 +1107,8 @@
         "中部": [
           {
             "model": "jma_msm",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1125,8 +1125,8 @@
           },
           {
             "model": "ecmwf_ifs",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1143,8 +1143,8 @@
           },
           {
             "model": "icon_seamless",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1163,8 +1163,8 @@
         "九州": [
           {
             "model": "jma_msm",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 0,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1181,8 +1181,8 @@
           },
           {
             "model": "ecmwf_ifs",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 0,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1199,8 +1199,8 @@
           },
           {
             "model": "icon_seamless",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 0,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1219,8 +1219,8 @@
         "北海道": [
           {
             "model": "jma_msm",
-            "matched_station_hours": 6,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 7,
+            "independent_calendar_days": 5,
             "wet_event_days": 0,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1237,8 +1237,8 @@
           },
           {
             "model": "ecmwf_ifs",
-            "matched_station_hours": 6,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 7,
+            "independent_calendar_days": 5,
             "wet_event_days": 0,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1255,8 +1255,8 @@
           },
           {
             "model": "icon_seamless",
-            "matched_station_hours": 6,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 7,
+            "independent_calendar_days": 5,
             "wet_event_days": 0,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1275,8 +1275,8 @@
         "東北": [
           {
             "model": "jma_msm",
-            "matched_station_hours": 16,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 18,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1293,8 +1293,8 @@
           },
           {
             "model": "ecmwf_ifs",
-            "matched_station_hours": 16,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 18,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1311,8 +1311,8 @@
           },
           {
             "model": "icon_seamless",
-            "matched_station_hours": 16,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 18,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1331,8 +1331,8 @@
         "沖縄": [
           {
             "model": "jma_msm",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1349,8 +1349,8 @@
           },
           {
             "model": "ecmwf_ifs",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1367,8 +1367,8 @@
           },
           {
             "model": "icon_seamless",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1387,8 +1387,8 @@
         "近畿": [
           {
             "model": "jma_msm",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1405,8 +1405,8 @@
           },
           {
             "model": "ecmwf_ifs",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1423,8 +1423,8 @@
           },
           {
             "model": "icon_seamless",
-            "matched_station_hours": 8,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 9,
+            "independent_calendar_days": 5,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1443,8 +1443,8 @@
         "関東": [
           {
             "model": "jma_msm",
-            "matched_station_hours": 7,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 8,
+            "independent_calendar_days": 5,
             "wet_event_days": 0,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1461,8 +1461,8 @@
           },
           {
             "model": "ecmwf_ifs",
-            "matched_station_hours": 7,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 8,
+            "independent_calendar_days": 5,
             "wet_event_days": 0,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1479,8 +1479,8 @@
           },
           {
             "model": "icon_seamless",
-            "matched_station_hours": 7,
-            "independent_calendar_days": 4,
+            "matched_station_hours": 8,
+            "independent_calendar_days": 5,
             "wet_event_days": 0,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1557,8 +1557,8 @@
         "昼": [
           {
             "model": "jma_msm",
-            "matched_station_hours": 42,
-            "independent_calendar_days": 3,
+            "matched_station_hours": 51,
+            "independent_calendar_days": 4,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1575,8 +1575,8 @@
           },
           {
             "model": "ecmwf_ifs",
-            "matched_station_hours": 42,
-            "independent_calendar_days": 3,
+            "matched_station_hours": 51,
+            "independent_calendar_days": 4,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1593,8 +1593,8 @@
           },
           {
             "model": "icon_seamless",
-            "matched_station_hours": 42,
-            "independent_calendar_days": 3,
+            "matched_station_hours": 51,
+            "independent_calendar_days": 4,
             "wet_event_days": 1,
             "strong_wind_event_days": 0,
             "heavy_precip_event_days": 0,
@@ -1621,5 +1621,5 @@
     ]
   },
   "shadow_trial_state": "collecting_data",
-  "new_long_horizon_matches": 0
+  "new_long_horizon_matches": 108
 }
