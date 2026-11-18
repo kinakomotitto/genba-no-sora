@@ -11,7 +11,7 @@
   "common_three_model_station_hours": {
     "3": 0,
     "6": 102,
-    "12": 85,
+    "12": 93,
     "24": 52
   },
   "rows": [
@@ -48,16 +48,16 @@
     {
       "model": "jma_msm",
       "lead_h": 12,
-      "station_time_matches": 88,
-      "wind_samples": 87,
-      "rain_samples": 86,
-      "direction_samples": 63,
-      "wind_mae_ms": 1.436,
-      "wind_bias_ms": -0.957,
-      "rain_mae_mm": 0.135,
+      "station_time_matches": 97,
+      "wind_samples": 96,
+      "rain_samples": 94,
+      "direction_samples": 68,
+      "wind_mae_ms": 1.49,
+      "wind_bias_ms": -1.051,
+      "rain_mae_mm": 0.123,
       "rain_missed_events": 1,
       "rain_observed_events": 9,
-      "direction_mae_deg": 27.0,
+      "direction_mae_deg": 26.4,
       "state": "diagnostics_only"
     },
     {
@@ -93,31 +93,31 @@
     {
       "model": "ecmwf_ifs",
       "lead_h": 6,
-      "station_time_matches": 143,
-      "wind_samples": 142,
-      "rain_samples": 141,
-      "direction_samples": 119,
-      "wind_mae_ms": 1.369,
-      "wind_bias_ms": -0.166,
-      "rain_mae_mm": 0.112,
+      "station_time_matches": 161,
+      "wind_samples": 160,
+      "rain_samples": 158,
+      "direction_samples": 134,
+      "wind_mae_ms": 1.448,
+      "wind_bias_ms": -0.12,
+      "rain_mae_mm": 0.105,
       "rain_missed_events": 1,
       "rain_observed_events": 11,
-      "direction_mae_deg": 30.15,
+      "direction_mae_deg": 30.24,
       "state": "diagnostics_only"
     },
     {
       "model": "ecmwf_ifs",
       "lead_h": 12,
-      "station_time_matches": 125,
-      "wind_samples": 124,
-      "rain_samples": 123,
-      "direction_samples": 105,
-      "wind_mae_ms": 1.521,
-      "wind_bias_ms": 0.01,
-      "rain_mae_mm": 0.309,
+      "station_time_matches": 134,
+      "wind_samples": 133,
+      "rain_samples": 131,
+      "direction_samples": 112,
+      "wind_mae_ms": 1.511,
+      "wind_bias_ms": -0.063,
+      "rain_mae_mm": 0.292,
       "rain_missed_events": 0,
       "rain_observed_events": 14,
-      "direction_mae_deg": 33.38,
+      "direction_mae_deg": 34.16,
       "state": "diagnostics_only"
     },
     {
@@ -153,31 +153,31 @@
     {
       "model": "icon_seamless",
       "lead_h": 6,
-      "station_time_matches": 143,
-      "wind_samples": 142,
-      "rain_samples": 141,
-      "direction_samples": 125,
-      "wind_mae_ms": 1.127,
-      "wind_bias_ms": -0.328,
-      "rain_mae_mm": 0.08,
+      "station_time_matches": 161,
+      "wind_samples": 160,
+      "rain_samples": 158,
+      "direction_samples": 141,
+      "wind_mae_ms": 1.177,
+      "wind_bias_ms": -0.305,
+      "rain_mae_mm": 0.075,
       "rain_missed_events": 4,
       "rain_observed_events": 11,
-      "direction_mae_deg": 28.58,
+      "direction_mae_deg": 29.28,
       "state": "diagnostics_only"
     },
     {
       "model": "icon_seamless",
       "lead_h": 12,
-      "station_time_matches": 125,
-      "wind_samples": 124,
-      "rain_samples": 123,
-      "direction_samples": 109,
-      "wind_mae_ms": 1.186,
-      "wind_bias_ms": -0.278,
-      "rain_mae_mm": 0.295,
+      "station_time_matches": 134,
+      "wind_samples": 133,
+      "rain_samples": 131,
+      "direction_samples": 117,
+      "wind_mae_ms": 1.171,
+      "wind_bias_ms": -0.301,
+      "rain_mae_mm": 0.277,
       "rain_missed_events": 2,
       "rain_observed_events": 14,
-      "direction_mae_deg": 27.8,
+      "direction_mae_deg": 28.76,
       "state": "diagnostics_only"
     },
     {
@@ -206,9 +206,9 @@
     "Quality-unverified observations, non-numeric and missing readings are excluded.",
     "Not an official warning or a substitute for onsite safety procedures."
   ],
-  "updated_at_utc": "2026-11-17T19:05:08.542878Z",
-  "forecast_snapshot_rows": 2586,
-  "observation_rows": 38546,
+  "updated_at_utc": "2026-11-18T01:18:59.917086Z",
+  "forecast_snapshot_rows": 2667,
+  "observation_rows": 39831,
   "observed_station_count": 1286,
   "source_forecast": "Open-Meteo model-specific snapshots, obtained before valid_at",
   "source_observation": "JMA AMeDAS public map data; values with quality flag 0 only",
@@ -216,10 +216,10 @@
   "important_notice": "This report is NOT a locally optimised forecast, forecast correction, or site-level wind measurement.",
   "match_archive_progress": {
     "schema": 1,
-    "matched_rows_current_window": 960,
-    "complete_three_model_cohorts_current_window": 239,
-    "pending_finalization_rows": 168,
-    "pending_finalization_complete_cohorts": 48,
+    "matched_rows_current_window": 1023,
+    "complete_three_model_cohorts_current_window": 247,
+    "pending_finalization_rows": 231,
+    "pending_finalization_complete_cohorts": 56,
     "eligible_unarchived_days": 0,
     "daily": [
       {
@@ -298,6 +298,19 @@
           "6": 24,
           "12": 16,
           "24": 8
+        }
+      },
+      {
+        "local_day_jst": "2026-11-18",
+        "eligible_from_jst": "2026-11-20",
+        "state": "pending_two_day_lag",
+        "matched_rows": 63,
+        "complete_three_model_cohorts": 8,
+        "cohorts_by_lead": {
+          "3": 0,
+          "6": 0,
+          "12": 8,
+          "24": 0
         }
       }
     ],
@@ -1621,5 +1634,5 @@
     ]
   },
   "shadow_trial_state": "collecting_data",
-  "new_long_horizon_matches": 108
+  "new_long_horizon_matches": 0
 }
