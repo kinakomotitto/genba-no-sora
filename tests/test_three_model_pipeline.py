@@ -1,6 +1,8 @@
 """Fully synthetic, offline tests: no weather API calls or private user data."""
 import datetime as dt
 import json
+import socket
+import urllib.error
 import sys
 import tempfile
 import unittest
@@ -45,6 +47,34 @@ class TestNationwidePilot(unittest.TestCase):
         self.assertTrue(all(dt.datetime.fromisoformat(r["fetched_at"].replace("Z","+00:00")) <
                             dt.datetime.fromisoformat(r["valid_at"].replace("Z","+00:00"))
                             for r in collected))
+
+    def test_transient_network_failure_recovers_with_bounded_retry(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            file=root/"snap.json"
+            file.write_text(json.dumps(snap()),encoding="utf-8")
+            calls=[]
+            def flaky(model,sites):
+                calls.append(model)
+                if model=="jma_msm" and calls.count(model)==1:
+                    raise urllib.error.URLError(socket.timeout("timeout"))
+                return fake_model(model,sites)
+            result=tc.collect(file,root/"out",flaky,lambda:NOW)
+            self.assertTrue(result["all_three_models_collected"])
+            self.assertEqual(result["calls_attempted"],4)
+            self.assertEqual(calls.count("jma_msm"),2)
+
+    def test_persistent_dns_failure_is_sanitized_and_bounded(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            file=root/"snap.json"
+            file.write_text(json.dumps(snap()),encoding="utf-8")
+            def dns_failure(model,sites):
+                raise urllib.error.URLError(socket.gaierror(-2,"secret hostname"))
+            result=tc.collect(file,root/"out",dns_failure,lambda:NOW)
+            self.assertEqual(result["calls_attempted"],6)
+            self.assertEqual(result["per_model"]["jma_msm"]["failure_types"],["network_dns"])
+            self.assertNotIn("secret",json.dumps(result))
 
     def test_model_failure_is_visible_and_not_imputed(self):
         with tempfile.TemporaryDirectory() as temp:
