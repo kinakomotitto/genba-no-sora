@@ -10,6 +10,8 @@ No winner / correction claims. Failed models are recorded, not imputed as zero.
 import datetime as dt
 import json
 import math
+import socket
+import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
@@ -97,6 +99,21 @@ def select_public_stations(snapshot,max_sites=MAX_PUBLIC_REFERENCE_STATIONS,pref
     if len(found)*len(MODELS)*RUNS_PER_DAY>MAX_DAILY_SITE_MODEL_UNITS:
         raise ValueError("National model collection exceeds daily weighted site-model budget")
     return found
+
+def network_failure_code(error):
+    """Sanitized diagnostics; never persist hostnames, URLs or exception bodies."""
+    if isinstance(error,urllib.error.URLError):
+        reason=error.reason
+        if isinstance(reason,socket.gaierror):
+            return "network_dns"
+        if isinstance(reason,(TimeoutError,socket.timeout)):
+            return "network_timeout"
+        if isinstance(reason,ConnectionRefusedError):
+            return "network_connection_refused"
+        if isinstance(reason,ConnectionResetError):
+            return "network_connection_reset"
+        return "network_unreachable"
+    return None
 
 def request_model(model,stations):
     params={
@@ -322,7 +339,17 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
                             midpoint=len(subset)//2
                             return (fetch_bounded(subset[:midpoint])+
                                     fetch_bounded(subset[midpoint:]))
-                    batches=fetch_bounded(chunk,already_counted=True)
+                    try:
+                        batches=fetch_bounded(chunk,already_counted=True)
+                    except urllib.error.URLError as transient:
+                        # Retry at most once per failed chunk, within the existing
+                        # 16-request budget. Never retry HTTP 401/403/429 or 400.
+                        if isinstance(transient,urllib.error.HTTPError):
+                            raise
+                        if status["calls_attempted"]>=MAX_HTTP_GETS_PER_RUN:
+                            raise
+                        status["calls_attempted"]+=1
+                        batches=fetch_bounded(chunk,already_counted=True)
                     piece=[]
                     for subset,response in batches:
                         piece.extend(parse_forecast(model,subset,response,stamp))
@@ -342,7 +369,7 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
                     # full URL/IP/token information is NEVER written to GitHub.
                     code=getattr(exc,"code",None)
                     reason=("HTTP_"+str(code) if isinstance(code,int)
-                            else getattr(exc,"reason_code",type(exc).__name__))
+                            else network_failure_code(exc) or getattr(exc,"reason_code",type(exc).__name__))
                     failures.append(reason)
                     # Stop immediately on shared-IP rate limits or disabled
                     # access; do not retry or query other models this run.
