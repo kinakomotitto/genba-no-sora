@@ -82,7 +82,8 @@ $('weekly-handle').addEventListener('touchstart',e=>{touchY=e.touches[0].clientY
 $('weekly-handle').addEventListener('touchend',e=>{if(touchY===null)return;const delta=e.changedTouches[0].clientY-touchY;touchY=null;if(delta>60){if(expanded){expanded=false;$('weekly-sheet').classList.remove('expanded')}else close()}else if(delta< -60){expanded=true;$('weekly-sheet').classList.add('expanded')}},{passive:true});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&activeDay>=0)close()});
 window.SoraWeekly={update(){draw();refresh()},refresh,render:draw};
-draw();
+draw();refresh();
+setInterval(()=>{if(document.visibilityState==='visible')refresh()},60000);
 window.addEventListener('online',()=>refresh());
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refresh()});
 window.addEventListener('pageshow',()=>refresh());
