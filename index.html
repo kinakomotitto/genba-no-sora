@@ -779,6 +779,41 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
 .amedas-height-status{font-size:10px;color:#93869b;line-height:1.6;margin:8px 0 0}
 @media(max-width:355px){.amedas-height-item strong{font-size:16px}.amedas-height-item{padding:8px 2px}}
 
+
+/* Seven-day forecast */
+.weekly-section{margin:14px 0 20px;padding:14px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.76)}
+.weekly-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px;font-weight:750}
+.weekly-head button{border:0;background:transparent;color:var(--pinkdark);font-size:22px}
+.weekly-head button.spinning{animation:weekly-spin 1s linear infinite}
+@keyframes weekly-spin{to{transform:rotate(360deg)}}
+.weekly-place{width:100%;border:1px solid var(--line);border-radius:12px;background:white;padding:10px;color:var(--ink);margin-bottom:10px}
+.weekly-days{display:grid;gap:6px}
+.weekly-day{width:100%;display:grid;grid-template-columns:minmax(90px,1.5fr) 30px minmax(82px,1fr) minmax(56px,.8fr) 9px;gap:4px;align-items:center;text-align:left;background:white;border:1px solid var(--line);border-radius:12px;padding:11px 8px;color:var(--ink);font-size:12px}
+.weekly-day-date{font-weight:700}.weekly-day-icon{font-size:19px}.weekly-day-temps small{color:var(--muted)}
+.weekly-updated{text-align:right;color:var(--muted);font-size:11px;margin-top:9px}
+.weekly-status{font-size:11px;color:var(--muted);margin-top:6px}.weekly-status.error{color:#a75e42}
+.weekly-skeleton{height:47px;border-radius:12px;background:linear-gradient(90deg,#f7f0f4,#fff,#f7f0f4);background-size:200% 100%;animation:weekly-shimmer 1.6s linear infinite}
+@keyframes weekly-shimmer{to{background-position:-200% 0}}
+.warn-soft{background:#cde8f6!important;border-radius:5px}.warn-mid{background:#f8e2be!important;border-radius:5px}.warn-strong{background:#f4d2ad!important;border-radius:5px}
+#weekly-overlay[hidden]{display:none}#weekly-overlay{position:fixed;inset:0;z-index:10000}
+.weekly-backdrop{position:absolute;inset:0;background:rgba(40,31,42,.35);border:0;width:100%}
+.weekly-sheet{position:absolute;bottom:0;left:0;right:0;height:60dvh;background:#fffafc;border-radius:24px 24px 0 0;padding:8px 12px calc(14px + env(safe-area-inset-bottom));box-shadow:0 -8px 35px #0002;transition:height .2s;display:flex;flex-direction:column}
+.weekly-sheet.expanded{height:90dvh}
+.weekly-handle{display:block;margin:0 auto 9px;border:0;background:transparent;padding:10px 45px;touch-action:pan-y}
+.weekly-handle:before{content:'';display:block;width:42px;height:5px;background:#d7c5cf;border-radius:8px}
+.weekly-sheet-head{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:12px}
+.weekly-sheet-head button{border:1px solid var(--line);background:white;border-radius:10px;padding:7px 10px;color:var(--ink)}
+.weekly-sheet-head button:disabled{opacity:.3}
+.weekly-table{display:flex;overflow:hidden;min-height:0}
+.weekly-hour-labels{flex:0 0 112px;z-index:1}
+.weekly-hour-scroll{overflow-x:auto;overflow-y:hidden;flex:1;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.weekly-hour-data{display:flex;width:max-content}
+.weekly-hour-col{width:74px;flex:none}
+.weekly-hour-cell{height:44px;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #f1e5ea;font-size:11px;white-space:nowrap}
+.weekly-hour-cell.head{font-weight:700;background:#fdf0f4}
+.weekly-hour-labels .weekly-hour-cell{justify-content:flex-start;padding-left:7px;font-weight:650;background:#fdf0f4}
+body.weekly-open{overflow:hidden}
+
 </style>
 </head>
 <body>
@@ -922,7 +957,18 @@ details.home-record{background:rgba(255,255,255,.82);padding:0 13px 0 14px;margi
     <div id="hours" class="forecast" aria-label="この先の時間別天気"><div class="hour muted">取得後に表示</div></div>
   </div>
 
-  <div class="home-warning">
+  <section id="weekly-forecast" class="weekly-section" aria-label="週間天気">
+<div class="weekly-head"><span>♡ 週間天気 <small class="muted">7日間</small></span><button type="button" id="weekly-refresh" aria-label="週間天気を更新">↻</button></div>
+<select id="weekly-place" class="weekly-place" aria-label="週間天気の場所"></select>
+<div id="weekly-days" class="weekly-days"></div><div id="weekly-updated" class="weekly-updated"></div><div id="weekly-status" class="weekly-status" role="status"></div>
+</section>
+<div id="weekly-overlay" hidden><button type="button" id="weekly-backdrop" class="weekly-backdrop" aria-label="閉じる"></button>
+<section id="weekly-sheet" class="weekly-sheet" role="dialog" aria-modal="true" aria-label="週間天気の時間別詳細">
+<button id="weekly-handle" class="weekly-handle" type="button" aria-label="上スワイプで拡大、下スワイプで閉じる"></button>
+<div class="weekly-sheet-head"><button id="weekly-prev" type="button" aria-label="前日">‹</button><strong id="weekly-sheet-date"></strong><button id="weekly-next" type="button" aria-label="翌日">›</button><button id="weekly-expand" type="button" aria-label="パネルの高さを切り替える">⤢</button><button id="weekly-close" type="button" aria-label="閉じる">×</button></div>
+<div class="weekly-table"><div class="weekly-hour-labels"><div class="weekly-hour-cell">時刻</div><div class="weekly-hour-cell">気温</div><div class="weekly-hour-cell">降水確率</div><div class="weekly-hour-cell">降水量</div><div class="weekly-hour-cell">風速</div><div class="weekly-hour-cell">最大瞬間風速</div></div><div id="weekly-hour-scroll" class="weekly-hour-scroll"><div id="weekly-hour-data" class="weekly-hour-data"></div></div></div>
+<p class="source">数値の色分けはアプリ独自の目安で、気象庁の警報・作業中止基準ではありません。</p></section></div>
+<div class="home-warning">
     <a href="https://www.jma.go.jp/bosai/warning/" target="_blank" rel="noopener noreferrer">
       <span aria-hidden="true">⚠️</span>
       <span><strong>警報・注意報</strong><small>気象庁の最新情報を確認</small></span>
@@ -2281,7 +2327,8 @@ function showTab(id,options={}){
   if(id==='home'&&selected.kind==='current')locate({fresh:true});
 }
 function gps(success,fail,options={}){if(!navigator.geolocation){fail&&fail('このブラウザではGPSが使えません');return}navigator.geolocation.getCurrentPosition(pos=>{lastGPS={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy,at:new Date().toISOString()};save();updateWindyLinks();success(lastGPS)},err=>{const msg=err.code===1?'位置情報の許可が必要です。ブラウザの設定で許可してください':err.code===3?'GPSの取得がタイムアウトしました':'GPSの位置を取得できませんでした';fail&&fail(msg)},{enableHighAccuracy:true,timeout:options.fresh?18000:12000,maximumAge:options.fresh?0:300000});}
-function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPSを更新できなかったよ · 前回の位置・予報が残っている場合があります';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
+function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPSを更新できなかったよ · 前回の位置・予報が残っている場合があります';window.SoraWeeklyContext=()=>({gps:lastGPS,sites:saved});
+if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
 
 
 // v0.46.1 — refresh weather when a previously open iPhone PWA returns to the
@@ -2731,7 +2778,7 @@ function renderWindTrend(hourly,stale){
 function renderWeather(data,fetched,stale){const c=data.current||{},h=data.hourly||{},desc=weatherDesc(c.weather_code);window.SoraAmedas?.setForecast?.(c,fetched,stale);$('temperature').textContent=Number.isFinite(c.temperature_2m)?Math.round(c.temperature_2m)+'°':'--°';$('description').textContent=desc[0];$('weather-icon').textContent=desc[1];$('apparent').textContent=`体感温度 ${fmt(c.apparent_temperature)}°C · 湿度 ${fmt(c.relative_humidity_2m)}%`;$('wind').textContent=`${fmt(c.wind_speed_10m)} m/s`;$('gust').textContent=`${fmt(c.wind_gusts_10m)} m/s`;
 let first=-1;if(Array.isArray(h.time)){const thisHourJP=new Date(Date.now()+9*3600000).toISOString().slice(0,13)+':00';first=h.time.findIndex(t=>t>=thisHourJP);}$('rain-prob').textContent=first>=0&&Array.isArray(h.precipitation_probability)&&h.precipitation_probability[first]!=null?`${Math.round(h.precipitation_probability[first])}%`:'--%';
 renderWindTrend(h,stale);renderRainOutlook(h,stale);if($('radar').classList.contains('active'))renderRadar15h();const hours=$('hours');hours.replaceChildren();if(Array.isArray(h.time)&&first>=0){h.time.slice(first,first+8).forEach((t,j)=>{const i=first+j;const el=document.createElement('div');el.className='hour';const time=document.createElement('div');time.className='sub';time.textContent=new Date(t).toLocaleTimeString('ja-JP',{hour:'2-digit',minute:'2-digit'});const ic=document.createElement('div');ic.style.fontSize='19px';ic.style.marginTop='6px';ic.textContent=weatherDesc(h.weather_code?.[i])[1];const temp=document.createElement('strong');temp.textContent=h.temperature_2m?.[i]!=null?Math.round(h.temperature_2m[i])+'°':'--°';const p=document.createElement('div');p.className='rain';p.textContent=h.precipitation_probability?.[i]!=null?'☂ '+h.precipitation_probability[i]+'%':'—';el.append(time,ic,temp,p);hours.append(el)})}else{hours.textContent='この時間帯の予報はありません。最新データを取得してください。'}
-$('weather-state').textContent=(stale?'保存データ':'最新取得')+' · '+datefmt(fetched);$('saved-label').textContent=stale?'保存された予報です（最新ではありません）。最終取得：'+datefmt(fetched):'予報の取得時刻：'+datefmt(fetched)+' ／ 山間部の局地的な天気とは異なる場合があります。';if(stale){$('offline-notice').textContent='保存済みの予報を表示中。現在の状況とは異なる可能性があります。警報・雨雲接近情報は更新されません。';$('offline-notice').classList.remove('hidden')}else if(navigator.onLine)$('offline-notice').classList.add('hidden');}
+$('weather-state').textContent=(stale?'保存データ':'最新取得')+' · '+datefmt(fetched);$('saved-label').textContent=stale?'保存された予報です（最新ではありません）。最終取得：'+datefmt(fetched):'予報の取得時刻：'+datefmt(fetched)+' ／ 山間部の局地的な天気とは異なる場合があります。';if(stale){$('offline-notice').textContent='保存済みの予報を表示中。現在の状況とは異なる可能性があります。警報・雨雲接近情報は更新されません。';$('offline-notice').classList.remove('hidden')}else if(navigator.onLine)$('offline-notice').classList.add('hidden');window.SoraWeekly?.update();}
 async function fetchWeather(lat,lon){const key=keyFor(lat,lon);window.SoraCompare?.prepare(lat,lon);window.SoraAmedas?.setLocation(lat,lon);if(!navigator.onLine){const old=cache[key];if(old)renderWeather(old.data,old.fetched,true);else toast('圏外で保存予報がありません');window.SoraCompare?.restore(lat,lon);setConnection();return}fetchController?.abort();const controller=new AbortController();fetchController=controller;const timer=setTimeout(()=>controller.abort(),14000);$('weather-state').textContent='取得中…';const query=new URLSearchParams({latitude:lat.toFixed(5),longitude:lon.toFixed(5),current:'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m',hourly:'temperature_2m,precipitation_probability,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m',wind_speed_unit:'ms',timezone:'Asia/Tokyo',forecast_days:'2'});try{const r=await fetch('https://api.open-meteo.com/v1/forecast?'+query,{signal:controller.signal});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();if(!data.current||!data.hourly)throw Error('予報データが不完全');if(controller!==fetchController)return;const fetched=new Date().toISOString();cache[key]={data,fetched};const keys=Object.keys(cache);if(keys.length>25){keys.sort((a,b)=>String(cache[a].fetched).localeCompare(String(cache[b].fetched)));for(const k of keys.slice(0,keys.length-25))delete cache[k]}save();renderWeather(data,fetched,false);window.SoraCompare?.update(lat,lon);}catch(e){if(controller!==fetchController)return;const old=cache[key];if(old){renderWeather(old.data,old.fetched,true);window.SoraCompare?.restore(lat,lon);toast('更新できないため保存データを表示しています')}else{$('weather-state').textContent='取得失敗';$('description').textContent='天気を取得できませんでした';window.SoraCompare?.restore(lat,lon);toast('通信環境を確認して「天気を更新」を押してね')}}finally{clearTimeout(timer);}}
 let savingGps=false;
 function quickSaveCurrent(){
@@ -3062,5 +3109,6 @@ if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.
 if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old){renderWeather(old.data,old.fetched,true);window.SoraCompare?.restore(lastGPS.lat,lastGPS.lon);}}locate({fresh:true});
 })();
 </script>
+<script src="./weekly-forecast.js?v=1"></script>
 </body>
 </html>
