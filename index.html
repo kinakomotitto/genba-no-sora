@@ -2327,8 +2327,7 @@ function showTab(id,options={}){
   if(id==='home'&&selected.kind==='current')locate({fresh:true});
 }
 function gps(success,fail,options={}){if(!navigator.geolocation){fail&&fail('このブラウザではGPSが使えません');return}navigator.geolocation.getCurrentPosition(pos=>{lastGPS={lat:pos.coords.latitude,lon:pos.coords.longitude,accuracy:pos.coords.accuracy,at:new Date().toISOString()};save();updateWindyLinks();success(lastGPS)},err=>{const msg=err.code===1?'位置情報の許可が必要です。ブラウザの設定で許可してください':err.code===3?'GPSの取得がタイムアウトしました':'GPSの位置を取得できませんでした';fail&&fail(msg)},{enableHighAccuracy:true,timeout:options.fresh?18000:12000,maximumAge:options.fresh?0:300000});}
-function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPSを更新できなかったよ · 前回の位置・予報が残っている場合があります';window.SoraWeeklyContext=()=>({gps:lastGPS,sites:saved});
-if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
+function locate(options={}){$('geo-status').textContent='GPSを取得中…';window.SoraArea?.clear();gps(p=>{if(selected.kind==='current'){$('geo-status').textContent=`現在地を取得 · ${p.lat.toFixed(4)}, ${p.lon.toFixed(4)}`;window.SoraArea?.update(p.lat,p.lon);fetchWeather(p.lat,p.lon)}else{toast('GPSを取得しました') }},msg=>{window.SoraArea?.clear();toast(msg);$('geo-status').textContent='GPSを更新できなかったよ · 前回の位置・予報が残っている場合があります';if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old)renderWeather(old.data,old.fetched,true)}},{fresh:!!options.fresh})}
 
 
 // v0.46.1 — refresh weather when a previously open iPhone PWA returns to the
@@ -3107,6 +3106,7 @@ window.addEventListener('pageshow',event=>{if(event.persisted)refreshForegroundW
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')refreshForegroundWeather()});window.addEventListener('offline',()=>{setConnection();const p=getCoords();if(p&&cache[keyFor(p.lat,p.lon)])renderWeather(cache[keyFor(p.lat,p.lon)].data,cache[keyFor(p.lat,p.lon)].fetched,true)});setConnection();renderSites();renderWxLogs();updateWindyLinks();
 if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
 if(lastGPS){const old=cache[keyFor(lastGPS.lat,lastGPS.lon)];if(old){renderWeather(old.data,old.fetched,true);window.SoraCompare?.restore(lastGPS.lat,lastGPS.lon);}}locate({fresh:true});
+window.SoraWeeklyContext=()=>({gps:lastGPS,sites:saved});
 })();
 </script>
 <script src="./weekly-forecast.js?v=1"></script>
