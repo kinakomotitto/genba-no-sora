@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "study": "station_elevation_day_night_air_temperature",
-  "updated_at_utc": "2026-11-19T07:22:13.839598Z",
+  "updated_at_utc": "2026-11-19T13:20:33.251657Z",
   "state": "exploratory_diagnostics_only",
   "automatic_correction_enabled": false,
   "production_forecast_changes": false,
@@ -14,7 +14,7 @@
   "earliest_observation_jst": "2026-11-10",
   "latest_observation_jst": "2026-11-19",
   "distinct_observation_days": 10,
-  "distinct_matched_timestamps": 36,
+  "distinct_matched_timestamps": 37,
   "day_night_definition_jst": "day 06:00-17:59 / night 18:00-05:59 (not local sunrise/sunset)",
   "by_period": {
     "day": {
@@ -27,30 +27,30 @@
       "median_higher_minus_lower_c": -1.4
     },
     "night": {
-      "samples": 3034,
-      "matched_timestamps": 19,
+      "samples": 3194,
+      "matched_timestamps": 20,
       "distinct_days": 10,
-      "warmer_higher_count": 486,
-      "warmer_higher_share": 0.16,
-      "mean_higher_minus_lower_c": -1.48,
+      "warmer_higher_count": 500,
+      "warmer_higher_share": 0.157,
+      "mean_higher_minus_lower_c": -1.5,
       "median_higher_minus_lower_c": -1.3
     },
     "night_calm": {
-      "samples": 1912,
-      "matched_timestamps": 19,
+      "samples": 1968,
+      "matched_timestamps": 20,
       "distinct_days": 10,
-      "warmer_higher_count": 301,
-      "warmer_higher_share": 0.157,
+      "warmer_higher_count": 307,
+      "warmer_higher_share": 0.156,
       "mean_higher_minus_lower_c": -1.33,
       "median_higher_minus_lower_c": -1.2
     },
     "night_other_wind": {
-      "samples": 1121,
-      "matched_timestamps": 19,
+      "samples": 1223,
+      "matched_timestamps": 20,
       "distinct_days": 10,
-      "warmer_higher_count": 185,
-      "warmer_higher_share": 0.165,
-      "mean_higher_minus_lower_c": -1.75,
+      "warmer_higher_count": 193,
+      "warmer_higher_share": 0.158,
+      "mean_higher_minus_lower_c": -1.77,
       "median_higher_minus_lower_c": -1.6
     }
   },
