@@ -310,6 +310,8 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
             rows=[]
             failures=[]
             successes=0
+            transient_retries_attempted=0
+            transient_retries_recovered=0
             for start in range(0,len(stations),MAX_STATIONS_PER_REQUEST):
                 chunk=stations[start:start+MAX_STATIONS_PER_REQUEST]
                 if api_throttled:
@@ -349,7 +351,9 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
                         if status["calls_attempted"]>=MAX_HTTP_GETS_PER_RUN:
                             raise
                         status["calls_attempted"]+=1
+                        transient_retries_attempted+=1
                         batches=fetch_bounded(chunk,already_counted=True)
+                        transient_retries_recovered+=1
                     piece=[]
                     for subset,response in batches:
                         piece.extend(parse_forecast(model,subset,response,stamp))
@@ -382,7 +386,10 @@ def collect(snapshot_path=INPUT,output=OUT,fetcher=request_model,clock=now_utc):
                   else ("partial" if successes else "unavailable"),
                 "rows":len(rows),"stations_successful":successes,
                 "failed_batches":len(failures),
-                "failure_types":sorted(set(failures))
+                "failure_types":sorted(set(failures)),
+                # Aggregate counts only: no coordinates, URLs or error bodies.
+                "transient_retries_attempted":transient_retries_attempted,
+                "transient_retries_recovered":transient_retries_recovered
             }
         if found:
             save_daily(found,stamp,output)
