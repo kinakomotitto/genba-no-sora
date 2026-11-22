@@ -18,6 +18,7 @@ on:
       - 'tools/research_failure_issue.py'
       - 'tests/test_amedas_snapshot.py'
       - 'tests/test_three_model_pipeline.py'
+      - 'tests/test_model_retry_diagnostics.py'
       - 'tests/test_schedule_delay_audit.py'
       - 'tests/test_match_coverage_audit.py'
       - 'tests/test_correction_readiness.py'
@@ -41,6 +42,7 @@ on:
       - 'tools/research_failure_issue.py'
       - 'tests/test_amedas_snapshot.py'
       - 'tests/test_three_model_pipeline.py'
+      - 'tests/test_model_retry_diagnostics.py'
       - 'tests/test_correction_readiness.py'
       - 'tests/test_forecast_skill_audit.py'
       - 'tests/test_national_shadow_correction.py'
@@ -60,6 +62,8 @@ jobs:
         run: python3 -m unittest discover -s tests -p test_terrain_temperature_research.py -v
       - name: Three model collection and scoring (synthetic)
         run: python3 -m unittest discover -s tests -p test_three_model_pipeline.py -v
+      - name: Bounded transient retry diagnostics (synthetic)
+        run: python3 -m unittest discover -s tests -p test_model_retry_diagnostics.py -v
       - name: Long-horizon season/month correction gate (synthetic)
         run: python3 -m unittest discover -s tests -p test_correction_readiness.py -v
       - name: Rare-event and monthly/seasonal skill diagnostics (synthetic)
