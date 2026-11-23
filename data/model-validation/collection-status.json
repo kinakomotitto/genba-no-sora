@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "fetched_at": "2026-11-23T07:38:41.944799Z",
+  "fetched_at": "2026-11-23T13:24:06.432025Z",
   "type": "research_pilot_public_stations_only",
   "not_nationwide_model_coverage": true,
   "models": [
@@ -21,42 +21,44 @@
   ],
   "per_model": {
     "jma_msm": {
-      "state": "ok",
-      "rows": 27,
-      "stations_successful": 9,
-      "failed_batches": 0,
-      "failure_types": [],
-      "transient_retries_attempted": 0,
+      "state": "unavailable",
+      "rows": 0,
+      "stations_successful": 0,
+      "failed_batches": 2,
+      "failure_types": [
+        "network_timeout"
+      ],
+      "transient_retries_attempted": 2,
       "transient_retries_recovered": 0
     },
     "ecmwf_ifs": {
       "state": "ok",
-      "rows": 27,
-      "stations_successful": 9,
+      "rows": 54,
+      "stations_successful": 18,
       "failed_batches": 0,
       "failure_types": [],
-      "transient_retries_attempted": 0,
-      "transient_retries_recovered": 0
+      "transient_retries_attempted": 1,
+      "transient_retries_recovered": 1
     },
     "icon_seamless": {
       "state": "ok",
-      "rows": 27,
-      "stations_successful": 9,
+      "rows": 54,
+      "stations_successful": 18,
       "failed_batches": 0,
       "failure_types": [],
       "transient_retries_attempted": 0,
       "transient_retries_recovered": 0
     }
   },
-  "calls_attempted": 3,
-  "forecast_rows_saved": 81,
+  "calls_attempted": 9,
+  "forecast_rows_saved": 108,
   "max_http_get_requests": 16,
   "request_chunk_size": 9,
   "automatic_correction_enabled": false,
   "data_source": "Open-Meteo (CC BY 4.0); free API only for non-commercial trials",
-  "selected_station_target": 9,
+  "selected_station_target": 18,
   "adaptive_backoff_used": false,
-  "selected_station_count": 9,
+  "selected_station_count": 18,
   "station_ids": [
     "14163",
     "31312",
@@ -66,12 +68,21 @@
     "62078",
     "67437",
     "82182",
-    "91197"
+    "91197",
+    "44356",
+    "44301",
+    "94011",
+    "88736",
+    "92006",
+    "18281",
+    "44262",
+    "11001",
+    "56036"
   ],
-  "daily_site_model_units_estimate": 108,
+  "daily_site_model_units_estimate": 216,
   "maximum_daily_site_model_units": 600,
   "selection_method": "9 anchor stations + deterministic farthest-point public stations with wind and rain observations",
   "state": "saved",
-  "consecutive_model_failures": 0,
-  "all_three_models_collected": true
+  "consecutive_model_failures": 1,
+  "all_three_models_collected": false
 }
