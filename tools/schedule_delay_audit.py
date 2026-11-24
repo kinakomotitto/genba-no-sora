@@ -30,13 +30,16 @@ def expected_slot(started):
 def diagnose(started,scheduled_event=True,created=None):
     if not scheduled_event:
         return {"state":"not_scheduled","delay_minutes":None}
-    slot=expected_slot(started)
+    if created is not None and (created.tzinfo is None or created>started):
+        raise ValueError("invalid creation time")
+    slot=expected_slot(created if created is not None else started)
     minutes=round((started-slot).total_seconds()/60,1)
     report={"state":"late" if minutes>WARN_MINUTES else "on_time",
             "expected_at_utc":slot.isoformat(),
             "observed_at_utc":started.astimezone(UTC).isoformat(),
             "delay_minutes":minutes,
             "warning_threshold_minutes":WARN_MINUTES,
+            "slot_attribution":"estimated_from_creation" if created is not None else "estimated_from_start",
             "note":"Workflow start delay only; not evidence of model collection success."}
     if created is not None:
         if created.tzinfo is None:
@@ -69,6 +72,16 @@ def main():
         created=dt.datetime.fromisoformat(run["created_at"].replace("Z","+00:00"))
         report=diagnose(started,created=created)
         print(json.dumps(report,ensure_ascii=False))
+        summary_path=os.environ.get("GITHUB_STEP_SUMMARY")
+        if summary_path:
+            with open(summary_path,"a",encoding="utf-8") as summary:
+                summary.write("## Scheduled run timing (diagnostic only)\\n")
+                summary.write("Expected UTC: {} | Started UTC: {}\\n\\n".format(
+                    report["expected_at_utc"],report["observed_at_utc"]))
+                summary.write("Delay: {} min | Dispatch-record lag: {} min | Queue wait: {} min\\n\\n".format(
+                    report["delay_minutes"],report["created_after_slot_minutes"],
+                    report["queue_wait_minutes"]))
+                summary.write("A successful workflow does not prove fresh 3-model data collection.\\n")
         if report["state"]=="late":
             print(f"::warning::Scheduled workflow started {report['delay_minutes']} minutes late")
     except (OSError,ValueError,KeyError,TypeError) as exc:
