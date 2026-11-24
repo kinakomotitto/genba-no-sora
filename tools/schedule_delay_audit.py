@@ -30,13 +30,16 @@ def expected_slot(started):
 def diagnose(started,scheduled_event=True,created=None):
     if not scheduled_event:
         return {"state":"not_scheduled","delay_minutes":None}
-    slot=expected_slot(started)
+    if created is not None and (created.tzinfo is None or created>started):
+        raise ValueError("invalid creation time")
+    slot=expected_slot(created if created is not None else started)
     minutes=round((started-slot).total_seconds()/60,1)
     report={"state":"late" if minutes>WARN_MINUTES else "on_time",
             "expected_at_utc":slot.isoformat(),
             "observed_at_utc":started.astimezone(UTC).isoformat(),
             "delay_minutes":minutes,
             "warning_threshold_minutes":WARN_MINUTES,
+            "slot_attribution":"estimated_from_creation" if created is not None else "estimated_from_start",
             "note":"Workflow start delay only; not evidence of model collection success."}
     if created is not None:
         if created.tzinfo is None:
