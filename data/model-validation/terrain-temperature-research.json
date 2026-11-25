@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "study": "station_elevation_day_night_air_temperature",
-  "updated_at_utc": "2026-11-24T19:03:43.794502Z",
+  "updated_at_utc": "2026-11-25T01:19:42.724117Z",
   "state": "exploratory_diagnostics_only",
   "automatic_correction_enabled": false,
   "production_forecast_changes": false,
@@ -14,44 +14,44 @@
   "earliest_observation_jst": "2026-11-12",
   "latest_observation_jst": "2026-11-25",
   "distinct_observation_days": 14,
-  "distinct_matched_timestamps": 53,
+  "distinct_matched_timestamps": 54,
   "day_night_definition_jst": "day 06:00-17:59 / night 18:00-05:59 (not local sunrise/sunset)",
   "by_period": {
     "day": {
-      "samples": 4146,
-      "matched_timestamps": 26,
-      "distinct_days": 13,
-      "warmer_higher_count": 592,
-      "warmer_higher_share": 0.143,
-      "mean_higher_minus_lower_c": -1.56,
+      "samples": 4313,
+      "matched_timestamps": 27,
+      "distinct_days": 14,
+      "warmer_higher_count": 598,
+      "warmer_higher_share": 0.139,
+      "mean_higher_minus_lower_c": -1.57,
       "median_higher_minus_lower_c": -1.4
     },
     "night": {
-      "samples": 4307,
+      "samples": 4313,
       "matched_timestamps": 27,
       "distinct_days": 14,
-      "warmer_higher_count": 706,
-      "warmer_higher_share": 0.164,
-      "mean_higher_minus_lower_c": -1.49,
+      "warmer_higher_count": 713,
+      "warmer_higher_share": 0.165,
+      "mean_higher_minus_lower_c": -1.48,
       "median_higher_minus_lower_c": -1.3
     },
     "night_calm": {
-      "samples": 2317,
+      "samples": 2307,
       "matched_timestamps": 27,
       "distinct_days": 14,
       "warmer_higher_count": 395,
-      "warmer_higher_share": 0.17,
+      "warmer_higher_share": 0.171,
       "mean_higher_minus_lower_c": -1.28,
       "median_higher_minus_lower_c": -1.1
     },
     "night_other_wind": {
-      "samples": 1980,
+      "samples": 1996,
       "matched_timestamps": 27,
       "distinct_days": 14,
-      "warmer_higher_count": 311,
-      "warmer_higher_share": 0.157,
-      "mean_higher_minus_lower_c": -1.73,
-      "median_higher_minus_lower_c": -1.65
+      "warmer_higher_count": 318,
+      "warmer_higher_share": 0.159,
+      "mean_higher_minus_lower_c": -1.71,
+      "median_higher_minus_lower_c": -1.6
     }
   },
   "interpretation": "Higher station warmer is a cross-station contrast, NOT demonstrated inversion, error or local observation.",
