@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "study": "station_elevation_day_night_air_temperature",
-  "updated_at_utc": "2026-11-27T01:24:57.847484Z",
+  "updated_at_utc": "2026-11-27T07:25:00.791330Z",
   "state": "exploratory_diagnostics_only",
   "automatic_correction_enabled": false,
   "production_forecast_changes": false,
@@ -14,16 +14,16 @@
   "earliest_observation_jst": "2026-11-14",
   "latest_observation_jst": "2026-11-27",
   "distinct_observation_days": 14,
-  "distinct_matched_timestamps": 54,
+  "distinct_matched_timestamps": 55,
   "day_night_definition_jst": "day 06:00-17:59 / night 18:00-05:59 (not local sunrise/sunset)",
   "by_period": {
     "day": {
-      "samples": 4303,
-      "matched_timestamps": 27,
+      "samples": 4463,
+      "matched_timestamps": 28,
       "distinct_days": 14,
-      "warmer_higher_count": 575,
+      "warmer_higher_count": 597,
       "warmer_higher_share": 0.134,
-      "mean_higher_minus_lower_c": -1.61,
+      "mean_higher_minus_lower_c": -1.62,
       "median_higher_minus_lower_c": -1.4
     },
     "night": {
